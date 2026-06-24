@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Accedi - Studio Legale</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1E3A5F 0%, #2C5282 50%, #1A365D 100%);
+      display: flex; align-items: center; justify-content: center;
+      padding: 1rem;
+    }
+    .login-container {
+      width: 100%; max-width: 420px;
+      animation: fadeUp 0.4s ease;
+    }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .login-logo {
+      text-align: center; margin-bottom: 2rem; color: white;
+    }
+    .login-logo i { font-size: 3rem; color: #63B3ED; margin-bottom: 0.75rem; display: block; }
+    .login-logo h1 { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.25rem; }
+    .login-logo p { font-size: 0.875rem; color: rgba(255,255,255,0.7); }
+    .login-card {
+      background: white; border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+    .login-card-header {
+      background: #F7FAFC; padding: 1.5rem;
+      border-bottom: 1px solid #E2E8F0; text-align: center;
+    }
+    .login-card-header h2 { font-size: 1.1rem; font-weight: 700; color: #1E3A5F; }
+    .login-card-header p { font-size: 0.825rem; color: #718096; margin-top: 0.25rem; }
+    .login-card-body { padding: 1.75rem; }
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.1rem; }
+    .form-group label { font-size: 0.875rem; font-weight: 500; color: #2D3748; }
+    .input-wrap { position: relative; }
+    .input-wrap i { position: absolute; left: 0.875rem; top: 50%; transform: translateY(-50%); color: #A0AEC0; font-size: 0.9rem; }
+    .form-group input {
+      width: 100%; padding: 0.7rem 0.875rem 0.7rem 2.5rem;
+      border: 1.5px solid #E2E8F0; border-radius: 8px;
+      font-size: 0.9rem; color: #2D3748; background: white;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-group input:focus { outline: none; border-color: #3182CE; box-shadow: 0 0 0 3px rgba(49,130,206,0.12); }
+    .btn-login {
+      width: 100%; padding: 0.8rem;
+      background: #1E3A5F; color: white; border: none;
+      border-radius: 8px; font-size: 0.95rem; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    }
+    .btn-login:hover { background: #2C5282; }
+    .btn-login:disabled { opacity: 0.7; cursor: not-allowed; }
+    .link-reset {
+      display: block; text-align: center; margin-top: 1rem;
+      font-size: 0.85rem; color: #3182CE; cursor: pointer; text-decoration: underline;
+    }
+    .link-reset:hover { color: #2C5282; }
+    .back-to-home {
+      display: block; text-align: center; margin-top: 0.75rem;
+      font-size: 0.82rem; color: #718096; text-decoration: none;
+    }
+    .back-to-home:hover { color: #2D3748; }
+    .error-box {
+      background: #FED7D7; color: #742A2A; padding: 0.75rem 1rem;
+      border-radius: 8px; font-size: 0.85rem; margin-bottom: 1rem; display: none;
+    }
+    .success-box {
+      background: #C6F6D5; color: #22543D; padding: 0.75rem 1rem;
+      border-radius: 8px; font-size: 0.85rem; margin-bottom: 1rem; display: none;
+    }
+    .reset-section { display: none; }
+    .divider { display: flex; align-items: center; gap: 0.75rem; margin: 1rem 0; }
+    .divider::before, .divider::after { content: ''; flex: 1; border-top: 1px solid #E2E8F0; }
+    .divider span { font-size: 0.78rem; color: #A0AEC0; white-space: nowrap; }
+    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body data-page="login">
+
+  <div class="login-container">
+    <div class="login-logo">
+      <i class="fas fa-balance-scale"></i>
+      <h1>Studio Legale</h1>
+      <p>Gestionale Interno</p>
+    </div>
+
+    <div class="login-card">
+      <div class="login-card-header">
+        <h2>Area Riservata</h2>
+        <p>Accedi con le tue credenziali</p>
+      </div>
+      <div class="login-card-body">
+
+        <!-- LOGIN SECTION -->
+        <div id="loginSection">
+          <div id="loginError" class="error-box"></div>
+          <form id="loginForm">
+            <div class="form-group">
+              <label for="loginEmail">Email</label>
+              <div class="input-wrap">
+                <i class="fas fa-envelope"></i>
+                <input type="email" id="loginEmail" placeholder="nome@studio.it" required autocomplete="email">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="loginPassword">Password</label>
+              <div class="input-wrap">
+                <i class="fas fa-lock"></i>
+                <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
+              </div>
+            </div>
+            <button type="submit" class="btn-login" id="btnLogin">
+              <i class="fas fa-sign-in-alt"></i> Accedi
+            </button>
+          </form>
+          <a class="link-reset" id="showResetLink" onclick="showReset()">Password dimenticata?</a>
+          <div class="divider"><span>oppure</span></div>
+          <a href="../index.html" class="back-to-home"><i class="fas fa-arrow-left"></i> Torna al sito pubblico</a>
+        </div>
+
+        <!-- RESET SECTION -->
+        <div id="resetSection" class="reset-section">
+          <div id="resetSuccess" class="success-box"></div>
+          <div id="resetError" class="error-box"></div>
+          <p style="font-size:0.875rem;color:#4A5568;margin-bottom:1rem;">Inserisci la tua email per ricevere le istruzioni di recupero password.</p>
+          <form id="resetForm">
+            <div class="form-group">
+              <label for="resetEmail">Email</label>
+              <div class="input-wrap">
+                <i class="fas fa-envelope"></i>
+                <input type="email" id="resetEmail" placeholder="nome@studio.it" required>
+              </div>
+            </div>
+            <button type="submit" class="btn-login" id="btnReset">
+              <i class="fas fa-paper-plane"></i> Invia Email di Recupero
+            </button>
+          </form>
+          <a class="link-reset" onclick="showLogin()">← Torna al login</a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+  <script src="../js/firebase-config.js"></script>
+  <script src="../js/utilities.js"></script>
+  <script src="../js/auth.js"></script>
+  <script>
+    function showReset() {
+      document.getElementById('loginSection').style.display = 'none';
+      document.getElementById('resetSection').style.display = 'block';
+    }
+    function showLogin() {
+      document.getElementById('resetSection').style.display = 'none';
+      document.getElementById('loginSection').style.display = 'block';
+    }
+
+    // Login form
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btnLogin');
+      const errBox = document.getElementById('loginError');
+      errBox.style.display = 'none';
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Accesso in corso...';
+      try {
+        const email = document.getElementById('loginEmail').value.trim();
+        const pass = document.getElementById('loginPassword').value;
+        await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+        await auth.signInWithEmailAndPassword(email, pass);
+        window.location.href = 'dashboard.html';
+      } catch (err) {
+        errBox.textContent = handleFirebaseError ? handleFirebaseError(err) : err.message;
+        errBox.style.display = 'block';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Accedi';
+      }
+    });
+
+    // Reset form
+    document.getElementById('resetForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btnReset');
+      const errBox = document.getElementById('resetError');
+      const succBox = document.getElementById('resetSuccess');
+      errBox.style.display = 'none';
+      succBox.style.display = 'none';
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Invio in corso...';
+      try {
+        const email = document.getElementById('resetEmail').value.trim();
+        await auth.sendPasswordResetEmail(email);
+        succBox.textContent = 'Email inviata! Controlla la tua casella di posta.';
+        succBox.style.display = 'block';
+      } catch (err) {
+        errBox.textContent = handleFirebaseError ? handleFirebaseError(err) : err.message;
+        errBox.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Invia Email di Recupero';
+      }
+    });
+
+    // If already logged in, redirect
+    auth.onAuthStateChanged(user => {
+      if (user) window.location.href = 'dashboard.html';
+    });
+  </script>
+</body>
+</html>

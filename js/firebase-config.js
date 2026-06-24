@@ -1,41 +1,30 @@
-// firebase-config.js - Configure with your Firebase project credentials
-// Replace the values below with your Firebase project configuration
-// Found at: Firebase Console > Project Settings > General > Your apps
-// Steps:
-//   1. Go to https://console.firebase.google.com
-//   2. Select your project (or create one)
-//   3. Click the gear icon → Project Settings
-//   4. Scroll to "Your apps" and select your Web app (or register one)
-//   5. Copy the firebaseConfig object values into this file
+// Firebase compat SDK initialization — Studio Legale Avv. Corrado Scamuzzi
+// La chiave API web è pubblica per design; la sicurezza è delegata alle Firebase Security Rules.
+// Richiede: firebase-app-compat, firebase-auth-compat, firebase-firestore-compat,
+//           firebase-storage-compat caricati via CDN prima di questo script.
 
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
-};
+(function () {
+  var firebaseConfig = {
+    apiKey: "AIzaSyDP-OTmxD0w3a1GwV4Swv5al4iD7LjkRQc",
+    authDomain: "studio-avvocato.firebaseapp.com",
+    projectId: "studio-avvocato",
+    storageBucket: "studio-avvocato.firebasestorage.app",
+    messagingSenderId: "937368694167",
+    appId: "1:937368694167:web:afcd02a0f1b8ae5c66a8d2",
+  };
 
-// Initialize Firebase app (compat SDK v9 loaded via CDN in HTML)
-firebase.initializeApp(firebaseConfig);
-
-// Authentication service — handles login, logout, session state
-const auth = firebase.auth();
-
-// Firestore database — stores all application data
-const db = firebase.firestore();
-
-// Cloud Storage — stores uploaded documents and files
-const storage = firebase.storage();
-
-// Enable Firestore offline persistence for better UX
-db.enablePersistence({ synchronizeTabs: true }).catch(err => {
-  if (err.code === 'failed-precondition') {
-    // Multiple tabs open; persistence can only be enabled in one tab at a time
-    console.warn('Firestore persistence unavailable: multiple tabs open');
-  } else if (err.code === 'unimplemented') {
-    // Browser does not support persistence
-    console.warn('Firestore persistence not supported in this browser');
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
   }
-});
+
+  window.auth    = firebase.auth();
+  window.db      = firebase.firestore();
+  window.storage = firebase.storage();
+
+  // Persistenza offline (opzionale — commentare se non necessario)
+  window.db.enablePersistence({ synchronizeTabs: true }).catch(function (err) {
+    if (err.code !== 'failed-precondition' && err.code !== 'unimplemented') {
+      console.warn('Firestore persistence error:', err);
+    }
+  });
+})();
