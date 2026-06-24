@@ -288,6 +288,18 @@
         gap: 0.55rem;
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
     </style>
   </head>
   <body>
@@ -408,7 +420,7 @@
             <h3>Cruscotto operativo</h3>
             <div class="kpi-grid">
               <div class="kpi">Pratiche aperte<br /><strong id="kpi-pratiche">18</strong></div>
-              <div class="kpi">Scadenze 7 giorni<br /><strong id="kpi-scadenze">6</strong></div>
+              <div class="kpi">Attività odierne<br /><strong id="kpi-attivita">6</strong></div>
               <div class="kpi">Udienze mese<br /><strong>9</strong></div>
               <div class="kpi">Parcelle da emettere<br /><strong>4</strong></div>
             </div>
@@ -492,6 +504,7 @@
               <li>Invio parcella pratica Verdi entro venerdì</li>
               <li>Rinnovo PEC tra 10 giorni</li>
             </ul>
+            <label class="sr-only" for="internal-note">Annotazioni interne giornaliere</label>
             <textarea id="internal-note" placeholder="Annotazioni rapide per la giornata"></textarea>
             <button class="btn" type="button" id="save-note">Salva nota</button>
             <p class="note" id="note-feedback"></p>
@@ -520,7 +533,7 @@
       const newTodoInput = document.getElementById("new-todo");
       const saveNoteBtn = document.getElementById("save-note");
       const noteFeedback = document.getElementById("note-feedback");
-      const kpiScadenze = document.getElementById("kpi-scadenze");
+      const kpiAttivita = document.getElementById("kpi-attivita");
 
       if (addTodoBtn && todoList && newTodoInput) {
         addTodoBtn.addEventListener("click", () => {
@@ -528,10 +541,21 @@
           if (!value) return;
 
           const item = document.createElement("li");
-          item.innerHTML = `<input type="checkbox" /> ${value} <span class="priority medium">Media</span>`;
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+
+          const textNode = document.createTextNode(value);
+
+          const badge = document.createElement("span");
+          badge.className = "priority medium";
+          badge.textContent = "Media";
+
+          item.appendChild(checkbox);
+          item.appendChild(textNode);
+          item.appendChild(badge);
           todoList.appendChild(item);
           newTodoInput.value = "";
-          kpiScadenze.textContent = String(Number(kpiScadenze.textContent) + 1);
+          kpiAttivita.textContent = String(Number(kpiAttivita.textContent) + 1);
         });
       }
 
