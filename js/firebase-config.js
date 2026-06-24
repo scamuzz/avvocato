@@ -18,9 +18,11 @@
   }
 
   if (typeof firebase !== 'undefined') {
-    window.auth    = firebase.auth();
-    window.db      = firebase.firestore();
-    window.storage = firebase.storage();
+    window.auth = firebase.auth();
+    window.db   = firebase.firestore();
+    if (typeof firebase.storage === 'function') {
+      window.storage = firebase.storage();
+    }
 
     // Persistenza offline (opzionale — commentare se non necessario)
     window.db.enablePersistence({ synchronizeTabs: true }).catch(function (err) {
