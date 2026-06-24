@@ -64,7 +64,7 @@ const addArchivioBtn = document.getElementById("add-archivio");
 const newArchivioNome = document.getElementById("new-archivio-nome");
 
 // === Riferimenti DOM – Promemoria ===
-const promemorialist = document.getElementById("promemoria-list");
+const promemoriaList = document.getElementById("promemoria-list");
 const addPromemoriaBtn = document.getElementById("add-promemoria");
 const newPromemoriaInput = document.getElementById("new-promemoria");
 
@@ -871,11 +871,11 @@ function createPromemoriaElement(item) {
 }
 
 function renderPromemoria(items) {
-  if (!promemorialist) return;
-  promemorialist.innerHTML = "";
+  if (!promemoriaList) return;
+  promemoriaList.innerHTML = "";
   for (const item of items) {
     if (!item.testo) continue;
-    promemorialist.appendChild(createPromemoriaElement(item));
+    promemoriaList.appendChild(createPromemoriaElement(item));
   }
 }
 
@@ -897,7 +897,7 @@ async function syncPromemoriaFromFirestore() {
 
 async function handleAddPromemoria() {
   const testo = newPromemoriaInput instanceof HTMLInputElement ? newPromemoriaInput.value.trim() : "";
-  if (!testo || !promemorialist) return;
+  if (!testo || !promemoriaList) return;
 
   if (isFirestoreReady()) {
     try {
@@ -905,7 +905,7 @@ async function handleAddPromemoria() {
         firestoreApi.collection(firestoreDb, PROMEMORIA_COLLECTION),
         { testo, createdAt: firestoreApi.serverTimestamp() },
       );
-      promemorialist.appendChild(createPromemoriaElement({ id: docRef.id, testo }));
+      promemoriaList.appendChild(createPromemoriaElement({ id: docRef.id, testo }));
       if (newPromemoriaInput instanceof HTMLInputElement) newPromemoriaInput.value = "";
       return;
     } catch (err) {
@@ -914,7 +914,7 @@ async function handleAddPromemoria() {
     }
   }
 
-  promemorialist.appendChild(createPromemoriaElement({ testo }));
+  promemoriaList.appendChild(createPromemoriaElement({ testo }));
   if (newPromemoriaInput instanceof HTMLInputElement) newPromemoriaInput.value = "";
 }
 
@@ -1099,12 +1099,12 @@ if (addArchivioBtn) addArchivioBtn.addEventListener("click", handleAddArchivio);
 if (addPromemoriaBtn) addPromemoriaBtn.addEventListener("click", handleAddPromemoria);
 
 // Enter key per i form di aggiunta
-if (newTodoInput) newTodoInput.addEventListener("keydown", (e) => { if (e.key === "Enter") handleAddTodo(); });
-if (newAgendaText) newAgendaText.addEventListener("keydown", (e) => { if (e.key === "Enter") handleAddAgenda(); });
-if (newAgendaDatetime) newAgendaDatetime.addEventListener("keydown", (e) => { if (e.key === "Enter") handleAddAgenda(); });
-if (newArchivioNome) newArchivioNome.addEventListener("keydown", (e) => { if (e.key === "Enter") handleAddArchivio(); });
-if (newPromemoriaInput) newPromemoriaInput.addEventListener("keydown", (e) => { if (e.key === "Enter") handleAddPromemoria(); });
-if (newPraticaAzione) newPraticaAzione.addEventListener("keydown", (e) => { if (e.key === "Enter") handleAddPratica(); });
+if (newTodoInput) newTodoInput.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); handleAddTodo(); } });
+if (newAgendaText) newAgendaText.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); handleAddAgenda(); } });
+if (newAgendaDatetime) newAgendaDatetime.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); handleAddAgenda(); } });
+if (newArchivioNome) newArchivioNome.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); handleAddArchivio(); } });
+if (newPromemoriaInput) newPromemoriaInput.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); handleAddPromemoria(); } });
+if (newPraticaAzione) newPraticaAzione.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); handleAddPratica(); } });
 
 bootstrap().catch((err) => {
   console.error("Errore non gestito nel bootstrap:", err);
