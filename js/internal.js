@@ -17,6 +17,7 @@ const INTERNAL_AREA_COLLECTION = "internal_area";
 const INTERNAL_AREA_MAIN_DOC = "main";
 const NOTE_STORAGE_KEY = "avvocato.internal.note";
 const TODO_CHECKBOX_SELECTOR = 'input[type="checkbox"]';
+const DATETIME_LOCAL_REGEX = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
 
 // === Costanti valori pratica ===
 const STATO_IN_CORSO = "In corso";
@@ -116,6 +117,7 @@ function makeIconBtn(icon, title) {
   const btn = document.createElement("button");
   btn.type = "button";
   btn.className = "btn-icon";
+  btn.setAttribute("aria-label", title);
   const iconSpan = document.createElement("span");
   iconSpan.setAttribute("aria-hidden", "true");
   iconSpan.textContent = icon;
@@ -131,7 +133,7 @@ function toDateTimeLocalValue(value) {
   if (!safe) return "";
   // Mantiene il formato richiesto da input[type="datetime-local"] senza perdere dati.
   // La conversione usa il fuso locale del browser.
-  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(safe)) return safe;
+  if (DATETIME_LOCAL_REGEX.test(safe)) return safe;
   const parsed = new Date(safe);
   if (Number.isNaN(parsed.getTime())) return "";
   const pad = (n) => String(n).padStart(2, "0");
@@ -619,8 +621,8 @@ function createPraticaRow(pratica) {
   statoSpan.textContent = pratica.stato || "";
   tdS.appendChild(statoSpan);
 
-  const tdSc = document.createElement("td");
-  tdSc.textContent = pratica.scadenza || "";
+  const tdScadenza = document.createElement("td");
+  tdScadenza.textContent = pratica.scadenza || "";
 
   const tdA = document.createElement("td");
   tdA.textContent = pratica.prossimaAzione || "";
@@ -637,7 +639,7 @@ function createPraticaRow(pratica) {
   tr.appendChild(tdC);
   tr.appendChild(tdP);
   tr.appendChild(tdS);
-  tr.appendChild(tdSc);
+  tr.appendChild(tdScadenza);
   tr.appendChild(tdA);
   tr.appendChild(tdBtn);
   return tr;
@@ -758,7 +760,7 @@ function handleEditPratica(pratica, tr) {
   const { td: tdC, input: inpC } = makeInputTd(pratica.cliente, "Cliente");
   const { td: tdP, input: inpP } = makeInputTd(pratica.pratica, "Pratica");
   const { td: tdS, select: selS } = makeSelectTd(pratica.stato);
-  const { td: tdSc, input: inpSc } = makeInputTd(pratica.scadenza, "", "date");
+  const { td: tdScadenza, input: inpScadenza } = makeInputTd(pratica.scadenza, "", "date");
   const { td: tdA, input: inpA } = makeInputTd(pratica.prossimaAzione, "Prossima azione");
 
   const tdBtn = document.createElement("td");
@@ -782,7 +784,7 @@ function handleEditPratica(pratica, tr) {
   editTr.appendChild(tdC);
   editTr.appendChild(tdP);
   editTr.appendChild(tdS);
-  editTr.appendChild(tdSc);
+  editTr.appendChild(tdScadenza);
   editTr.appendChild(tdA);
   editTr.appendChild(tdBtn);
 
@@ -797,7 +799,7 @@ function handleEditPratica(pratica, tr) {
       cliente: inpC.value.trim() || pratica.cliente,
       pratica: inpP.value.trim() || pratica.pratica,
       stato: selS.value,
-      scadenza: inpSc.value,
+      scadenza: inpScadenza.value,
       prossimaAzione: inpA.value.trim(),
     };
     editTr.replaceWith(createPraticaRow(updated));
