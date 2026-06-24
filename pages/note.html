@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Note Interne - Studio Legale</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body data-protected="true">
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo"><i class="fas fa-balance-scale"></i><span>Studio Legale</span></div>
+  <nav class="sidebar-nav"><ul>
+    <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+    <li class="nav-section">Gestione</li>
+    <li><a href="clienti.html"><i class="fas fa-users"></i> Clienti</a></li>
+    <li><a href="pratiche.html"><i class="fas fa-briefcase"></i> Pratiche</a></li>
+    <li class="nav-section">Agenda</li>
+    <li><a href="appuntamenti.html"><i class="fas fa-calendar-check"></i> Appuntamenti</a></li>
+    <li><a href="udienze.html"><i class="fas fa-gavel"></i> Udienze</a></li>
+    <li class="nav-section">Archivio</li>
+    <li><a href="documenti.html"><i class="fas fa-file-alt"></i> Documenti</a></li>
+    <li><a href="note.html" class="active"><i class="fas fa-sticky-note"></i> Note Interne</a></li>
+    <li><a href="richieste.html"><i class="fas fa-inbox"></i> Richieste</a></li>
+  </ul></nav>
+</aside>
+<nav class="topnav">
+  <button class="sidebar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+  <span class="topnav-title">Note Interne</span>
+  <div class="topnav-user">
+    <div class="user-avatar" id="userAvatar">--</div>
+    <span class="topnav-user-name" id="userDisplayName"></span>
+    <button onclick="logoutUser()" class="btn btn-sm btn-danger"><i class="fas fa-sign-out-alt"></i> Esci</button>
+  </div>
+</nav>
+<main class="main-content">
+  <div class="page-content">
+    <div class="page-header">
+      <div class="page-header-left"><h1>Note Interne</h1><p>Note private non visibili ai clienti</p></div>
+      <div class="page-header-actions">
+        <button class="btn btn-primary" onclick="openAddModal()"><i class="fas fa-plus"></i> Nuova Nota</button>
+      </div>
+    </div>
+    <div class="filter-bar">
+      <select id="filterPratica" class="form-control" style="max-width:220px" onchange="applyFilters()">
+        <option value="">Tutte le pratiche</option>
+      </select>
+      <div class="search-input-wrap flex-1">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" class="form-control search-input" placeholder="Cerca nelle note..." oninput="applyFilters()">
+      </div>
+      <span class="text-muted text-small" id="countLabel"></span>
+    </div>
+    <div id="noteContainer">
+      <div class="empty-state"><i class="fas fa-spinner fa-spin" style="font-size:2rem;color:var(--text-light)"></i><p>Caricamento...</p></div>
+    </div>
+  </div>
+</main>
+
+<!-- Add/Edit Modal -->
+<div class="modal-overlay" id="notaModalOverlay">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3 id="notaModalTitle">Nuova Nota</h3>
+      <button class="modal-close" onclick="closeModal('notaModalOverlay')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="notaId">
+      <div class="form-group"><label class="form-label">Pratica</label>
+        <select id="notaPraticaId" class="form-control"><option value="">Nessuna pratica specifica</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Contenuto *</label>
+        <textarea id="notaContenuto" class="form-control" rows="8" required placeholder="Inserisci il contenuto della nota..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('notaModalOverlay')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveNota()"><i class="fas fa-save"></i> Salva</button>
+    </div>
+  </div>
+</div>
+
+<!-- View Note Modal -->
+<div class="modal-overlay" id="viewNotaModalOverlay">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3 id="viewNotaTitle">Nota</h3>
+      <button class="modal-close" onclick="closeModal('viewNotaModalOverlay')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div id="viewNotaContent" style="white-space:pre-wrap;line-height:1.7;color:var(--text)"></div>
+      <div class="divider"></div>
+      <div class="d-flex gap-3" style="font-size:0.8rem;color:var(--text-muted)">
+        <span><i class="fas fa-user"></i> <span id="viewNotaAutore"></span></span>
+        <span><i class="fas fa-clock"></i> <span id="viewNotaData"></span></span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('viewNotaModalOverlay')">Chiudi</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script src="../js/firebase-config.js"></script>
+<script src="../js/utilities.js"></script>
+<script src="../js/auth.js"></script>
+<script src="../js/note.js"></script>
+</body>
+</html>

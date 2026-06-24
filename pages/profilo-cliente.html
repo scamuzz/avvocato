@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profilo Cliente - Studio Legale</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/clienti.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body data-protected="true">
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo"><i class="fas fa-balance-scale"></i><span>Studio Legale</span></div>
+  <nav class="sidebar-nav"><ul>
+    <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+    <li class="nav-section">Gestione</li>
+    <li><a href="clienti.html" class="active"><i class="fas fa-users"></i> Clienti</a></li>
+    <li><a href="pratiche.html"><i class="fas fa-briefcase"></i> Pratiche</a></li>
+    <li class="nav-section">Agenda</li>
+    <li><a href="appuntamenti.html"><i class="fas fa-calendar-check"></i> Appuntamenti</a></li>
+    <li><a href="udienze.html"><i class="fas fa-gavel"></i> Udienze</a></li>
+    <li class="nav-section">Archivio</li>
+    <li><a href="documenti.html"><i class="fas fa-file-alt"></i> Documenti</a></li>
+    <li><a href="note.html"><i class="fas fa-sticky-note"></i> Note Interne</a></li>
+    <li><a href="richieste.html"><i class="fas fa-inbox"></i> Richieste</a></li>
+  </ul></nav>
+</aside>
+<nav class="topnav">
+  <button class="sidebar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+  <span class="topnav-title">Profilo Cliente</span>
+  <div class="topnav-user">
+    <div class="user-avatar" id="userAvatar">--</div>
+    <span class="topnav-user-name" id="userDisplayName"></span>
+    <button onclick="logoutUser()" class="btn btn-sm btn-danger"><i class="fas fa-sign-out-alt"></i> Esci</button>
+  </div>
+</nav>
+<main class="main-content">
+  <div class="page-content">
+    <!-- Back + actions -->
+    <div class="d-flex align-center justify-between mb-4">
+      <a href="clienti.html" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left"></i> Torna ai Clienti</a>
+      <div class="d-flex gap-2">
+        <button class="btn btn-secondary btn-sm" onclick="openEditModal()"><i class="fas fa-edit"></i> Modifica</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteCliente()"><i class="fas fa-trash"></i> Elimina</button>
+      </div>
+    </div>
+
+    <!-- Client header -->
+    <div class="card mb-4">
+      <div style="padding:2rem">
+        <div class="d-flex gap-4 align-center flex-wrap">
+          <div class="avatar avatar-xl" id="clienteAvatar" style="background:#1E3A5F;font-size:1.5rem">--</div>
+          <div style="flex:1">
+            <h1 id="clienteNome" style="font-size:1.75rem;font-weight:800;color:var(--primary)">Caricamento...</h1>
+            <div class="d-flex gap-3 mt-2 flex-wrap" id="clienteContatti"></div>
+            <div class="d-flex gap-3 mt-2 flex-wrap" id="clienteMeta"></div>
+          </div>
+        </div>
+        <div id="clienteNote" class="mt-3" style="display:none">
+          <div class="text-small text-muted font-semibold mb-1">Note generali</div>
+          <div id="clienteNoteText" style="color:var(--text);line-height:1.7;white-space:pre-wrap"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tab-nav" id="clienteTabs">
+      <button class="tab-nav-item active" onclick="showTab('pratiche', this)"><i class="fas fa-briefcase"></i> Pratiche <span class="badge badge-gray" id="countPratiche">0</span></button>
+      <button class="tab-nav-item" onclick="showTab('appuntamenti', this)"><i class="fas fa-calendar-check"></i> Appuntamenti <span class="badge badge-gray" id="countAppuntamenti">0</span></button>
+      <button class="tab-nav-item" onclick="showTab('documenti', this)"><i class="fas fa-file-alt"></i> Documenti <span class="badge badge-gray" id="countDocumenti">0</span></button>
+      <button class="tab-nav-item" onclick="showTab('note', this)"><i class="fas fa-sticky-note"></i> Note <span class="badge badge-gray" id="countNote">0</span></button>
+    </div>
+    <div id="tabPratiche" class="tab-panel active"></div>
+    <div id="tabAppuntamenti" class="tab-panel"></div>
+    <div id="tabDocumenti" class="tab-panel"></div>
+    <div id="tabNote" class="tab-panel"></div>
+  </div>
+</main>
+
+<!-- Edit Modal -->
+<div class="modal-overlay" id="editModalOverlay">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3>Modifica Cliente</h3>
+      <button class="modal-close" onclick="closeModal('editModalOverlay')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <form id="editForm">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Nome *</label><input type="text" id="eNome" class="form-control" required></div>
+          <div class="form-group"><label class="form-label">Cognome *</label><input type="text" id="eCognome" class="form-control" required></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Email</label><input type="email" id="eEmail" class="form-control"></div>
+          <div class="form-group"><label class="form-label">Telefono</label><input type="tel" id="eTelefono" class="form-control"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Indirizzo</label><input type="text" id="eIndirizzo" class="form-control"></div>
+        <div class="form-group"><label class="form-label">Codice Fiscale</label><input type="text" id="eCodiceFiscale" class="form-control" maxlength="16"></div>
+        <div class="form-group"><label class="form-label">Note Generali</label><textarea id="eNoteGenerali" class="form-control" rows="3"></textarea></div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('editModalOverlay')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveEdit()"><i class="fas fa-save"></i> Salva</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script src="../js/firebase-config.js"></script>
+<script src="../js/utilities.js"></script>
+<script src="../js/auth.js"></script>
+<script>
+// ============================================================
+// PROFILO-CLIENTE.JS (inline)
+// ============================================================
+const params = new URLSearchParams(window.location.search);
+const clienteId = params.get('id');
+let clienteData = null;
+const AVATAR_COLORS = ['#1E3A5F','#2C5282','#276749','#744210','#553C9A','#97266D'];
+
+if (!clienteId) window.location.href = 'clienti.html';
+
+async function loadCliente() {
+  try {
+    const doc = await db.collection('clienti').doc(clienteId).get();
+    if (!doc.exists) { showToast('Cliente non trovato', 'error'); return; }
+    clienteData = doc.data();
+    renderHeader(clienteData);
+    loadPratiche();
+    loadAppuntamenti();
+    loadDocumenti();
+    loadNote();
+  } catch (err) { showToast('Errore: ' + err.message, 'error'); }
+}
+
+function renderHeader(c) {
+  const initials = getInitials(c.nome, c.cognome);
+  const color = AVATAR_COLORS[(initials.charCodeAt(0)||0) % AVATAR_COLORS.length];
+  document.getElementById('clienteAvatar').textContent = initials;
+  document.getElementById('clienteAvatar').style.background = color;
+  document.getElementById('clienteNome').textContent = c.nome + ' ' + c.cognome;
+  document.title = c.nome + ' ' + c.cognome + ' - Studio Legale';
+  const contatti = [];
+  if (c.email) contatti.push(`<a href="mailto:${sanitizeInput(c.email)}" style="color:var(--accent);font-size:0.875rem"><i class="fas fa-envelope"></i> ${sanitizeInput(c.email)}</a>`);
+  if (c.telefono) contatti.push(`<span style="font-size:0.875rem;color:var(--text-muted)"><i class="fas fa-phone"></i> ${sanitizeInput(c.telefono)}</span>`);
+  if (c.indirizzo) contatti.push(`<span style="font-size:0.875rem;color:var(--text-muted)"><i class="fas fa-map-marker-alt"></i> ${sanitizeInput(c.indirizzo)}</span>`);
+  document.getElementById('clienteContatti').innerHTML = contatti.join('');
+  const meta = [];
+  if (c.codiceFiscale) meta.push(`<span class="badge badge-gray"><i class="fas fa-id-card"></i> CF: ${sanitizeInput(c.codiceFiscale)}</span>`);
+  meta.push(`<span class="badge badge-primary">Cliente dal ${formatDate(c.dataCreazione)}</span>`);
+  document.getElementById('clienteMeta').innerHTML = meta.join('');
+  if (c.noteGenerali) {
+    document.getElementById('clienteNote').style.display = 'block';
+    document.getElementById('clienteNoteText').textContent = c.noteGenerali;
+  }
+}
+
+async function loadPratiche() {
+  const container = document.getElementById('tabPratiche');
+  const snap = await db.collection('pratiche').where('clienteId','==',clienteId).get();
+  document.getElementById('countPratiche').textContent = snap.size;
+  if (snap.empty) { container.innerHTML = '<div class="empty-state"><i class="fas fa-briefcase"></i><p>Nessuna pratica associata</p></div>'; return; }
+  const rows = snap.docs.map(d => {
+    const p = d.data();
+    return `<tr>
+      <td class="font-semibold">${sanitizeInput(p.titolo||'—')}</td>
+      <td><span class="badge ${getStatoClass(p.stato)}">${sanitizeInput(p.stato||'—')}</span></td>
+      <td><span class="badge ${getPrioritaClass(p.priorita)}">${sanitizeInput(p.priorita||'—')}</span></td>
+      <td class="text-small text-muted">${formatDate(p.dataApertura)}</td>
+    </tr>`;
+  }).join('');
+  container.innerHTML = `<div class="card"><div class="table-wrapper"><table class="table"><thead><tr><th>Titolo</th><th>Stato</th><th>Priorità</th><th>Apertura</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
+
+async function loadAppuntamenti() {
+  const container = document.getElementById('tabAppuntamenti');
+  const snap = await db.collection('appuntamenti').where('clienteId','==',clienteId).orderBy('data','desc').get();
+  document.getElementById('countAppuntamenti').textContent = snap.size;
+  if (snap.empty) { container.innerHTML = '<div class="empty-state"><i class="fas fa-calendar-check"></i><p>Nessun appuntamento</p></div>'; return; }
+  const rows = snap.docs.map(d => {
+    const a = d.data();
+    return `<tr><td>${formatDate(a.data)}</td><td>${sanitizeInput(a.ora||'—')}</td><td>${sanitizeInput(a.luogo||'—')}</td><td>${sanitizeInput(truncate(a.descrizione||'—',50))}</td><td><span class="badge ${getStatoClass(a.stato)}">${sanitizeInput(a.stato||'—')}</span></td></tr>`;
+  }).join('');
+  container.innerHTML = `<div class="card"><div class="table-wrapper"><table class="table"><thead><tr><th>Data</th><th>Ora</th><th>Luogo</th><th>Descrizione</th><th>Stato</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
+
+async function loadDocumenti() {
+  const container = document.getElementById('tabDocumenti');
+  // Get pratiche IDs for this client
+  const pratSnap = await db.collection('pratiche').where('clienteId','==',clienteId).get();
+  const praticaIds = pratSnap.docs.map(d => d.id);
+  if (!praticaIds.length) { document.getElementById('countDocumenti').textContent = '0'; container.innerHTML = '<div class="empty-state"><i class="fas fa-file-alt"></i><p>Nessun documento</p></div>'; return; }
+  // Firestore 'in' queries support up to 10 items
+  const batch = praticaIds.slice(0,10);
+  const docSnap = await db.collection('documenti').where('praticaId','in',batch).get();
+  document.getElementById('countDocumenti').textContent = docSnap.size;
+  if (docSnap.empty) { container.innerHTML = '<div class="empty-state"><i class="fas fa-file-alt"></i><p>Nessun documento</p></div>'; return; }
+  const rows = docSnap.docs.map(d => {
+    const doc = d.data();
+    return `<tr><td>${sanitizeInput(doc.nomeFile||'—')}</td><td><span class="badge badge-gray">${sanitizeInput(doc.tipo||'—')}</span></td><td class="text-small text-muted">${formatDate(doc.dataUpload)}</td><td><a href="${sanitizeInput(doc.urlFile)}" target="_blank" class="btn btn-sm btn-secondary"><i class="fas fa-download"></i> Scarica</a></td></tr>`;
+  }).join('');
+  container.innerHTML = `<div class="card"><div class="table-wrapper"><table class="table"><thead><tr><th>Nome file</th><th>Tipo</th><th>Data upload</th><th>Azioni</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
+
+async function loadNote() {
+  const container = document.getElementById('tabNote');
+  const pratSnap = await db.collection('pratiche').where('clienteId','==',clienteId).get();
+  const praticaIds = pratSnap.docs.map(d => d.id);
+  if (!praticaIds.length) { document.getElementById('countNote').textContent = '0'; container.innerHTML = '<div class="empty-state"><i class="fas fa-sticky-note"></i><p>Nessuna nota</p></div>'; return; }
+  const batch = praticaIds.slice(0,10);
+  const noteSnap = await db.collection('noteInterne').where('praticaId','in',batch).orderBy('dataCreazione','desc').get();
+  document.getElementById('countNote').textContent = noteSnap.size;
+  if (noteSnap.empty) { container.innerHTML = '<div class="empty-state"><i class="fas fa-sticky-note"></i><p>Nessuna nota</p></div>'; return; }
+  const cards = noteSnap.docs.map(d => {
+    const n = d.data();
+    return `<div class="card" style="border-left:4px solid var(--primary);padding:1.25rem;margin-bottom:0.75rem">
+      <div class="d-flex justify-between mb-2"><span class="text-small text-muted">${sanitizeInput(n.autore||'—')}</span><span class="text-small text-muted">${formatDate(n.dataCreazione)}</span></div>
+      <div style="white-space:pre-wrap;line-height:1.7">${sanitizeInput(n.contenuto||'')}</div>
+    </div>`;
+  }).join('');
+  container.innerHTML = cards;
+}
+
+function showTab(tab, btn) {
+  document.querySelectorAll('.tab-nav-item').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+}
+
+function openEditModal() {
+  if (!clienteData) return;
+  populateForm({ eNome: clienteData.nome, eCognome: clienteData.cognome, eEmail: clienteData.email, eTelefono: clienteData.telefono, eIndirizzo: clienteData.indirizzo, eCodiceFiscale: clienteData.codiceFiscale, eNoteGenerali: clienteData.noteGenerali });
+  openModal('editModalOverlay');
+}
+
+async function saveEdit() {
+  const nome = document.getElementById('eNome').value.trim();
+  const cognome = document.getElementById('eCognome').value.trim();
+  if (!nome || !cognome) { showToast('Nome e cognome obbligatori', 'warning'); return; }
+  const data = { nome, cognome, email: document.getElementById('eEmail').value.trim(), telefono: document.getElementById('eTelefono').value.trim(), indirizzo: document.getElementById('eIndirizzo').value.trim(), codiceFiscale: document.getElementById('eCodiceFiscale').value.trim().toUpperCase(), noteGenerali: document.getElementById('eNoteGenerali').value.trim() };
+  try {
+    await db.collection('clienti').doc(clienteId).update(data);
+    clienteData = { ...clienteData, ...data };
+    renderHeader(clienteData);
+    showToast('Cliente aggiornato!', 'success');
+    closeModal('editModalOverlay');
+  } catch (err) { showToast('Errore: ' + err.message, 'error'); }
+}
+
+async function deleteCliente() {
+  if (!await confirmDialog('Eliminare questo cliente? Questa azione non può essere annullata.')) return;
+  try {
+    await db.collection('clienti').doc(clienteId).delete();
+    window.location.href = 'clienti.html';
+  } catch (err) { showToast('Errore: ' + err.message, 'error'); }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initUI();
+  auth.onAuthStateChanged(u => { if (u) loadCliente(); });
+});
+</script>
+</body>
+</html>

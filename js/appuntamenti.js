@@ -1,187 +1,354 @@
 // ============================================================
-// APPUNTAMENTI.JS - Appointment management CRUD
+// APPUNTAMENTI.JS — Appointment management
 // ============================================================
 
-var allApp = [];
-var currentView = 'lista';
-var calYear, calMonth;
+var _appList = [];
+var _filtered = [];
+var _editingId = null;
+var _viewMode = 'lista';
+var _calMonth = new Date().getMonth();
+var _calYear  = new Date().getFullYear();
+var _clientiMap = {};
+var _praticheMap = {};
 
-async function loadAppuntamenti() {
+document.addEventListener('DOMContentLoaded', function() {
+  _loadAll();
+  _loadClientiOpts();
+});
+
+// ── Helpers ─────────────────────────────────────────────────
+
+function _fmtDateStr(str) {
+  if (!str) return '—';
+  var p = str.split('-');
+  if (p.length !== 3) return str;
+  return p[2] + '/' + p[1] + '/' + p[0];
+}
+
+function _appBadge(stato) {
+  var cls = 'badge ';
+  switch (stato) {
+    case 'Programmato': cls += 'badge-info';    break;
+    case 'Confermato':  cls += 'badge-success'; break;
+    case 'Cancellato':  cls += 'badge-danger';  break;
+    case 'Completato':  cls += 'badge-neutral'; break;
+    default:            cls += 'badge-neutral';
+  }
+  return '<span class="' + cls + '">' + escapeHtml(stato || '—') + '</span>';
+}
+
+// ── Data loading ─────────────────────────────────────────────
+
+async function _loadAll() {
+  var tbody = document.getElementById('tbl-app-body');
   try {
-    const snap = await db.collection('appuntamenti').orderBy('data').orderBy('ora').get();
-    allApp = snap.docs.map(d => ({ ...d.data(), id: d.id }));
-    applyFilters();
-  } catch (err) {
-    showToast('Errore caricamento appuntamenti', 'error');
+    var snap = await db.collection('appuntamenti').orderBy('data', 'desc').get();
+    _appList = [];
+    snap.forEach(function(doc) {
+      _appList.push(Object.assign({ id: doc.id }, doc.data()));
+    });
+    _applyFilters();
+  } catch (e) {
+    console.error('Errore caricamento appuntamenti:', e);
+    if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Errore nel caricamento</td></tr>';
+    showToast('Errore nel caricamento degli appuntamenti', 'error');
   }
 }
 
-function applyFilters() {
-  const data = document.getElementById('filterData').value;
-  const stato = document.getElementById('filterStato').value;
-  let filtered = allApp.filter(a => {
-    return (!data || a.data === data) && (!stato || a.stato === stato);
+function _applyFilters() {
+  var stato = document.getElementById('filter-stato').value;
+  var month = document.getElementById('filter-month').value; // "YYYY-MM"
+
+  _filtered = _appList.filter(function(a) {
+    var ok = true;
+    if (stato && a.stato !== stato) ok = false;
+    if (month && a.data) {
+      if (a.data.substring(0, 7) !== month) ok = false;
+    }
+    return ok;
   });
-  document.getElementById('countLabel').textContent = filtered.length + ' appuntamenti';
-  if (currentView === 'calendario') renderCalendario(filtered);
-  else renderLista(filtered);
+
+  if (_viewMode === 'lista') {
+    renderLista(_filtered);
+  } else {
+    renderCalendario(_filtered, _calMonth, _calYear);
+  }
 }
 
-function clearFilters() {
-  document.getElementById('filterData').value = '';
-  document.getElementById('filterStato').value = '';
-  applyFilters();
-}
-
-function setView(view, btn) {
-  currentView = view;
-  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  applyFilters();
-}
+// ── List render ───────────────────────────────────────────────
 
 function renderLista(list) {
-  const container = document.getElementById('appContainer');
-  if (list.length === 0) {
-    container.innerHTML = '<div class="empty-state"><i class="fas fa-calendar-check"></i><h3>Nessun appuntamento</h3><p>Aggiungi il primo appuntamento</p></div>';
+  var tbody = document.getElementById('tbl-app-body');
+  if (!list || list.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7">' + emptyStateHtml('fas fa-calendar-alt', 'Nessun appuntamento trovato') + '</td></tr>';
     return;
   }
-  const today = formatDateInput(new Date());
-  const rows = list.map(a => {
-    const isPast = a.data < today;
-    return `<tr style="opacity:${isPast&&a.stato!=='Confermato'?'0.7':'1'}">
-      <td><div class="font-semibold">${a.data ? formatDate(a.data) : '—'}</div><div class="text-small text-muted">${sanitizeInput(a.ora||'')}</div></td>
-      <td>${sanitizeInput(a.luogo||'—')}</td>
-      <td>${sanitizeInput(a.descrizione ? truncate(a.descrizione,50) : '—')}</td>
-      <td><span class="badge ${getStatoClass(a.stato)}">${sanitizeInput(a.stato||'—')}</span></td>
-      <td><div class="table-actions">
-        <button class="btn btn-sm btn-secondary" onclick="openEditModal('${a.id}')"><i class="fas fa-edit"></i></button>
-        <button class="btn btn-sm btn-danger" onclick="confirmDelete('${a.id}')"><i class="fas fa-trash"></i></button>
-      </div></td>
-    </tr>`;
-  }).join('');
-  container.innerHTML = `<div class="card"><div class="table-wrapper"><table class="table">
-    <thead><tr><th>Data / Ora</th><th>Luogo</th><th>Descrizione</th><th>Stato</th><th style="text-align:right">Azioni</th></tr></thead>
-    <tbody>${rows}</tbody>
-  </table></div></div>`;
+  var html = '';
+  list.forEach(function(a) {
+    var clienteNome = _clientiMap[a.clienteId] || '—';
+    var praticaTit  = a.praticaId ? (_praticheMap[a.praticaId] || a.praticaId) : '—';
+    html += '<tr>';
+    html += '<td>' + _fmtDateStr(a.data) + '</td>';
+    html += '<td>' + escapeHtml(a.ora || '—') + '</td>';
+    html += '<td>' + escapeHtml(clienteNome) + '</td>';
+    html += '<td>' + escapeHtml(praticaTit) + '</td>';
+    html += '<td>' + escapeHtml(a.luogo || '—') + '</td>';
+    html += '<td>' + _appBadge(a.stato) + '</td>';
+    html += '<td class="table-actions">';
+    html += '<button class="btn btn-ghost btn-sm btn-icon" title="Modifica" onclick="openEditAppModal(\'' + a.id + '\')">';
+    html += '<i class="fas fa-edit"></i></button> ';
+    html += '<button class="btn btn-danger btn-sm btn-icon" title="Elimina" onclick="deleteAppuntamento(\'' + a.id + '\')">';
+    html += '<i class="fas fa-trash"></i></button>';
+    html += '</td></tr>';
+  });
+  tbody.innerHTML = html;
 }
 
-function renderCalendario(list) {
-  const container = document.getElementById('appContainer');
-  const now = new Date();
-  if (!calYear) calYear = now.getFullYear();
-  if (calMonth === undefined) calMonth = now.getMonth();
+// ── Calendar render ───────────────────────────────────────────
 
-  const firstDay = new Date(calYear, calMonth, 1);
-  const lastDay = new Date(calYear, calMonth + 1, 0);
-  const months = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
-  const days = ['Lun','Mar','Mer','Gio','Ven','Sab','Dom'];
+function renderCalendario(list, month, year) {
+  var monthNames = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
+                    'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+  document.getElementById('cal-month-title').textContent = monthNames[month] + ' ' + year;
 
-  // Build event map
-  const eventMap = {};
-  list.forEach(a => { if (!eventMap[a.data]) eventMap[a.data] = []; eventMap[a.data].push(a); });
+  var grid = document.getElementById('cal-grid');
+  var dayNamesHtml = '<div class="cal-day-name">Lun</div><div class="cal-day-name">Mar</div>' +
+    '<div class="cal-day-name">Mer</div><div class="cal-day-name">Gio</div>' +
+    '<div class="cal-day-name">Ven</div><div class="cal-day-name">Sab</div>' +
+    '<div class="cal-day-name">Dom</div>';
 
-  // Build cells
-  let cells = '';
-  let startDay = (firstDay.getDay() + 6) % 7; // 0=Mon
-  for (let i = 0; i < startDay; i++) cells += '<div class="calendar-cell other-month"></div>';
-  for (let d = 1; d <= lastDay.getDate(); d++) {
-    const dateStr = calYear + '-' + String(calMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
-    const isToday = dateStr === formatDateInput(now);
-    const evs = eventMap[dateStr] || [];
-    const evHtml = evs.slice(0,3).map(e => `<div class="cal-event cal-event-appuntamento" title="${sanitizeInput(e.descrizione||'')} ${e.ora||''}">${sanitizeInput(e.ora||'')} ${sanitizeInput(truncate(e.descrizione||'Appuntamento',20))}</div>`).join('');
-    const moreHtml = evs.length > 3 ? `<div class="cal-event-more">+${evs.length-3} altri</div>` : '';
-    cells += `<div class="calendar-cell${isToday?' today':''}">
-      <div class="calendar-day-num">${d}</div>
-      <div class="cal-events">${evHtml}${moreHtml}</div>
-    </div>`;
+  var firstDay = new Date(year, month, 1);
+  var lastDay  = new Date(year, month + 1, 0);
+  var startDow = firstDay.getDay(); // 0=Sun
+  startDow = (startDow === 0) ? 6 : startDow - 1; // Mon-based
+
+  var todayDate = new Date();
+  var todayStr = todayDate.getFullYear() + '-' +
+    String(todayDate.getMonth() + 1).padStart(2, '0') + '-' +
+    String(todayDate.getDate()).padStart(2, '0');
+
+  // Group by date
+  var byDate = {};
+  var monthPrefix = year + '-' + String(month + 1).padStart(2, '0');
+  list.forEach(function(a) {
+    if (!a.data || a.data.substring(0, 7) !== monthPrefix) return;
+    if (!byDate[a.data]) byDate[a.data] = [];
+    byDate[a.data].push(a);
+  });
+
+  var cells = '';
+  for (var i = 0; i < startDow; i++) {
+    cells += '<div class="cal-day other-month"></div>';
   }
-  const headerDays = days.map(d => `<div>${d}</div>`).join('');
-  container.innerHTML = `<div class="card"><div class="card-body">
-    <div class="d-flex align-center justify-between mb-4">
-      <button class="btn btn-secondary btn-sm" onclick="prevMonth()"><i class="fas fa-chevron-left"></i></button>
-      <span class="font-bold" style="font-size:1.1rem">${months[calMonth]} ${calYear}</span>
-      <button class="btn btn-secondary btn-sm" onclick="nextMonth()"><i class="fas fa-chevron-right"></i></button>
-    </div>
-    <div class="calendar-month">
-      <div class="calendar-month-header">${headerDays}</div>
-      <div class="calendar-grid">${cells}</div>
-    </div>
-    <div class="calendar-legend mt-4">
-      <div class="legend-item"><div class="legend-dot" style="background:#3182CE"></div> Appuntamento</div>
-    </div>
-  </div></div>`;
+
+  for (var d = 1; d <= lastDay.getDate(); d++) {
+    var dateStr = monthPrefix + '-' + String(d).padStart(2, '0');
+    var cls = 'cal-day' + (dateStr === todayStr ? ' today' : '');
+    cells += '<div class="' + cls + '" onclick="openNewAppModalDate(\'' + dateStr + '\')">';
+    cells += '<div class="cal-day-num">' + d + '</div>';
+    var apps = byDate[dateStr] || [];
+    apps.forEach(function(a) {
+      var chipCls = 'cal-chip ';
+      switch (a.stato) {
+        case 'Programmato': chipCls += 'prog'; break;
+        case 'Confermato':  chipCls += 'conf'; break;
+        case 'Cancellato':  chipCls += 'canc'; break;
+        case 'Completato':  chipCls += 'comp'; break;
+        default:            chipCls += 'prog';
+      }
+      var label = (a.ora || '') + ' ' + (_clientiMap[a.clienteId] || 'Cliente');
+      cells += '<div class="' + chipCls + '" title="' + escapeHtml(label) + '"' +
+        ' onclick="event.stopPropagation(); openEditAppModal(\'' + a.id + '\')">' +
+        escapeHtml(label) + '</div>';
+    });
+    cells += '</div>';
+  }
+
+  var totalCells = startDow + lastDay.getDate();
+  var remaining  = (7 - (totalCells % 7)) % 7;
+  for (var j = 0; j < remaining; j++) {
+    cells += '<div class="cal-day other-month"></div>';
+  }
+
+  grid.innerHTML = dayNamesHtml + cells;
 }
 
-function prevMonth() { calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; } applyFilters(); }
-function nextMonth() { calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; } applyFilters(); }
-
-async function loadClientiDropdown() {
-  const sel = document.getElementById('appClienteId');
-  sel.innerHTML = '<option value="">Seleziona cliente...</option>';
-  const snap = await db.collection('clienti').orderBy('cognome').get();
-  snap.forEach(d => { const c = d.data(); sel.innerHTML += `<option value="${d.id}">${sanitizeInput(c.cognome+' '+c.nome)}</option>`; });
+function prevMonth() {
+  _calMonth--;
+  if (_calMonth < 0) { _calMonth = 11; _calYear--; }
+  renderCalendario(_filtered, _calMonth, _calYear);
 }
 
-async function loadPraticheByCliente(clienteId) {
-  const sel = document.getElementById('appPraticaId');
-  sel.innerHTML = '<option value="">Nessuna pratica</option>';
-  if (!clienteId) return;
-  const snap = await db.collection('pratiche').where('clienteId','==',clienteId).get();
-  snap.forEach(d => { sel.innerHTML += `<option value="${d.id}">${sanitizeInput(d.data().titolo||'Pratica')}</option>`; });
+function nextMonth() {
+  _calMonth++;
+  if (_calMonth > 11) { _calMonth = 0; _calYear++; }
+  renderCalendario(_filtered, _calMonth, _calYear);
 }
 
-function openAddModal() {
-  document.getElementById('appId').value = '';
-  document.getElementById('appForm').reset();
-  document.getElementById('appData').value = formatDateInput(new Date());
-  document.getElementById('appModalTitle').textContent = 'Nuovo Appuntamento';
-  loadClientiDropdown();
-  openModal('appModalOverlay');
+// ── View switch ───────────────────────────────────────────────
+
+function switchView(mode) {
+  _viewMode = mode;
+  var listView = document.getElementById('list-view');
+  var calView  = document.getElementById('calendar-view');
+  var btnLista = document.getElementById('btn-lista');
+  var btnCal   = document.getElementById('btn-calendario');
+
+  if (mode === 'lista') {
+    listView.classList.remove('d-none');
+    calView.classList.add('d-none');
+    btnLista.classList.add('active');
+    btnCal.classList.remove('active');
+    renderLista(_filtered);
+  } else {
+    listView.classList.add('d-none');
+    calView.classList.remove('d-none');
+    btnLista.classList.remove('active');
+    btnCal.classList.add('active');
+    renderCalendario(_filtered, _calMonth, _calYear);
+  }
 }
 
-async function openEditModal(id) {
-  const doc = await db.collection('appuntamenti').doc(id).get();
-  if (!doc.exists) return;
-  const a = doc.data();
-  await loadClientiDropdown();
-  document.getElementById('appClienteId').value = a.clienteId || '';
-  await loadPraticheByCliente(a.clienteId);
-  populateForm({ appId: id, appClienteId: a.clienteId, appPraticaId: a.praticaId, appData: a.data, appOra: a.ora, appLuogo: a.luogo, appDescrizione: a.descrizione, appStato: a.stato });
-  document.getElementById('appModalTitle').textContent = 'Modifica Appuntamento';
-  openModal('appModalOverlay');
+// ── Modal management ──────────────────────────────────────────
+
+function openNewAppModal() {
+  _editingId = null;
+  document.getElementById('modal-app-title').textContent = 'Nuovo Appuntamento';
+  document.getElementById('f-clienteId').value   = '';
+  document.getElementById('f-praticaId').innerHTML = '<option value="">Nessuna pratica</option>';
+  document.getElementById('f-data').value        = '';
+  document.getElementById('f-ora').value         = '';
+  document.getElementById('f-luogo').value       = '';
+  document.getElementById('f-descrizione').value = '';
+  document.getElementById('f-stato').value       = 'Programmato';
+  openModal('modal-appuntamento');
 }
+
+function openNewAppModalDate(dateStr) {
+  openNewAppModal();
+  document.getElementById('f-data').value = dateStr;
+}
+
+async function openEditAppModal(id) {
+  var app = _appList.find(function(a) { return a.id === id; });
+  if (!app) return;
+  _editingId = id;
+  document.getElementById('modal-app-title').textContent = 'Modifica Appuntamento';
+  document.getElementById('f-clienteId').value   = app.clienteId || '';
+  document.getElementById('f-data').value        = app.data || '';
+  document.getElementById('f-ora').value         = app.ora || '';
+  document.getElementById('f-luogo').value       = app.luogo || '';
+  document.getElementById('f-descrizione').value = app.descrizione || '';
+  document.getElementById('f-stato').value       = app.stato || 'Programmato';
+  await _loadPraticheOpts(app.clienteId, app.praticaId);
+  openModal('modal-appuntamento');
+}
+
+// ── Save / CRUD ───────────────────────────────────────────────
 
 async function saveAppuntamento() {
-  const id = document.getElementById('appId').value;
-  const data = document.getElementById('appData').value;
-  const ora = document.getElementById('appOra').value;
-  if (!data || !ora) { showToast('Data e ora sono obbligatorie', 'warning'); return; }
-  const payload = {
-    clienteId: document.getElementById('appClienteId').value,
-    praticaId: document.getElementById('appPraticaId').value,
-    data, ora,
-    luogo: document.getElementById('appLuogo').value.trim(),
-    descrizione: document.getElementById('appDescrizione').value.trim(),
-    stato: document.getElementById('appStato').value
-  };
-  try {
-    if (id) { await db.collection('appuntamenti').doc(id).update(payload); showToast('Aggiornato!', 'success'); }
-    else { await db.collection('appuntamenti').add(payload); showToast('Appuntamento aggiunto!', 'success'); }
-    closeModal('appModalOverlay');
-    loadAppuntamenti();
-  } catch (err) { showToast('Errore: '+err.message, 'error'); }
-}
+  var clienteId   = document.getElementById('f-clienteId').value;
+  var praticaId   = document.getElementById('f-praticaId').value;
+  var data        = document.getElementById('f-data').value;
+  var ora         = document.getElementById('f-ora').value;
+  var luogo       = document.getElementById('f-luogo').value.trim();
+  var descrizione = document.getElementById('f-descrizione').value.trim();
+  var stato       = document.getElementById('f-stato').value;
 
-async function confirmDelete(id) {
-  if (await confirmDialog('Eliminare questo appuntamento?')) {
-    await db.collection('appuntamenti').doc(id).delete();
-    showToast('Eliminato', 'success');
-    loadAppuntamenti();
+  if (!clienteId) { showToast('Il cliente è obbligatorio', 'error'); return; }
+  if (!data)      { showToast('La data è obbligatoria', 'error'); return; }
+  if (!ora)       { showToast('L\'ora è obbligatoria', 'error'); return; }
+
+  var payload = {
+    clienteId:   clienteId,
+    praticaId:   praticaId || null,
+    data:        data,
+    ora:         ora,
+    luogo:       luogo,
+    descrizione: descrizione,
+    stato:       stato
+  };
+
+  try {
+    if (_editingId) {
+      await updateAppuntamento(_editingId, payload);
+      showToast('Appuntamento aggiornato', 'success');
+    } else {
+      await addAppuntamento(payload);
+      showToast('Appuntamento creato', 'success');
+    }
+    closeModal('modal-appuntamento');
+    _loadAll();
+  } catch (e) {
+    console.error(e);
+    showToast('Errore nel salvataggio', 'error');
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  initUI();
-  auth.onAuthStateChanged(user => { if (user) loadAppuntamenti(); });
-});
+async function addAppuntamento(data) {
+  return db.collection('appuntamenti').add(
+    Object.assign({}, data, { createdAt: firebase.firestore.FieldValue.serverTimestamp() })
+  );
+}
+
+async function updateAppuntamento(id, data) {
+  return db.collection('appuntamenti').doc(id).update(
+    Object.assign({}, data, { updatedAt: firebase.firestore.FieldValue.serverTimestamp() })
+  );
+}
+
+async function deleteAppuntamento(id) {
+  if (!confirm('Sei sicuro di voler eliminare questo appuntamento?')) return;
+  try {
+    await db.collection('appuntamenti').doc(id).delete();
+    showToast('Appuntamento eliminato', 'success');
+    _loadAll();
+  } catch (e) {
+    console.error(e);
+    showToast('Errore nell\'eliminazione', 'error');
+  }
+}
+
+// ── Dropdown loaders ──────────────────────────────────────────
+
+async function _loadClientiOpts() {
+  try {
+    var snap = await db.collection('clienti').orderBy('cognome').get();
+    var sel = document.getElementById('f-clienteId');
+    sel.innerHTML = '<option value="">Seleziona cliente...</option>';
+    _clientiMap = {};
+    snap.forEach(function(doc) {
+      var c = doc.data();
+      var nome = ((c.nome || '') + ' ' + (c.cognome || '')).trim();
+      _clientiMap[doc.id] = nome;
+      var opt = document.createElement('option');
+      opt.value = doc.id;
+      opt.textContent = nome;
+      sel.appendChild(opt);
+    });
+    // Refresh list view names now that map is populated
+    if (_filtered.length) renderLista(_filtered);
+  } catch (e) {
+    console.error('Errore caricamento clienti:', e);
+  }
+}
+
+async function _loadPraticheOpts(clienteId, selectedId) {
+  var sel = document.getElementById('f-praticaId');
+  sel.innerHTML = '<option value="">Nessuna pratica</option>';
+  if (!clienteId) return;
+  try {
+    var snap = await db.collection('pratiche').where('clienteId', '==', clienteId).get();
+    snap.forEach(function(doc) {
+      var p = doc.data();
+      _praticheMap[doc.id] = p.titolo || ('Pratica ' + doc.id);
+      var opt = document.createElement('option');
+      opt.value = doc.id;
+      opt.textContent = p.titolo || ('Pratica ' + doc.id);
+      if (doc.id === selectedId) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  } catch (e) {
+    console.error('Errore caricamento pratiche:', e);
+  }
+}
