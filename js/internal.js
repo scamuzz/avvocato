@@ -18,6 +18,13 @@ const INTERNAL_AREA_MAIN_DOC = "main";
 const NOTE_STORAGE_KEY = "avvocato.internal.note";
 const TODO_CHECKBOX_SELECTOR = 'input[type="checkbox"]';
 
+// === Costanti valori pratica ===
+const STATO_IN_CORSO = "In corso";
+const STATO_QUASI_CHIUSA = "Quasi chiusa";
+const STATO_PRECONTENZIOSO = "Precontenzioso";
+const STATO_CHIUSA = "Chiusa";
+const STATI_PRATICA = [STATO_IN_CORSO, STATO_QUASI_CHIUSA, STATO_PRECONTENZIOSO, STATO_CHIUSA];
+
 // === Riferimenti DOM – auth/layout ===
 const loadingSection = document.getElementById("loading-section");
 const loginSection = document.getElementById("login-section");
@@ -43,6 +50,7 @@ const internalNoteInput = document.getElementById("internal-note");
 const kpiAttivita = document.getElementById("kpi-attivita");
 const kpiPratiche = document.getElementById("kpi-pratiche");
 const kpiUdienze = document.getElementById("kpi-udienze");
+const kpiParcelle = document.getElementById("kpi-parcelle");
 
 // === Riferimenti DOM – Agenda ===
 const agendaList = document.getElementById("agenda-list");
@@ -175,17 +183,30 @@ function syncTodoKpi() {
 
 function syncKpiPratiche() {
   if (!praticheTbody || !kpiPratiche) return;
-  const rows = praticheTbody.querySelectorAll("tr[data-id]");
-  let aperte = 0;
-  for (const row of rows) {
-    if (row.dataset.stato !== "Chiusa") aperte++;
-  }
-  kpiPratiche.textContent = String(aperte);
+  kpiPratiche.textContent = String(
+    countPraticheByStato((s) => s !== STATO_CHIUSA),
+  );
 }
 
 function syncKpiUdienze() {
   if (!agendaList || !kpiUdienze) return;
   kpiUdienze.textContent = String(agendaList.querySelectorAll("li").length);
+}
+
+function syncKpiParcelle() {
+  if (!praticheTbody || !kpiParcelle) return;
+  kpiParcelle.textContent = String(
+    countPraticheByStato((s) => s === STATO_QUASI_CHIUSA),
+  );
+}
+
+function countPraticheByStato(predicate) {
+  if (!praticheTbody) return 0;
+  let count = 0;
+  for (const row of praticheTbody.querySelectorAll("tr[data-id]")) {
+    if (predicate(row.dataset.stato ?? "")) count++;
+  }
+  return count;
 }
 
 // =============================================================
@@ -529,7 +550,7 @@ function handleEditAgenda(item, li, contentEl, strongEl, textSpan) {
 // =============================================================
 
 function praticaStatoClass(stato) {
-  return stato === "Quasi chiusa" || stato === "Chiusa" ? "status-ok" : "status-warn";
+  return stato === STATO_QUASI_CHIUSA || stato === STATO_CHIUSA ? "status-ok" : "status-warn";
 }
 
 function createPraticaRow(pratica) {
@@ -576,6 +597,7 @@ function renderPratiche(items) {
     praticheTbody.appendChild(createPraticaRow(item));
   }
   syncKpiPratiche();
+  syncKpiParcelle();
 }
 
 async function syncPraticheFromFirestore() {
@@ -615,6 +637,7 @@ async function handleAddPratica() {
         if (el instanceof HTMLInputElement) el.value = "";
       });
       syncKpiPratiche();
+      syncKpiParcelle();
       return;
     } catch (err) {
       console.error("Errore aggiunta pratica:", err);
@@ -627,11 +650,13 @@ async function handleAddPratica() {
     if (el instanceof HTMLInputElement) el.value = "";
   });
   syncKpiPratiche();
+  syncKpiParcelle();
 }
 
 async function handleDeletePratica(id, tr) {
   tr.remove();
   syncKpiPratiche();
+  syncKpiParcelle();
   if (!id || !isFirestoreReady()) return;
   try {
     await firestoreApi.deleteDoc(firestoreApi.doc(firestoreDb, PRATICHE_COLLECTION, id));
@@ -643,7 +668,6 @@ async function handleDeletePratica(id, tr) {
 
 function handleEditPratica(pratica, tr) {
   if (!tr.isConnected) return;
-  const STATI = ["In corso", "Quasi chiusa", "Precontenzioso", "Chiusa"];
 
   function makeInputTd(value, placeholder) {
     const td = document.createElement("td");
@@ -659,7 +683,7 @@ function handleEditPratica(pratica, tr) {
   function makeSelectTd(value) {
     const td = document.createElement("td");
     const select = document.createElement("select");
-    for (const opt of STATI) {
+    for (const opt of STATI_PRATICA) {
       const o = document.createElement("option");
       o.value = opt;
       o.textContent = opt;
@@ -714,6 +738,7 @@ function handleEditPratica(pratica, tr) {
     };
     editTr.replaceWith(createPraticaRow(updated));
     syncKpiPratiche();
+    syncKpiParcelle();
     if (pratica.id && isFirestoreReady()) {
       try {
         await firestoreApi.updateDoc(
