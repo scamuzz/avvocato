@@ -128,12 +128,18 @@ function emptyStateHtml(iconClass, message) {
 
 function openModal(id) {
   var el = document.getElementById(id);
-  if (el) el.classList.add('active');
+  if (el) {
+    el.classList.add('active');
+    el.classList.add('open');
+  }
 }
 
 function closeModal(id) {
   var el = document.getElementById(id);
-  if (el) el.classList.remove('active');
+  if (el) {
+    el.classList.remove('active');
+    el.classList.remove('open');
+  }
 }
 
 // --- Missing helpers used across pages ---
