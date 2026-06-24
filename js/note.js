@@ -1,138 +1,198 @@
 // ============================================================
-// NOTE.JS - Internal notes CRUD
+// NOTE.JS — Internal notes management
 // ============================================================
-var allNote = [];
-var praticheMap = {};
+
+var _noteList        = [];
+var _noteFiltered    = [];
+var _noteEditingId   = null;
+var _praticheNoteMap = {};
+
+document.addEventListener('DOMContentLoaded', function() {
+  loadNote();
+  loadPraticheNoteDropdown();
+});
+
+// ── Helpers ───────────────────────────────────────────────────
+
+function _fmtDateNote(ts) {
+  if (!ts) return '—';
+  if (ts.toDate) return formatDate(ts);
+  return '—';
+}
+
+// ── Data loading ──────────────────────────────────────────────
 
 async function loadNote() {
+  var container = document.getElementById('note-list');
   try {
-    const [noteSnap, pratSnap] = await Promise.all([
-      db.collection('noteInterne').orderBy('dataCreazione','desc').get(),
-      db.collection('pratiche').get()
-    ]);
-    pratSnap.forEach(d => { praticheMap[d.id] = d.data().titolo || 'Pratica'; });
-    allNote = noteSnap.docs.map(d => ({ ...d.data(), id: d.id }));
-    populatePraticheFilter();
-    applyFilters();
-  } catch (err) { showToast('Errore caricamento note', 'error'); }
+    var snap = await db.collection('note').orderBy('dataCreazione', 'desc').get();
+    _noteList = [];
+    snap.forEach(function(doc) {
+      _noteList.push(Object.assign({ id: doc.id }, doc.data()));
+    });
+    _noteFiltered = _noteList.slice();
+    renderNote(_noteFiltered);
+  } catch (e) {
+    console.error('Errore caricamento note:', e);
+    container.innerHTML = '<div class="alert alert-error">Errore nel caricamento delle note</div>';
+    showToast('Errore nel caricamento delle note', 'error');
+  }
 }
 
-function populatePraticheFilter() {
-  const sel = document.getElementById('filterPratica');
-  sel.innerHTML = '<option value="">Tutte le pratiche</option>';
-  Object.entries(praticheMap).forEach(([id, t]) => {
-    sel.innerHTML += `<option value="${id}">${sanitizeInput(t)}</option>`;
-  });
-}
-
-function applyFilters() {
-  const pratica = document.getElementById('filterPratica').value;
-  const search = document.getElementById('searchInput').value.toLowerCase();
-  let filtered = allNote.filter(n => {
-    return (!pratica || n.praticaId === pratica) &&
-           (!search || (n.contenuto||'').toLowerCase().includes(search));
-  });
-  document.getElementById('countLabel').textContent = filtered.length + ' note';
-  renderNote(filtered);
-}
+// ── Render list ───────────────────────────────────────────────
 
 function renderNote(list) {
-  const container = document.getElementById('noteContainer');
-  if (!list.length) {
-    container.innerHTML = '<div class="empty-state"><i class="fas fa-sticky-note"></i><h3>Nessuna nota</h3><p>Aggiungi note private per le pratiche</p></div>';
+  var container = document.getElementById('note-list');
+  if (!list || list.length === 0) {
+    container.innerHTML = emptyStateHtml('fas fa-sticky-note', 'Nessuna nota trovata');
     return;
   }
-  const cards = list.map(n => `
-    <div class="card" style="border-left:4px solid var(--primary);cursor:pointer" onclick="viewNota('${n.id}')">
-      <div style="padding:1.25rem">
-        <div class="d-flex justify-between align-center mb-2">
-          <span class="badge badge-primary">${sanitizeInput(praticheMap[n.praticaId] || 'Generale')}</span>
-          <span class="text-small text-muted">${formatDate(n.dataCreazione)}</span>
-        </div>
-        <div style="color:var(--text);line-height:1.6;white-space:pre-wrap">${sanitizeInput(truncate(n.contenuto||'', 200))}</div>
-        <div class="divider" style="margin:0.75rem 0"></div>
-        <div class="d-flex justify-between align-center">
-          <span class="text-small text-muted"><i class="fas fa-user"></i> ${sanitizeInput(n.autore||'—')}</span>
-          <div class="d-flex gap-2" onclick="event.stopPropagation()">
-            <button class="btn btn-sm btn-secondary" onclick="openEditModal('${n.id}')"><i class="fas fa-edit"></i></button>
-            <button class="btn btn-sm btn-danger" onclick="confirmDelete('${n.id}')"><i class="fas fa-trash"></i></button>
-          </div>
-        </div>
-      </div>
-    </div>`).join('');
-  container.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1rem">${cards}</div>`;
+  var html = '';
+  list.forEach(function(nota) {
+    var pratica  = _praticheNoteMap[nota.praticaId] || nota.praticaId || '—';
+    var excerpt  = truncate(nota.contenuto || '', 200);
+    var dataStr  = _fmtDateNote(nota.dataCreazione);
+    html += '<div class="note-card" onclick="viewNota(\'' + nota.id + '\')">';
+    html += '<div class="note-card-header">';
+    html += '<span class="badge badge-info"><i class="fas fa-folder-open"></i> ' + escapeHtml(pratica) + '</span>';
+    html += '<span class="badge badge-neutral text-sm"><i class="fas fa-lock"></i> Interno</span>';
+    html += '</div>';
+    html += '<div class="note-card-body">' + escapeHtml(excerpt) + (nota.contenuto && nota.contenuto.length > 200 ? '...' : '') + '</div>';
+    html += '<div class="note-card-footer">';
+    html += '<span class="note-card-meta"><i class="fas fa-user"></i> ' + escapeHtml(nota.autore || 'Avvocato') + '</span>';
+    html += '<span class="note-card-meta"><i class="fas fa-calendar"></i> ' + dataStr + '</span>';
+    html += '</div></div>';
+  });
+  container.innerHTML = html;
 }
+
+// ── View note detail ──────────────────────────────────────────
 
 function viewNota(id) {
-  const n = allNote.find(x => x.id === id);
-  if (!n) return;
-  document.getElementById('viewNotaTitle').textContent = praticheMap[n.praticaId] ? 'Nota - ' + praticheMap[n.praticaId] : 'Nota';
-  document.getElementById('viewNotaContent').textContent = n.contenuto || '';
-  document.getElementById('viewNotaAutore').textContent = n.autore || '—';
-  document.getElementById('viewNotaData').textContent = formatDateTime(n.dataCreazione);
-  openModal('viewNotaModalOverlay');
+  var nota = _noteList.find(function(n) { return n.id === id; });
+  if (!nota) return;
+  var pratica = _praticheNoteMap[nota.praticaId] || nota.praticaId || '—';
+  document.getElementById('detail-pratica-badge').innerHTML =
+    '<span class="badge badge-info"><i class="fas fa-folder-open"></i> ' + escapeHtml(pratica) + '</span>' +
+    '<span class="badge badge-neutral"><i class="fas fa-lock"></i> Uso interno</span>';
+  document.getElementById('detail-contenuto').textContent = nota.contenuto || '';
+  document.getElementById('detail-autore').textContent = nota.autore || 'Avvocato';
+  document.getElementById('detail-data').textContent   = _fmtDateNote(nota.dataCreazione);
+  document.getElementById('detail-btn-edit').onclick   = function() { closeModal('modal-nota-detail'); openEditNotaModal(id); };
+  document.getElementById('detail-btn-delete').onclick = function() { deleteNota(id); };
+  openModal('modal-nota-detail');
 }
 
-async function loadPraticheDropdown() {
-  const sel = document.getElementById('notaPraticaId');
-  sel.innerHTML = '<option value="">Nessuna pratica specifica</option>';
-  const snap = await db.collection('pratiche').orderBy('titolo').get();
-  snap.forEach(d => { sel.innerHTML += `<option value="${d.id}">${sanitizeInput(d.data().titolo)}</option>`; });
+// ── Modal management ──────────────────────────────────────────
+
+function openNewNotaModal() {
+  _noteEditingId = null;
+  document.getElementById('modal-nota-form-title').textContent = 'Nuova Nota';
+  document.getElementById('nf-praticaId').value = '';
+  document.getElementById('nf-contenuto').value = '';
+  openModal('modal-nota-form');
 }
 
-async function openAddModal() {
-  document.getElementById('notaId').value = '';
-  document.getElementById('notaContenuto').value = '';
-  document.getElementById('notaModalTitle').textContent = 'Nuova Nota';
-  await loadPraticheDropdown();
-  openModal('notaModalOverlay');
+function openEditNotaModal(id) {
+  var nota = _noteList.find(function(n) { return n.id === id; });
+  if (!nota) return;
+  _noteEditingId = id;
+  document.getElementById('modal-nota-form-title').textContent = 'Modifica Nota';
+  document.getElementById('nf-praticaId').value = nota.praticaId || '';
+  document.getElementById('nf-contenuto').value = nota.contenuto || '';
+  openModal('modal-nota-form');
 }
 
-async function openEditModal(id) {
-  const doc = await db.collection('noteInterne').doc(id).get();
-  if (!doc.exists) return;
-  const n = doc.data();
-  await loadPraticheDropdown();
-  document.getElementById('notaId').value = id;
-  document.getElementById('notaPraticaId').value = n.praticaId || '';
-  document.getElementById('notaContenuto').value = n.contenuto || '';
-  document.getElementById('notaModalTitle').textContent = 'Modifica Nota';
-  openModal('notaModalOverlay');
-}
+// ── Save / CRUD ───────────────────────────────────────────────
 
 async function saveNota() {
-  const id = document.getElementById('notaId').value;
-  const contenuto = document.getElementById('notaContenuto').value.trim();
-  if (!contenuto) { showToast('Il contenuto è obbligatorio', 'warning'); return; }
-  const autore = window.currentUserData ? (window.currentUserData.nome + ' ' + window.currentUserData.cognome).trim() :
-    (window.currentUser ? window.currentUser.email : 'Utente');
-  const data = {
-    praticaId: document.getElementById('notaPraticaId').value,
-    contenuto, autore
-  };
-  try {
-    if (id) {
-      await db.collection('noteInterne').doc(id).update({ ...data, dataModifica: firebase.firestore.FieldValue.serverTimestamp() });
-      showToast('Nota aggiornata!', 'success');
-    } else {
-      data.dataCreazione = firebase.firestore.FieldValue.serverTimestamp();
-      await db.collection('noteInterne').add(data);
-      showToast('Nota salvata!', 'success');
-    }
-    closeModal('notaModalOverlay');
-    loadNote();
-  } catch (err) { showToast('Errore: ' + err.message, 'error'); }
-}
+  var praticaId = document.getElementById('nf-praticaId').value;
+  var contenuto = document.getElementById('nf-contenuto').value.trim();
 
-async function confirmDelete(id) {
-  if (await confirmDialog('Eliminare questa nota?')) {
-    await db.collection('noteInterne').doc(id).delete();
-    showToast('Nota eliminata', 'success');
+  if (!praticaId) { showToast('Seleziona una pratica', 'error'); return; }
+  if (!contenuto) { showToast('Il contenuto non può essere vuoto', 'error'); return; }
+
+  var payload = { praticaId: praticaId, contenuto: contenuto };
+
+  try {
+    if (_noteEditingId) {
+      await updateNota(_noteEditingId, payload);
+      showToast('Nota aggiornata', 'success');
+    } else {
+      await addNota(payload);
+      showToast('Nota salvata', 'success');
+    }
+    closeModal('modal-nota-form');
     loadNote();
+  } catch (e) {
+    console.error(e);
+    showToast('Errore nel salvataggio', 'error');
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  initUI();
-  auth.onAuthStateChanged(u => { if (u) loadNote(); });
-});
+async function addNota(data) {
+  var currentUser = auth.currentUser;
+  return db.collection('note').add(Object.assign({}, data, {
+    autore:        currentUser ? (currentUser.email || 'Avvocato') : 'Avvocato',
+    dataCreazione: firebase.firestore.FieldValue.serverTimestamp()
+  }));
+}
+
+async function updateNota(id, data) {
+  return db.collection('note').doc(id).update(
+    Object.assign({}, data, { dataModifica: firebase.firestore.FieldValue.serverTimestamp() })
+  );
+}
+
+async function deleteNota(id) {
+  if (!confirm('Sei sicuro di voler eliminare questa nota?')) return;
+  try {
+    closeModal('modal-nota-detail');
+    await db.collection('note').doc(id).delete();
+    showToast('Nota eliminata', 'success');
+    loadNote();
+  } catch (e) {
+    console.error(e);
+    showToast('Errore nell\'eliminazione', 'error');
+  }
+}
+
+// ── Filter ────────────────────────────────────────────────────
+
+function filterByPratica(praticaId) {
+  if (!praticaId) {
+    _noteFiltered = _noteList.slice();
+  } else {
+    _noteFiltered = _noteList.filter(function(n) { return n.praticaId === praticaId; });
+  }
+  renderNote(_noteFiltered);
+}
+
+// ── Dropdown loader ───────────────────────────────────────────
+
+async function loadPraticheNoteDropdown() {
+  try {
+    var snap = await db.collection('pratiche').orderBy('titolo').get();
+    var selFilter = document.getElementById('filter-pratica-note');
+    var selForm   = document.getElementById('nf-praticaId');
+    selFilter.innerHTML = '<option value="">Tutte le pratiche</option>';
+    selForm.innerHTML   = '<option value="">Seleziona pratica...</option>';
+    _praticheNoteMap = {};
+    snap.forEach(function(doc) {
+      var p = doc.data();
+      _praticheNoteMap[doc.id] = p.titolo || ('Pratica ' + doc.id);
+      var makeOpt = function(val, text) {
+        var o = document.createElement('option');
+        o.value = val;
+        o.textContent = text;
+        return o;
+      };
+      var label = p.titolo || ('Pratica ' + doc.id);
+      selFilter.appendChild(makeOpt(doc.id, label));
+      selForm.appendChild(makeOpt(doc.id, label));
+    });
+    if (_noteFiltered.length) renderNote(_noteFiltered);
+  } catch (e) {
+    console.error('Errore caricamento pratiche:', e);
+  }
+}

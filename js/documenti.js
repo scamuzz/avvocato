@@ -1,142 +1,296 @@
 // ============================================================
-// DOCUMENTI.JS - Document management with Firebase Storage
+// DOCUMENTI.JS — Document management with Firebase Storage
 // ============================================================
-var allDocs = [];
-var praticheMap = {};
 
-async function loadDocumenti() {
-  try {
-    const [docsSnap, pratSnap] = await Promise.all([
-      db.collection('documenti').orderBy('dataUpload','desc').get(),
-      db.collection('pratiche').get()
-    ]);
-    pratSnap.forEach(d => { praticheMap[d.id] = d.data().titolo || 'Pratica'; });
-    allDocs = docsSnap.docs.map(d => ({ ...d.data(), id: d.id }));
-    populatePraticheFilter();
-    applyFilters();
-  } catch (err) { showToast('Errore caricamento', 'error'); }
-}
+var _docList        = [];
+var _docFiltered    = [];
+var _praticheDocMap = {};
+var _pendingFile    = null;
 
-function populatePraticheFilter() {
-  const sel = document.getElementById('filterPratica');
-  sel.innerHTML = '<option value="">Tutte le pratiche</option>';
-  Object.entries(praticheMap).forEach(([id,t]) => { sel.innerHTML += `<option value="${id}">${sanitizeInput(t)}</option>`; });
-}
-
-function applyFilters() {
-  const pratica = document.getElementById('filterPratica').value;
-  const tipo = document.getElementById('filterTipo').value;
-  const search = document.getElementById('searchInput').value.toLowerCase();
-  let filtered = allDocs.filter(d => (!pratica||d.praticaId===pratica)&&(!tipo||d.tipo===tipo)&&(!search||(d.nomeFile||'').toLowerCase().includes(search)));
-  document.getElementById('countLabel').textContent = filtered.length + ' documenti';
-  renderDocumenti(filtered);
-}
-
-const TIPO_ICONS = { 'Atto':'fa-file-contract','Contratto':'fa-file-signature','Sentenza':'fa-gavel','Procura':'fa-stamp','Documento cliente':'fa-id-card','Altro':'fa-file-alt' };
-
-function renderDocumenti(list) {
-  const container = document.getElementById('documentiContainer');
-  if (!list.length) { container.innerHTML = '<div class="empty-state"><i class="fas fa-file-alt"></i><h3>Nessun documento</h3><p>Carica il primo documento</p></div>'; return; }
-  const cards = list.map(d => {
-    const icon = TIPO_ICONS[d.tipo] || 'fa-file-alt';
-    const isPdf = (d.nomeFile||'').toLowerCase().endsWith('.pdf');
-    return `<div class="card" style="display:flex;flex-direction:column">
-      <div style="padding:1.25rem;display:flex;align-items:flex-start;gap:1rem">
-        <div style="width:48px;height:48px;background:#EBF8FF;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-          <i class="fas ${icon}" style="font-size:1.3rem;color:#2C5282"></i>
-        </div>
-        <div style="flex:1;min-width:0">
-          <div class="font-semibold" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${sanitizeInput(d.nomeFile)}">${sanitizeInput(d.nomeFile||'—')}</div>
-          <div class="text-small text-muted">${sanitizeInput(d.tipo||'—')}</div>
-          <div class="text-small text-muted">${sanitizeInput(praticheMap[d.praticaId]||'—')}</div>
-          <div class="text-small text-muted">${formatDate(d.dataUpload)}</div>
-        </div>
-      </div>
-      <div style="padding:0.75rem 1.25rem;border-top:1px solid #E2E8F0;display:flex;gap:0.5rem;flex-wrap:wrap">
-        ${isPdf?`<button class="btn btn-sm btn-secondary" onclick="previewDoc('${sanitizeInput(d.urlFile)}','${sanitizeInput(d.nomeFile)}')"><i class="fas fa-eye"></i> Anteprima</button>`:''}
-        <a href="${sanitizeInput(d.urlFile)}" target="_blank" class="btn btn-sm btn-secondary"><i class="fas fa-download"></i> Scarica</a>
-        <button class="btn btn-sm btn-danger" onclick="confirmDeleteDoc('${d.id}','${sanitizeInput(d.urlFile)}','${sanitizeInput(d.nomeFile)}')"><i class="fas fa-trash"></i></button>
-      </div>
-    </div>`;
-  }).join('');
-  container.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem">${cards}</div>`;
-}
-
-async function openUploadModal() {
-  const sel = document.getElementById('uploadPraticaId');
-  sel.innerHTML = '<option value="">Seleziona pratica...</option>';
-  const snap = await db.collection('pratiche').orderBy('titolo').get();
-  snap.forEach(d => { sel.innerHTML += `<option value="${d.id}">${sanitizeInput(d.data().titolo)}</option>`; });
-  document.getElementById('selectedFileName').textContent = '';
-  document.getElementById('fileInput').value = '';
-  document.getElementById('uploadProgress').style.display = 'none';
-  openModal('uploadModalOverlay');
-}
-
-function fileSelected(input) {
-  if (input.files[0]) {
-    document.getElementById('selectedFileName').textContent = '📎 ' + input.files[0].name;
-    document.getElementById('dropZone').style.borderColor = '#3182CE';
-  }
-}
-
-// Drag & drop setup
-document.addEventListener('DOMContentLoaded', () => {
-  initUI();
-  const dz = document.getElementById('dropZone');
-  if (dz) {
-    dz.addEventListener('dragover', e => { e.preventDefault(); dz.style.borderColor='#3182CE'; dz.style.background='#EBF8FF'; });
-    dz.addEventListener('dragleave', () => { dz.style.borderColor='#E2E8F0'; dz.style.background=''; });
-    dz.addEventListener('drop', e => {
-      e.preventDefault(); dz.style.borderColor='#E2E8F0'; dz.style.background='';
-      if (e.dataTransfer.files[0]) { const dt = new DataTransfer(); dt.items.add(e.dataTransfer.files[0]); document.getElementById('fileInput').files = dt.files; fileSelected(document.getElementById('fileInput')); }
-    });
-  }
-  auth.onAuthStateChanged(u => { if (u) loadDocumenti(); });
+document.addEventListener('DOMContentLoaded', function() {
+  loadDocumenti();
+  loadPraticheDocDropdown();
 });
 
-async function uploadDocumento() {
-  const praticaId = document.getElementById('uploadPraticaId').value;
-  const tipo = document.getElementById('uploadTipo').value;
-  const fileInput = document.getElementById('fileInput');
-  if (!praticaId) { showToast('Seleziona una pratica','warning'); return; }
-  if (!fileInput.files[0]) { showToast('Seleziona un file','warning'); return; }
-  const file = fileInput.files[0];
-  if (file.size > 50*1024*1024) { showToast('File troppo grande (max 50MB)','error'); return; }
-  const btn = document.getElementById('btnUpload');
-  btn.disabled = true;
-  document.getElementById('uploadProgress').style.display = 'block';
+// ── Helpers ───────────────────────────────────────────────────
+
+function _fmtSize(bytes) {
+  if (!bytes) return '';
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / 1048576).toFixed(1) + ' MB';
+}
+
+function _tipoBadge(tipo) {
+  var map = {
+    'Atto':           'badge-primary',
+    'Contratto':      'badge-info',
+    'Fattura':        'badge-success',
+    'Corrispondenza': 'badge-warning',
+    'Altro':          'badge-neutral'
+  };
+  var cls = 'badge ' + (map[tipo] || 'badge-neutral');
+  return '<span class="' + cls + '">' + escapeHtml(tipo || 'Altro') + '</span>';
+}
+
+function _getFileIcon(tipo) {
+  switch (tipo) {
+    case 'Atto':           return 'fas fa-file-pdf';
+    case 'Contratto':      return 'fas fa-file-contract';
+    case 'Fattura':        return 'fas fa-file-invoice';
+    case 'Corrispondenza': return 'fas fa-envelope';
+    default:               return 'fas fa-file';
+  }
+}
+
+function _isPDF(nome) {
+  return nome && nome.toLowerCase().endsWith('.pdf');
+}
+
+function _fmtDateDoc(ts) {
+  if (!ts) return '—';
+  if (ts.toDate) return formatDate(ts);
+  return '—';
+}
+
+// ── Data loading ──────────────────────────────────────────────
+
+async function loadDocumenti() {
+  var grid = document.getElementById('docs-grid');
   try {
-    const filename = Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
-    const ref = storage.ref('documenti/' + praticaId + '/' + filename);
-    const task = ref.put(file);
-    task.on('state_changed', snap => {
-      const pct = (snap.bytesTransferred/snap.totalBytes*100).toFixed(0);
-      document.getElementById('progressBar').style.width = pct + '%';
-      document.getElementById('progressText').textContent = 'Caricamento: ' + pct + '%';
+    var snap = await db.collection('documenti').orderBy('createdAt', 'desc').get();
+    _docList = [];
+    snap.forEach(function(doc) {
+      _docList.push(Object.assign({ id: doc.id }, doc.data()));
     });
-    await task;
-    const url = await ref.getDownloadURL();
-    await db.collection('documenti').add({ praticaId, tipo, nomeFile: file.name, urlFile: url, dataUpload: firebase.firestore.FieldValue.serverTimestamp() });
-    showToast('Documento caricato!','success');
-    closeModal('uploadModalOverlay');
-    loadDocumenti();
-  } catch (err) { showToast('Errore upload: '+err.message,'error'); }
-  finally { btn.disabled=false; document.getElementById('uploadProgress').style.display='none'; }
+    _docFiltered = _docList.slice();
+    renderDocumenti(_docFiltered);
+  } catch (e) {
+    console.error('Errore caricamento documenti:', e);
+    grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:40px;">Errore nel caricamento</div>';
+    showToast('Errore nel caricamento dei documenti', 'error');
+  }
 }
 
-function previewDoc(url, name) {
-  document.getElementById('previewTitle').textContent = name;
-  document.getElementById('previewFrame').src = url;
-  openModal('previewModalOverlay');
+// ── Render grid ───────────────────────────────────────────────
+
+function renderDocumenti(docs) {
+  var grid = document.getElementById('docs-grid');
+  if (!docs || docs.length === 0) {
+    grid.innerHTML = '<div style="grid-column:1/-1;">' + emptyStateHtml('fas fa-file-alt', 'Nessun documento caricato') + '</div>';
+    return;
+  }
+  var html = '';
+  docs.forEach(function(d) {
+    var pratica   = _praticheDocMap[d.praticaId] || '—';
+    var iconClass = _getFileIcon(d.tipo);
+    var isPDF     = _isPDF(d.nome);
+    html += '<div class="doc-card">';
+    html += '<div class="doc-icon"><i class="' + iconClass + '"></i></div>';
+    html += '<div class="doc-name" title="' + escapeHtml(d.nome || '') + '">' + escapeHtml(truncate(d.nome || 'Documento', 40)) + '</div>';
+    html += '<div>' + _tipoBadge(d.tipo) + '</div>';
+    html += '<div class="doc-meta"><i class="fas fa-folder-open"></i> ' + escapeHtml(pratica) + '</div>';
+    html += '<div class="doc-meta"><i class="fas fa-calendar"></i> ' + _fmtDateDoc(d.createdAt) + '</div>';
+    if (d.size) html += '<div class="doc-meta"><i class="fas fa-hdd"></i> ' + _fmtSize(d.size) + '</div>';
+    html += '<div class="doc-actions">';
+    if (isPDF && d.url) {
+      html += '<button class="btn btn-ghost btn-sm" title="Anteprima" onclick="previewPDF(\'' + escapeHtml(d.url) + '\', \'' + escapeHtml(d.nome || 'Documento') + '\')">';
+      html += '<i class="fas fa-eye"></i></button>';
+    }
+    if (d.url) {
+      html += '<button class="btn btn-outline-primary btn-sm" title="Scarica" onclick="downloadDocumento(\'' + escapeHtml(d.url) + '\', \'' + escapeHtml(d.nome || 'documento') + '\')">';
+      html += '<i class="fas fa-download"></i></button>';
+    }
+    html += '<button class="btn btn-danger btn-sm btn-icon" title="Elimina" onclick="deleteDocumento(\'' + d.id + '\', \'' + escapeHtml(d.url || '') + '\')">';
+    html += '<i class="fas fa-trash"></i></button>';
+    html += '</div></div>';
+  });
+  grid.innerHTML = html;
 }
 
-async function confirmDeleteDoc(id, url, name) {
-  if (!await confirmDialog('Eliminare "'+name+'"?')) return;
+// ── Filters ───────────────────────────────────────────────────
+
+function applyDocFilters() {
+  var praticaId = document.getElementById('filter-pratica-doc').value;
+  var tipo      = document.getElementById('filter-tipo').value;
+
+  _docFiltered = _docList.filter(function(d) {
+    if (praticaId && d.praticaId !== praticaId) return false;
+    if (tipo && d.tipo !== tipo) return false;
+    return true;
+  });
+  renderDocumenti(_docFiltered);
+}
+
+// ── Drag & Drop ───────────────────────────────────────────────
+
+function handleDragOver(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.add('drag-over');
+}
+
+function handleDragLeave(e) {
+  document.getElementById('drop-zone').classList.remove('drag-over');
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.remove('drag-over');
+  var files = e.dataTransfer.files;
+  if (files.length > 0) {
+    _setPendingFile(files[0]);
+  }
+}
+
+function handleFileSelect(e) {
+  var file = e.target.files[0];
+  if (file) _setPendingFile(file);
+}
+
+function _setPendingFile(file) {
+  _pendingFile = file;
+  var fnEl = document.getElementById('drop-filename');
+  fnEl.textContent = file.name + ' (' + _fmtSize(file.size) + ')';
+  fnEl.classList.remove('d-none');
+}
+
+// ── Upload ────────────────────────────────────────────────────
+
+function saveUpload() {
+  var praticaId = document.getElementById('up-praticaId').value;
+  var tipo      = document.getElementById('up-tipo').value;
+
+  if (!praticaId)  { showToast('Seleziona una pratica', 'error'); return; }
+  if (!tipo)       { showToast('Seleziona il tipo documento', 'error'); return; }
+  if (!_pendingFile) { showToast('Seleziona un file da caricare', 'error'); return; }
+
+  uploadDocumento(praticaId, tipo, _pendingFile);
+}
+
+function uploadDocumento(praticaId, tipo, file) {
+  var progressContainer = document.getElementById('up-progress');
+  var progressFill      = document.getElementById('up-progress-fill');
+  var progressLabel     = document.getElementById('up-progress-label');
+  var btnUpload         = document.getElementById('btn-upload');
+
+  progressContainer.style.display = 'block';
+  btnUpload.disabled = true;
+
+  var safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  var filename = Date.now() + '_' + safeName;
+  var ref  = storage.ref('documenti/' + filename);
+  var task = ref.put(file);
+
+  task.on('state_changed',
+    function(snapshot) {
+      var pct = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+      progressFill.style.width = pct + '%';
+      progressLabel.textContent = pct + '%';
+    },
+    function(error) {
+      console.error('Errore upload:', error);
+      showToast('Errore durante il caricamento', 'error');
+      progressContainer.style.display = 'none';
+      btnUpload.disabled = false;
+    },
+    async function() {
+      try {
+        var url = await task.snapshot.ref.getDownloadURL();
+        await db.collection('documenti').add({
+          praticaId: praticaId,
+          tipo:      tipo,
+          nome:      file.name,
+          url:       url,
+          size:      file.size,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        closeModal('modal-upload');
+        showToast('Documento caricato con successo', 'success');
+        _pendingFile = null;
+        progressContainer.style.display = 'none';
+        progressFill.style.width = '0%';
+        progressLabel.textContent = '0%';
+        btnUpload.disabled = false;
+        document.getElementById('drop-filename').classList.add('d-none');
+        document.getElementById('up-praticaId').value = '';
+        document.getElementById('up-tipo').value = '';
+        document.getElementById('up-file').value = '';
+        loadDocumenti();
+      } catch (e) {
+        console.error('Errore salvataggio Firestore:', e);
+        showToast('Errore nel salvataggio dei metadati', 'error');
+        progressContainer.style.display = 'none';
+        btnUpload.disabled = false;
+      }
+    }
+  );
+}
+
+// ── Delete ────────────────────────────────────────────────────
+
+async function deleteDocumento(id, url) {
+  if (!confirm('Sei sicuro di voler eliminare questo documento?')) return;
   try {
-    try { await storage.refFromURL(url).delete(); } catch (e) {}
+    if (url) {
+      try {
+        await storage.refFromURL(url).delete();
+      } catch (storageErr) {
+        console.warn('File Storage già eliminato o non trovato:', storageErr);
+      }
+    }
     await db.collection('documenti').doc(id).delete();
-    showToast('Documento eliminato','success');
+    showToast('Documento eliminato', 'success');
     loadDocumenti();
-  } catch (err) { showToast('Errore: '+err.message,'error'); }
+  } catch (e) {
+    console.error(e);
+    showToast('Errore nell\'eliminazione', 'error');
+  }
+}
+
+// ── Download / Preview ────────────────────────────────────────
+
+function downloadDocumento(url, nome) {
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = nome;
+  a.target = '_blank';
+  a.rel = 'noopener';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function previewPDF(url, nome) {
+  document.getElementById('pdf-iframe').src = url;
+  document.getElementById('modal-pdf-title').textContent = nome || 'Anteprima Documento';
+  openModal('modal-pdf');
+}
+
+// ── Dropdown loader ───────────────────────────────────────────
+
+async function loadPraticheDocDropdown() {
+  try {
+    var snap = await db.collection('pratiche').orderBy('titolo').get();
+    var selFilter = document.getElementById('filter-pratica-doc');
+    var selForm   = document.getElementById('up-praticaId');
+    selFilter.innerHTML = '<option value="">Tutte le pratiche</option>';
+    selForm.innerHTML   = '<option value="">Seleziona pratica...</option>';
+    _praticheDocMap = {};
+    snap.forEach(function(doc) {
+      var p = doc.data();
+      _praticheDocMap[doc.id] = p.titolo || ('Pratica ' + doc.id);
+      var makeOpt = function(val, text) {
+        var o = document.createElement('option');
+        o.value = val;
+        o.textContent = text;
+        return o;
+      };
+      var label = p.titolo || ('Pratica ' + doc.id);
+      selFilter.appendChild(makeOpt(doc.id, label));
+      selForm.appendChild(makeOpt(doc.id, label));
+    });
+    if (_docFiltered.length) renderDocumenti(_docFiltered);
+  } catch (e) {
+    console.error('Errore caricamento pratiche:', e);
+  }
 }

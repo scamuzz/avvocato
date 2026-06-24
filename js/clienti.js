@@ -118,9 +118,7 @@ function renderClientiTable(clienti) {
             '<i class="fas fa-edit"></i>' +
           '</button>' +
           '<button class="btn btn-sm btn-danger" title="Elimina" ' +
-                  'onclick="confirmDelete(\'' + c.id + '\', \'' +
-                    escapeHtml(((c.nome || '') + ' ' + (c.cognome || '')).trim()).replace(/'/g, "\\'") +
-                  '\')">' +
+                  'onclick="confirmDelete(\'' + c.id + '\')">' +
             '<i class="fas fa-trash"></i>' +
           '</button>' +
         '</div>' +
@@ -144,7 +142,6 @@ function renderClientiCards(clienti) {
       var initials = getInitials(c.nome, c.cognome);
       var fullName = escapeHtml((c.nome || '') + ' ' + (c.cognome || '')).trim();
       var safeId   = c.id;
-      var safeName = escapeHtml(fullName).replace(/'/g, "\\'");
       return '<div class="client-card">' +
         '<div class="client-card-header">' +
           '<div class="avatar-lg">' + escapeHtml(initials) + '</div>' +
@@ -167,7 +164,7 @@ function renderClientiCards(clienti) {
           '<button class="btn btn-sm btn-primary" onclick="openEditModal(\'' + safeId + '\')">' +
             '<i class="fas fa-edit"></i> Modifica' +
           '</button>' +
-          '<button class="btn btn-sm btn-danger" onclick="confirmDelete(\'' + safeId + '\', \'' + safeName + '\')">' +
+          '<button class="btn btn-sm btn-danger" onclick="confirmDelete(\'' + safeId + '\')">' +
             '<i class="fas fa-trash"></i>' +
           '</button>' +
         '</div>' +
@@ -312,7 +309,9 @@ function deleteCliente(id) {
 
 // --- Conferma eliminazione ---
 
-function confirmDelete(id, name) {
+function confirmDelete(id) {
+  var c = _allClienti.find(function (x) { return x.id === id; });
+  var name = c ? ((c.nome || '') + ' ' + (c.cognome || '')).trim() : id;
   _deleteTargetId = id;
   document.getElementById('confirmDeleteMsg').textContent =
     'Sei sicuro di voler eliminare il cliente "' + name + '"? ' +

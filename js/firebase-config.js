@@ -13,18 +13,20 @@
     appId: "1:937368694167:web:afcd02a0f1b8ae5c66a8d2",
   };
 
-  if (!firebase.apps.length) {
+  if (typeof firebase !== 'undefined' && !firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
   }
 
-  window.auth    = firebase.auth();
-  window.db      = firebase.firestore();
-  window.storage = firebase.storage();
+  if (typeof firebase !== 'undefined') {
+    window.auth    = firebase.auth();
+    window.db      = firebase.firestore();
+    window.storage = firebase.storage();
 
-  // Persistenza offline (opzionale — commentare se non necessario)
-  window.db.enablePersistence({ synchronizeTabs: true }).catch(function (err) {
-    if (err.code !== 'failed-precondition' && err.code !== 'unimplemented') {
-      console.warn('Firestore persistence error:', err);
-    }
-  });
+    // Persistenza offline (opzionale — commentare se non necessario)
+    window.db.enablePersistence({ synchronizeTabs: true }).catch(function (err) {
+      if (err.code !== 'failed-precondition' && err.code !== 'unimplemented') {
+        console.warn('Firestore persistence error:', err);
+      }
+    });
+  }
 })();

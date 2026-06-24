@@ -88,7 +88,6 @@ function renderPratiche(pratiche) {
   tbody.innerHTML = pratiche.map(function (p) {
     var stripeColor = { Alta: '#dc2626', Media: '#d97706', Bassa: '#059669' }[p.priorita] || '#e5e7eb';
     var clienteLabel = escapeHtml(p.clienteNome || _allClientiMap[p.clienteId] || '—');
-    var safeTitle    = escapeHtml(p.titolo || '').replace(/'/g, "\\'");
     return '<tr>' +
       '<td style="width:4px;padding:0;background:' + stripeColor + ';border-radius:2px 0 0 2px;"></td>' +
       '<td>' +
@@ -112,7 +111,7 @@ function renderPratiche(pratiche) {
             '<i class="fas fa-edit"></i>' +
           '</button>' +
           '<button class="btn btn-sm btn-danger" title="Elimina" ' +
-                  'onclick="confirmDelete(\'' + p.id + '\', \'' + safeTitle + '\')">' +
+                  'onclick="confirmDelete(\'' + p.id + '\')">' +
             '<i class="fas fa-trash"></i>' +
           '</button>' +
         '</div>' +
@@ -297,7 +296,9 @@ function deletePratica(id) {
 
 // --- Conferma eliminazione ---
 
-function confirmDelete(id, title) {
+function confirmDelete(id) {
+  var p = _allPratiche.find(function (x) { return x.id === id; });
+  var title = p ? (p.titolo || id) : id;
   _deleteTargetId = id;
   document.getElementById('confirmDeleteMsg').textContent =
     'Sei sicuro di voler eliminare la pratica "' + title + '"? ' +
