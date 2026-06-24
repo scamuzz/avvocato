@@ -93,7 +93,7 @@
               </div>
               <div class="kpi">
                 <dt>Udienze mese</dt>
-                <dd><strong>9</strong></dd>
+                <dd><strong id="kpi-udienze">—</strong></dd>
               </div>
               <div class="kpi">
                 <dt>Parcelle da emettere</dt>
@@ -118,12 +118,14 @@
           <!-- Agenda -->
           <article class="card">
             <h3>Agenda e udienze</h3>
-            <ul class="timeline">
-              <li><strong>Lun 09:30</strong> Udienza Tribunale Civile – R.G. 214/2025</li>
-              <li><strong>Mar 15:00</strong> Consulenza online (nuovo cliente)</li>
-              <li><strong>Gio 11:00</strong> Scadenza deposito memoria</li>
-              <li><strong>Ven 16:30</strong> Riunione consulente fiscale</li>
+            <ul class="timeline" id="agenda-list">
+              <!-- caricato da Firestore da internal.js -->
             </ul>
+            <div class="flex" style="margin-top:0.6rem;">
+              <input id="new-agenda-datetime" type="text" placeholder="Es. Lun 09:30" style="width:7.5rem;flex-shrink:0" />
+              <input id="new-agenda-text" type="text" placeholder="Descrizione appuntamento" />
+              <button class="btn" type="button" id="add-agenda">Aggiungi</button>
+            </div>
           </article>
 
           <!-- Pipeline pratiche -->
@@ -137,40 +139,39 @@
                     <th>Pratica</th>
                     <th>Stato</th>
                     <th>Prossima azione</th>
+                    <th></th>
                   </tr>
                 </thead>
-                <tbody>
-                  <tr>
-                    <td>Bianchi</td>
-                    <td>Recupero crediti</td>
-                    <td><span class="status-warn">In corso</span></td>
-                    <td>Deposito memoria 27/06</td>
-                  </tr>
-                  <tr>
-                    <td>Verdi</td>
-                    <td>Contrattualistica</td>
-                    <td><span class="status-ok">Quasi chiusa</span></td>
-                    <td>Invio bozza finale</td>
-                  </tr>
-                  <tr>
-                    <td>Neri</td>
-                    <td>Risarcimento danni</td>
-                    <td><span class="status-warn">Precontenzioso</span></td>
-                    <td>Sollecito controparte</td>
-                  </tr>
+                <tbody id="pratiche-tbody">
+                  <!-- caricato da Firestore da internal.js -->
                 </tbody>
               </table>
+            </div>
+            <div class="flex" style="margin-top:0.5rem;">
+              <input id="new-pratica-cliente" type="text" placeholder="Cliente" style="flex:1;min-width:70px" />
+              <input id="new-pratica-nome" type="text" placeholder="Pratica" style="flex:1;min-width:70px" />
+              <select id="new-pratica-stato" style="flex-shrink:0">
+                <option value="In corso">In corso</option>
+                <option value="Quasi chiusa">Quasi chiusa</option>
+                <option value="Precontenzioso">Precontenzioso</option>
+                <option value="Chiusa">Chiusa</option>
+              </select>
+            </div>
+            <div class="flex" style="margin-top:0.4rem;">
+              <input id="new-pratica-azione" type="text" placeholder="Prossima azione" style="flex:1" />
+              <button class="btn" type="button" id="add-pratica">Aggiungi</button>
             </div>
           </article>
 
           <!-- Archivio e strumenti -->
           <article class="card">
             <h3>Archivio e strumenti</h3>
-            <div class="quick-actions">
-              <button class="btn secondary" type="button">Apri fascicoli</button>
-              <button class="btn secondary" type="button">Modelli atti</button>
-              <button class="btn secondary" type="button">Verbali udienza</button>
-              <button class="btn secondary" type="button">Registro PEC</button>
+            <div id="archivio-list" class="archivio-list">
+              <!-- caricato da Firestore da internal.js -->
+            </div>
+            <div class="flex" style="margin-top:0.6rem;">
+              <input id="new-archivio-nome" type="text" placeholder="Nome strumento" style="flex:1" />
+              <button class="btn" type="button" id="add-archivio">Aggiungi</button>
             </div>
             <p class="note">Accesso rapido ai documenti usati più spesso.</p>
           </article>
@@ -178,16 +179,17 @@
           <!-- Promemoria e note interne -->
           <article class="card">
             <h3>Promemoria e note interne</h3>
-            <ul>
-              <li>Follow-up cliente Bianchi entro domani</li>
-              <li>Invio parcella pratica Verdi entro 28/06</li>
-              <li>Rinnovo PEC tra 10 giorni</li>
+            <ul id="promemoria-list" class="promemoria-list">
+              <!-- caricato da Firestore da internal.js -->
             </ul>
+            <div class="flex" style="margin-top:0.4rem;margin-bottom:0.75rem;">
+              <input id="new-promemoria" type="text" placeholder="Nuovo promemoria" style="flex:1" />
+              <button class="btn" type="button" id="add-promemoria">Aggiungi</button>
+            </div>
             <label class="sr-only" for="internal-note">Annotazioni interne giornaliere</label>
             <textarea
               id="internal-note"
               placeholder="Annotazioni rapide per la giornata"
-              style="margin-top: 0.75rem;"
             ></textarea>
             <button class="btn" type="button" id="save-note" style="margin-top: 0.5rem;">
               Salva nota
