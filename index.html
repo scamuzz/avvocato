@@ -420,7 +420,7 @@
             <h3>Cruscotto operativo</h3>
             <div class="kpi-grid">
               <div class="kpi">Pratiche aperte<br /><strong id="kpi-pratiche">18</strong></div>
-              <div class="kpi">Attività odierne<br /><strong id="kpi-attivita">6</strong></div>
+              <div class="kpi">Attività odierne<br /><strong id="kpi-attivita">3</strong></div>
               <div class="kpi">Udienze mese<br /><strong>9</strong></div>
               <div class="kpi">Parcelle da emettere<br /><strong>4</strong></div>
             </div>
@@ -430,9 +430,9 @@
           <article class="card">
             <h3>To-do giornaliero</h3>
             <ul class="checklist" id="todo-list">
-              <li><input type="checkbox" /> Deposito memoria - Pratica Bianchi <span class="priority high">Alta</span></li>
-              <li><input type="checkbox" /> Chiamata cliente Neri <span class="priority medium">Media</span></li>
-              <li><input type="checkbox" /> Verifica bozza contratto <span class="priority low">Bassa</span></li>
+              <li><input type="checkbox" aria-label="Deposito memoria - Pratica Bianchi" /> Deposito memoria - Pratica Bianchi <span class="priority high">Alta</span></li>
+              <li><input type="checkbox" aria-label="Chiamata cliente Neri" /> Chiamata cliente Neri <span class="priority medium">Media</span></li>
+              <li><input type="checkbox" aria-label="Verifica bozza contratto" /> Verifica bozza contratto <span class="priority low">Bassa</span></li>
             </ul>
             <div class="flex">
               <input id="new-todo" type="text" placeholder="Nuova attività interna" />
@@ -543,6 +543,7 @@
           const item = document.createElement("li");
           const checkbox = document.createElement("input");
           checkbox.type = "checkbox";
+          checkbox.setAttribute("aria-label", value);
 
           const textNode = document.createTextNode(value);
 
@@ -556,6 +557,15 @@
           todoList.appendChild(item);
           newTodoInput.value = "";
           kpiAttivita.textContent = String(Number(kpiAttivita.textContent) + 1);
+        });
+      }
+
+      if (todoList && kpiAttivita) {
+        todoList.addEventListener("change", (event) => {
+          const target = event.target;
+          if (!(target instanceof HTMLInputElement) || target.type !== "checkbox") return;
+          const current = Number(kpiAttivita.textContent);
+          kpiAttivita.textContent = String(target.checked ? Math.max(current - 1, 0) : current + 1);
         });
       }
 
