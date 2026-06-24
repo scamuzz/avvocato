@@ -231,6 +231,15 @@
         font-size: 1.1rem;
       }
 
+      .kpi dt {
+        margin: 0;
+        font-size: 0.88rem;
+      }
+
+      .kpi dd {
+        margin: 0.25rem 0 0;
+      }
+
       .priority {
         font-size: 0.78rem;
         font-weight: 600;
@@ -424,12 +433,12 @@
         <div class="card-grid">
           <article class="card">
             <h3>Cruscotto operativo</h3>
-            <div class="kpi-grid">
-              <div class="kpi">Pratiche aperte<br /><strong id="kpi-pratiche">18</strong></div>
-              <div class="kpi">Attività odierne<br /><strong id="kpi-attivita">3</strong></div>
-              <div class="kpi">Udienze mese<br /><strong>9</strong></div>
-              <div class="kpi">Parcelle da emettere<br /><strong>4</strong></div>
-            </div>
+            <dl class="kpi-grid">
+              <div class="kpi"><dt>Pratiche aperte</dt><dd><strong id="kpi-pratiche">18</strong></dd></div>
+              <div class="kpi"><dt>Attività odierne</dt><dd><strong id="kpi-attivita">3</strong></dd></div>
+              <div class="kpi"><dt>Udienze mese</dt><dd><strong>9</strong></dd></div>
+              <div class="kpi"><dt>Parcelle da emettere</dt><dd><strong>4</strong></dd></div>
+            </dl>
             <p class="note">Vista rapida per pianificare il lavoro della giornata.</p>
           </article>
 
@@ -507,7 +516,7 @@
             <h3>Promemoria automatici e note interne</h3>
             <ul>
               <li>Follow-up cliente Bianchi entro domani</li>
-              <li>Invio parcella pratica Verdi entro venerdì</li>
+              <li>Invio parcella pratica Verdi entro 28/06</li>
               <li>Rinnovo PEC tra 10 giorni</li>
             </ul>
             <label class="sr-only" for="internal-note">Annotazioni interne giornaliere</label>
