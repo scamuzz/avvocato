@@ -25,22 +25,22 @@ var _hasAutoOpenedModal = false;
 
 function initClienti() {
   // URL ?new=1 → apre subito il modale
-  var params = new URLSearchParams(window.location.search);
-  if (params.get('new') === '1') {
-    var openFromUrl = function () {
+  if (new URLSearchParams(window.location.search).get('new') === '1') {
+    var handleAutoOpenModal = function () {
       if (_hasAutoOpenedModal) return;
       _hasAutoOpenedModal = true;
       setTimeout(openAddModal, 400);
+      var params = new URLSearchParams(window.location.search);
       params.delete('new');
       var query = params.toString();
       window.history.replaceState(null, '', window.location.pathname + (query ? ('?' + query) : ''));
     };
 
     if (auth.currentUser) {
-      openFromUrl();
+      handleAutoOpenModal();
     } else {
       auth.onAuthStateChanged(function (user) {
-        if (user) openFromUrl();
+        if (user) handleAutoOpenModal();
       });
     }
   }

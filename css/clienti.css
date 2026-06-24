@@ -2,7 +2,7 @@
    CLIENTI.CSS
    ============================================================ */
 
-:root { --clienti-btn-radius: 10px; }
+.main-content { --clienti-btn-radius: 10px; }
 
 /* Toolbar */
 .toolbar {
