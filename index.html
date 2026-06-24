@@ -553,7 +553,6 @@
       const kpiAttivita = document.getElementById("kpi-attivita");
       const TODO_CHECKBOX_SELECTOR = 'input[type="checkbox"]';
       const NOTE_STORAGE_KEY = "avvocato.internal.note";
-      const REMOTE_NOTE_STORAGE_KEY = "avvocato.internal.remote.note";
       const FIREBASE_SDK_VERSION = "10.12.2";
       const TODOS_COLLECTION = "internal_todos";
       const INTERNAL_AREA_COLLECTION = "internal_area";
@@ -653,6 +652,7 @@
       let firebaseEnabled = false;
       let firestoreDb = null;
       let firestoreApi = null;
+      let seedInProgress = false;
       const isFirestoreReady = () => Boolean(firebaseEnabled && firestoreDb && firestoreApi);
 
       const setNoteMessage = (message) => {
@@ -698,30 +698,37 @@
 
           if (todosSnapshot.empty) {
             if (shouldSeedTodos) {
-              // Seed esplicito: usa i TODO iniziali in pagina come base del primo dataset Firestore.
-              const currentTodos = getTodosFromDom();
-              const batch = firestoreApi.writeBatch(firestoreDb);
-              currentTodos.forEach((todo) => {
-                const todoDoc = firestoreApi.doc(todosRef);
-                batch.set(todoDoc, {
-                  text: todo.text,
-                  completed: todo.completed,
-                  priority: normalizePriority(todo.priority),
-                  createdAt: firestoreApi.serverTimestamp(),
+              try {
+                // Seed esplicito: usa i TODO iniziali in pagina come base del primo dataset Firestore.
+                seedInProgress = true;
+                if (todoList) todoList.style.pointerEvents = "none";
+                const currentTodos = getTodosFromDom();
+                const batch = firestoreApi.writeBatch(firestoreDb);
+                currentTodos.forEach((todo) => {
+                  const todoDoc = firestoreApi.doc(todosRef);
+                  batch.set(todoDoc, {
+                    text: todo.text,
+                    completed: todo.completed,
+                    priority: normalizePriority(todo.priority),
+                    createdAt: firestoreApi.serverTimestamp(),
+                  });
                 });
-              });
-              await batch.commit();
-              const seededSnapshot = await firestoreApi.getDocs(
-                firestoreApi.query(todosRef, firestoreApi.orderBy("createdAt", "asc")),
-              );
-              const seededTodos = seededSnapshot.docs.map((docItem) => ({
-                id: docItem.id,
-                text: String(docItem.data().text || ""),
-                completed: Boolean(docItem.data().completed),
-                priority: normalizePriority(docItem.data().priority),
-              }));
-              renderTodos(seededTodos);
-              setNoteMessage("Firestore inizializzato con TODO locali.");
+                await batch.commit();
+                const seededSnapshot = await firestoreApi.getDocs(
+                  firestoreApi.query(todosRef, firestoreApi.orderBy("createdAt", "asc")),
+                );
+                const seededTodos = seededSnapshot.docs.map((docItem) => ({
+                  id: docItem.id,
+                  text: String(docItem.data().text || ""),
+                  completed: Boolean(docItem.data().completed),
+                  priority: normalizePriority(docItem.data().priority),
+                }));
+                renderTodos(seededTodos);
+                setNoteMessage("Firestore inizializzato con TODO locali.");
+              } finally {
+                seedInProgress = false;
+                if (todoList) todoList.style.pointerEvents = "";
+              }
             }
             return;
           }
@@ -755,7 +762,6 @@
           const localNote = localStorage.getItem(NOTE_STORAGE_KEY)?.trim();
           if (localNote && localNote !== noteValue) {
             setNoteMessage("Conflitto nota locale/remota: mantenuta nota locale.");
-            sessionStorage.setItem(REMOTE_NOTE_STORAGE_KEY, noteValue);
             console.warn("Conflitto nota locale/remota: mantenuta nota locale.");
             return;
           }
@@ -800,6 +806,10 @@
         todoList.addEventListener("change", async (event) => {
           const target = event.target;
           if (!(target instanceof HTMLInputElement) || !target.matches(TODO_CHECKBOX_SELECTOR)) return;
+          if (seedInProgress) {
+            setNoteMessage("Sincronizzazione iniziale in corso, riprova tra pochi secondi.");
+            return;
+          }
           const todoId = target.dataset.id;
           syncTodoKpi();
 
