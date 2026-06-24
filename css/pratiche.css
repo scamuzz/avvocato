@@ -1,0 +1,626 @@
+/* =========================================================
+   pratiche.css — Cases management styles
+   ========================================================= */
+
+/* ----- Toolbar ----- */
+.pratiche-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.pratiche-search {
+  flex: 1;
+  min-width: 220px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--white);
+  border: 1.5px solid var(--grey-200);
+  border-radius: var(--radius-full);
+  padding: 9px 16px;
+  transition: var(--transition);
+  box-shadow: var(--shadow-sm);
+}
+
+.pratiche-search:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(49,130,206,.12);
+}
+
+.pratiche-search-icon { color: var(--grey-400); font-size: .9rem; flex-shrink: 0; }
+
+.pratiche-search input {
+  border: none;
+  outline: none;
+  background: none;
+  font-size: .875rem;
+  color: var(--text);
+  width: 100%;
+}
+
+.pratiche-search input::placeholder { color: var(--text-muted); }
+
+/* Status filter bar */
+.status-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+}
+
+.status-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  border-radius: var(--radius-full);
+  font-size: .8125rem;
+  font-weight: 600;
+  border: 1.5px solid var(--grey-200);
+  background: var(--white);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+  box-shadow: var(--shadow-sm);
+}
+
+.status-filter-btn:hover { border-color: var(--grey-400); color: var(--text); }
+.status-filter-btn.active { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+
+.status-filter-count {
+  background: rgba(0,0,0,.08);
+  border-radius: var(--radius-full);
+  padding: 1px 6px;
+  font-size: .7rem;
+  min-width: 18px;
+  text-align: center;
+}
+
+.status-filter-btn.active .status-filter-count { background: var(--accent); color: var(--white); }
+
+/* ----- Kanban Board ----- */
+.kanban-board {
+  display: flex;
+  gap: 18px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  align-items: flex-start;
+  min-height: calc(100vh - 280px);
+}
+
+.kanban-column {
+  flex: 0 0 290px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-height: 200px;
+}
+
+.kanban-column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  border: 1px solid var(--grey-200);
+  border-bottom: none;
+  background: var(--grey-50);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.kanban-column-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: .875rem;
+  font-weight: 700;
+}
+
+.kanban-status-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.kanban-column-count {
+  background: var(--grey-200);
+  color: var(--grey-600);
+  font-size: .7rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  min-width: 22px;
+  text-align: center;
+}
+
+.kanban-column-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  background: var(--grey-50);
+  border: 1px solid var(--grey-200);
+  border-top: none;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  min-height: 80px;
+  overflow-y: auto;
+  max-height: calc(100vh - 340px);
+}
+
+.kanban-column-body.drag-over {
+  background: var(--accent-light);
+  border-color: var(--accent);
+}
+
+/* Kanban column color themes */
+.kanban-column.aperta    .kanban-column-header { background: #EBF8FF; }
+.kanban-column.aperta    .kanban-status-dot    { background: #3182CE; }
+.kanban-column.aperta    .kanban-column-count  { background: #BEE3F8; color: #2B6CB0; }
+
+.kanban-column.istruttoria .kanban-column-header { background: #FFFBEB; }
+.kanban-column.istruttoria .kanban-status-dot    { background: #D69E2E; }
+.kanban-column.istruttoria .kanban-column-count  { background: #FEFCBF; color: #975A16; }
+
+.kanban-column.udienza   .kanban-column-header { background: #FFF5F5; }
+.kanban-column.udienza   .kanban-status-dot    { background: #E53E3E; }
+.kanban-column.udienza   .kanban-column-count  { background: #FED7D7; color: #C53030; }
+
+.kanban-column.trattativa .kanban-column-header { background: #FAF5FF; }
+.kanban-column.trattativa .kanban-status-dot    { background: #805AD5; }
+.kanban-column.trattativa .kanban-column-count  { background: #E9D8FD; color: #6B46C1; }
+
+.kanban-column.chiusa    .kanban-column-header { background: #F0FFF4; }
+.kanban-column.chiusa    .kanban-status-dot    { background: #38A169; }
+.kanban-column.chiusa    .kanban-column-count  { background: #C6F6D5; color: #276749; }
+
+.kanban-column.archiviata .kanban-column-header { background: var(--grey-100); }
+.kanban-column.archiviata .kanban-status-dot    { background: var(--grey-400); }
+.kanban-column.archiviata .kanban-column-count  { background: var(--grey-200); color: var(--grey-600); }
+
+/* ----- Case Cards (Kanban) ----- */
+.case-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  border: 1.5px solid var(--grey-200);
+  padding: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.case-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--grey-300);
+  transform: translateY(-1px);
+}
+
+.case-card.dragging {
+  opacity: .6;
+  transform: rotate(2deg) scale(1.02);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Priority left border */
+.case-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  border-radius: var(--radius) 0 0 var(--radius);
+}
+
+.case-card.priority-alta    ::before, .case-card.priority-alta::before    { background: var(--danger); }
+.case-card.priority-media   ::before, .case-card.priority-media::before   { background: var(--warning); }
+.case-card.priority-bassa   ::before, .case-card.priority-bassa::before   { background: var(--success); }
+.case-card.priority-urgente ::before, .case-card.priority-urgente::before { background: #E53E3E; box-shadow: 0 0 8px rgba(229,62,62,.5); }
+
+.case-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.case-card-number {
+  font-size: .7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.case-card-title {
+  font-size: .875rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-top: 3px;
+}
+
+.case-card-type {
+  font-size: .75rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.case-card-client {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 8px;
+  background: var(--grey-50);
+  border-radius: var(--radius-sm);
+  font-size: .775rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.case-card-client-avatar {
+  width: 22px; height: 22px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: var(--white);
+  font-size: .6rem;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+
+.case-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.case-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.case-card-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: .72rem;
+  color: var(--text-muted);
+}
+
+.case-card-deadline {
+  font-size: .72rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 7px;
+  border-radius: var(--radius-full);
+}
+
+.case-card-deadline.overdue { color: var(--danger); background: var(--danger-light); }
+.case-card-deadline.soon    { color: var(--warning); background: var(--warning-light); }
+.case-card-deadline.normal  { color: var(--text-muted); background: var(--grey-100); }
+
+/* Add card button */
+.kanban-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 9px;
+  background: none;
+  border: 1.5px dashed var(--grey-300);
+  border-radius: var(--radius);
+  font-size: .8125rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition);
+  margin-top: 4px;
+}
+
+.kanban-add-btn:hover { background: var(--white); border-color: var(--accent); color: var(--accent); }
+
+/* ----- Table / List View for Cases ----- */
+.cases-table-view {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--grey-200);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.priority-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .8125rem;
+  font-weight: 600;
+}
+
+.priority-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.priority-dot.alta    { background: var(--danger); }
+.priority-dot.media   { background: var(--warning); }
+.priority-dot.bassa   { background: var(--success); }
+.priority-dot.urgente { background: var(--danger); box-shadow: 0 0 6px rgba(229,62,62,.6); }
+
+/* Status pills */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: .75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.status-pill-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.status-pill.aperta     { background: #EBF8FF; color: #2B6CB0; }
+.status-pill.istruttoria { background: #FFFBEB; color: #975A16; }
+.status-pill.udienza    { background: #FFF5F5; color: #C53030; }
+.status-pill.trattativa { background: #FAF5FF; color: #6B46C1; }
+.status-pill.chiusa     { background: #F0FFF4; color: #276749; }
+.status-pill.archiviata { background: var(--grey-100); color: var(--grey-600); }
+.status-pill.sospesa    { background: #FFFBEB; color: #975A16; }
+
+/* ----- Timeline Component ----- */
+.timeline {
+  position: relative;
+  padding-left: 28px;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 10px;
+  top: 8px;
+  bottom: 0;
+  width: 2px;
+  background: var(--grey-200);
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 24px;
+}
+
+.timeline-item:last-child { margin-bottom: 0; }
+
+.timeline-marker {
+  position: absolute;
+  left: -22px;
+  top: 6px;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--white);
+  border: 2px solid var(--grey-300);
+  transition: var(--transition);
+  z-index: 1;
+}
+
+.timeline-item.active   .timeline-marker { border-color: var(--accent);  background: var(--accent);  box-shadow: 0 0 0 4px rgba(49,130,206,.15); }
+.timeline-item.success  .timeline-marker { border-color: var(--success); background: var(--success); }
+.timeline-item.warning  .timeline-marker { border-color: var(--warning); background: var(--warning); }
+.timeline-item.danger   .timeline-marker { border-color: var(--danger);  background: var(--danger);  }
+
+.timeline-content {
+  background: var(--white);
+  border: 1px solid var(--grey-200);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.timeline-content:hover { box-shadow: var(--shadow); }
+
+.timeline-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.timeline-title {
+  font-size: .875rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.timeline-date {
+  font-size: .75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.timeline-text {
+  font-size: .8375rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.timeline-author {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  font-size: .775rem;
+  color: var(--text-muted);
+}
+
+.timeline-author-avatar {
+  width: 22px; height: 22px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: var(--white);
+  font-size: .6rem;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* Add timeline event */
+.timeline-add {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  position: relative;
+  margin-left: -28px;
+  padding-left: 28px;
+}
+
+.timeline-add-marker {
+  position: absolute;
+  left: 4px;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--grey-100);
+  border: 2px dashed var(--grey-300);
+  z-index: 1;
+}
+
+.timeline-add-btn {
+  font-size: .8125rem;
+  color: var(--text-muted);
+  background: none;
+  border: 1.5px dashed var(--grey-300);
+  border-radius: var(--radius);
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: var(--transition);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.timeline-add-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+
+/* ----- Case Detail ----- */
+.case-detail-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.case-number-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: var(--grey-100);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.case-priority-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  font-size: .8375rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  border-left: 4px solid;
+}
+
+.case-priority-bar.urgente { background: #FFF5F5; border-color: var(--danger); color: var(--danger); }
+.case-priority-bar.alta    { background: #FFF5F5; border-color: #E53E3E; color: #E53E3E; }
+.case-priority-bar.media   { background: var(--warning-light); border-color: var(--warning); color: var(--warning); }
+.case-priority-bar.bassa   { background: var(--success-light); border-color: var(--success); color: var(--success); }
+
+/* Document attachments */
+.doc-list { display: flex; flex-direction: column; gap: 8px; }
+
+.doc-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--grey-50);
+  border: 1px solid var(--grey-200);
+  border-radius: var(--radius);
+  transition: var(--transition);
+  cursor: pointer;
+}
+
+.doc-item:hover { background: var(--white); box-shadow: var(--shadow-sm); }
+
+.doc-icon {
+  width: 36px; height: 36px;
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.doc-icon.pdf  { background: #FFF5F5; color: #E53E3E; }
+.doc-icon.word { background: #EBF8FF; color: #3182CE; }
+.doc-icon.excel { background: #F0FFF4; color: #38A169; }
+.doc-icon.image { background: #FAF5FF; color: #805AD5; }
+.doc-icon.generic { background: var(--grey-100); color: var(--grey-500); }
+
+.doc-info { flex: 1; min-width: 0; }
+.doc-name { font-size: .8375rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.doc-meta { font-size: .75rem; color: var(--text-muted); display: flex; gap: 8px; }
+
+.doc-actions { display: flex; gap: 4px; }
+
+/* ----- Responsive ----- */
+@media (max-width: 1280px) {
+  .kanban-board { gap: 14px; }
+  .kanban-column { flex: 0 0 260px; }
+}
+
+@media (max-width: 768px) {
+  .kanban-board { flex-direction: column; overflow-x: hidden; }
+  .kanban-column { flex: none; width: 100%; }
+  .kanban-column-body { max-height: none; }
+  .pratiche-toolbar { flex-direction: column; align-items: stretch; }
+}

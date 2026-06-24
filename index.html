@@ -1,83 +1,593 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="it">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Studio Legale Avv. Corrado Scamuzzi</title>
-    <link rel="stylesheet" href="css/style.css" />
-  </head>
-  <body>
-    <header>
-      <div class="container">
-        <div class="topbar">
-          <div class="brand">Studio Legale Avv. Corrado Scamuzzi</div>
-          <nav>
-            <a href="index.html" class="nav-link active">Area Pubblica</a>
-            <a href="clienti.html" class="nav-link">Area Clienti</a>
-            <a href="interna.html" class="nav-link">Area Interna</a>
-          </nav>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Studio Legale - Home</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* ===== PUBLIC PAGE STYLES ===== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, -apple-system, sans-serif; color: #2D3748; }
+
+    /* Navigation */
+    .pub-nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      background: rgba(30,58,95,0.97); backdrop-filter: blur(8px);
+      padding: 0 2rem; height: 70px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.2);
+    }
+    .pub-nav-logo { display: flex; align-items: center; gap: 0.75rem; color: white; text-decoration: none; }
+    .pub-nav-logo i { font-size: 1.6rem; color: #63B3ED; }
+    .pub-nav-logo span { font-size: 1.1rem; font-weight: 700; letter-spacing: 0.5px; }
+    .pub-nav-links { display: flex; gap: 2rem; list-style: none; }
+    .pub-nav-links a { color: rgba(255,255,255,0.85); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
+    .pub-nav-links a:hover { color: white; }
+    .pub-nav-cta { display: flex; gap: 1rem; align-items: center; }
+    .btn-outline-white {
+      border: 1.5px solid rgba(255,255,255,0.7); color: white; background: transparent;
+      padding: 0.5rem 1.25rem; border-radius: 6px; cursor: pointer;
+      font-size: 0.875rem; text-decoration: none; transition: all 0.2s;
+    }
+    .btn-outline-white:hover { background: white; color: #1E3A5F; }
+    .btn-pub-primary {
+      background: #63B3ED; color: #1E3A5F; border: none;
+      padding: 0.5rem 1.25rem; border-radius: 6px; cursor: pointer;
+      font-size: 0.875rem; font-weight: 600; text-decoration: none; transition: all 0.2s;
+    }
+    .btn-pub-primary:hover { background: #90CDF4; }
+
+    /* Hero */
+    .hero {
+      min-height: 100vh; padding-top: 70px;
+      background: linear-gradient(135deg, #1E3A5F 0%, #2C5282 50%, #1A365D 100%);
+      display: flex; align-items: center; position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-content { max-width: 1200px; margin: 0 auto; padding: 4rem 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; position: relative; z-index: 1; }
+    .hero-text h1 { font-size: 3rem; font-weight: 800; color: white; line-height: 1.2; margin-bottom: 1.5rem; }
+    .hero-text h1 span { color: #63B3ED; }
+    .hero-text p { font-size: 1.15rem; color: rgba(255,255,255,0.8); line-height: 1.8; margin-bottom: 2.5rem; }
+    .hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .btn-hero-primary {
+      background: #63B3ED; color: #1E3A5F; border: none;
+      padding: 0.875rem 2rem; border-radius: 8px; cursor: pointer;
+      font-size: 1rem; font-weight: 700; text-decoration: none; transition: all 0.3s;
+      display: inline-flex; align-items: center; gap: 0.5rem;
+    }
+    .btn-hero-primary:hover { background: #90CDF4; transform: translateY(-2px); box-shadow: 0 8px 25px rgba(99,179,237,0.4); }
+    .btn-hero-secondary {
+      background: transparent; color: white; border: 2px solid rgba(255,255,255,0.5);
+      padding: 0.875rem 2rem; border-radius: 8px; cursor: pointer;
+      font-size: 1rem; font-weight: 600; text-decoration: none; transition: all 0.3s;
+      display: inline-flex; align-items: center; gap: 0.5rem;
+    }
+    .btn-hero-secondary:hover { border-color: white; background: rgba(255,255,255,0.1); }
+    .hero-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 3rem; }
+    .hero-stat { text-align: center; }
+    .hero-stat-num { font-size: 2.5rem; font-weight: 800; color: #63B3ED; }
+    .hero-stat-label { font-size: 0.875rem; color: rgba(255,255,255,0.7); margin-top: 0.25rem; }
+    .hero-card {
+      background: rgba(255,255,255,0.1); backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2); border-radius: 16px;
+      padding: 2rem; color: white;
+    }
+    .hero-card-icon { font-size: 3rem; margin-bottom: 1rem; color: #63B3ED; }
+    .hero-card h3 { font-size: 1.25rem; margin-bottom: 0.5rem; }
+    .hero-card p { font-size: 0.9rem; color: rgba(255,255,255,0.7); line-height: 1.6; }
+
+    /* Sections */
+    section { padding: 5rem 2rem; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    .section-header { text-align: center; margin-bottom: 3.5rem; }
+    .section-badge { display: inline-block; background: #EBF8FF; color: #2C5282; padding: 0.35rem 1rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem; }
+    .section-header h2 { font-size: 2.25rem; font-weight: 800; color: #1E3A5F; margin-bottom: 1rem; }
+    .section-header p { font-size: 1rem; color: #718096; max-width: 600px; margin: 0 auto; line-height: 1.8; }
+
+    /* Servizi */
+    #servizi { background: #F7FAFC; }
+    .servizi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+    .servizio-card {
+      background: white; border-radius: 12px; padding: 2rem;
+      box-shadow: 0 2px 15px rgba(0,0,0,0.06); transition: all 0.3s;
+      border: 1px solid #E2E8F0; position: relative; overflow: hidden;
+    }
+    .servizio-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #1E3A5F, #3182CE); }
+    .servizio-card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.12); }
+    .servizio-icon { width: 56px; height: 56px; background: #EBF8FF; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.25rem; }
+    .servizio-icon i { font-size: 1.5rem; color: #2C5282; }
+    .servizio-card h3 { font-size: 1.1rem; font-weight: 700; color: #1E3A5F; margin-bottom: 0.75rem; }
+    .servizio-card p { font-size: 0.9rem; color: #718096; line-height: 1.7; }
+
+    /* Chi siamo */
+    #chisiamo { background: white; }
+    .chisiamo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+    .chisiamo-text h2 { font-size: 2rem; font-weight: 800; color: #1E3A5F; margin-bottom: 1.5rem; }
+    .chisiamo-text p { color: #4A5568; line-height: 1.8; margin-bottom: 1rem; }
+    .chisiamo-features { margin-top: 2rem; display: flex; flex-direction: column; gap: 1rem; }
+    .chisiamo-feature { display: flex; align-items: flex-start; gap: 1rem; }
+    .chisiamo-feature i { color: #3182CE; font-size: 1.25rem; margin-top: 0.1rem; flex-shrink: 0; }
+    .chisiamo-feature div h4 { font-weight: 600; color: #2D3748; margin-bottom: 0.25rem; }
+    .chisiamo-feature div p { font-size: 0.9rem; color: #718096; }
+    .chisiamo-image { background: linear-gradient(135deg, #1E3A5F, #2C5282); border-radius: 16px; padding: 3rem; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: white; min-height: 350px; }
+    .chisiamo-image i { font-size: 5rem; color: #63B3ED; margin-bottom: 1.5rem; }
+    .chisiamo-image h3 { font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; }
+    .chisiamo-image p { color: rgba(255,255,255,0.8); line-height: 1.7; }
+
+    /* Contatti */
+    #contatti { background: #F7FAFC; }
+    .contatti-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; }
+    .contatti-info h3 { font-size: 1.5rem; font-weight: 700; color: #1E3A5F; margin-bottom: 1.5rem; }
+    .contatto-item { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.5rem; }
+    .contatto-icon { width: 44px; height: 44px; background: #EBF8FF; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .contatto-icon i { color: #2C5282; font-size: 1.1rem; }
+    .contatto-item h4 { font-weight: 600; color: #2D3748; margin-bottom: 0.25rem; }
+    .contatto-item p { font-size: 0.9rem; color: #718096; }
+
+    /* Forms */
+    .form-card { background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 15px rgba(0,0,0,0.06); border: 1px solid #E2E8F0; }
+    .form-card h3 { font-size: 1.25rem; font-weight: 700; color: #1E3A5F; margin-bottom: 0.5rem; }
+    .form-card p { font-size: 0.875rem; color: #718096; margin-bottom: 1.5rem; }
+    .pub-form { display: flex; flex-direction: column; gap: 1rem; }
+    .pub-form .form-group { display: flex; flex-direction: column; gap: 0.35rem; }
+    .pub-form label { font-size: 0.875rem; font-weight: 500; color: #4A5568; }
+    .pub-form input, .pub-form textarea, .pub-form select {
+      padding: 0.65rem 0.875rem; border: 1.5px solid #E2E8F0; border-radius: 8px;
+      font-size: 0.9rem; color: #2D3748; background: white; transition: border-color 0.2s;
+    }
+    .pub-form input:focus, .pub-form textarea:focus, .pub-form select:focus {
+      outline: none; border-color: #3182CE; box-shadow: 0 0 0 3px rgba(49,130,206,0.1);
+    }
+    .pub-form textarea { resize: vertical; min-height: 100px; }
+    .btn-form-submit {
+      background: #1E3A5F; color: white; border: none; padding: 0.75rem 1.5rem;
+      border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    }
+    .btn-form-submit:hover { background: #2C5282; }
+    .btn-form-submit:disabled { opacity: 0.7; cursor: not-allowed; }
+    .form-success { background: #C6F6D5; color: #276749; padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.875rem; display: none; }
+    .form-error { background: #FED7D7; color: #9B2C2C; padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.875rem; display: none; }
+    .tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid #E2E8F0; padding-bottom: 0; }
+    .tab-btn { background: none; border: none; padding: 0.65rem 1.25rem; cursor: pointer; font-size: 0.9rem; color: #718096; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
+    .tab-btn.active { color: #2C5282; border-bottom-color: #2C5282; font-weight: 600; }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    /* Footer */
+    footer { background: #1E3A5F; color: rgba(255,255,255,0.8); padding: 3rem 2rem 1.5rem; }
+    .footer-grid { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 3rem; margin-bottom: 2rem; }
+    .footer-brand i { font-size: 2rem; color: #63B3ED; margin-bottom: 1rem; }
+    .footer-brand h3 { color: white; font-size: 1.2rem; margin-bottom: 0.5rem; }
+    .footer-brand p { font-size: 0.875rem; line-height: 1.7; }
+    .footer-links h4 { color: white; font-weight: 600; margin-bottom: 1rem; }
+    .footer-links ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+    .footer-links a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.875rem; transition: color 0.2s; }
+    .footer-links a:hover { color: white; }
+    .footer-bottom { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem; text-align: center; font-size: 0.8rem; max-width: 1200px; margin: 0 auto; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero-content { grid-template-columns: 1fr; text-align: center; }
+      .hero-text h1 { font-size: 2rem; }
+      .hero-btns { justify-content: center; }
+      .hero-stats { grid-template-columns: repeat(3, 1fr); }
+      .chisiamo-grid, .contatti-grid, .footer-grid { grid-template-columns: 1fr; }
+      .pub-nav-links { display: none; }
+    }
+
+    /* Scroll reveal */
+    .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.6s, transform 0.6s; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="pub-nav">
+    <a href="#" class="pub-nav-logo">
+      <i class="fas fa-balance-scale"></i>
+      <span>Studio Legale</span>
+    </a>
+    <ul class="pub-nav-links">
+      <li><a href="#servizi">Servizi</a></li>
+      <li><a href="#chisiamo">Chi Siamo</a></li>
+      <li><a href="#contatti">Contatti</a></li>
+      <li><a href="#richiesta">Richiedi Appuntamento</a></li>
+    </ul>
+    <div class="pub-nav-cta">
+      <a href="pages/login.html" class="btn-outline-white"><i class="fas fa-lock"></i> Area Riservata</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-text">
+        <h1>Assistenza Legale <span>Professionale</span> e Affidabile</h1>
+        <p>Il nostro studio legale offre consulenza specializzata in diritto civile, penale e commerciale. Siamo al vostro fianco per tutelare i vostri diritti con competenza e dedizione.</p>
+        <div class="hero-btns">
+          <a href="#richiesta" class="btn-hero-primary"><i class="fas fa-calendar-check"></i> Richiedi Consulenza</a>
+          <a href="#servizi" class="btn-hero-secondary"><i class="fas fa-arrow-down"></i> Scopri i Servizi</a>
         </div>
-        <div class="hero">
-          <h1>Portale unico per studio legale individuale</h1>
-          <p>
-            Un solo strumento per presentare i servizi, seguire le pratiche con i clienti e
-            organizzare il lavoro quotidiano dell'avvocato.
-          </p>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <div class="hero-stat-num">500+</div>
+            <div class="hero-stat-label">Clienti Assistiti</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-num">20+</div>
+            <div class="hero-stat-label">Anni di Esperienza</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-num">98%</div>
+            <div class="hero-stat-label">Casi Risolti</div>
+          </div>
         </div>
       </div>
-    </header>
-
-    <main class="container">
-      <h2>Area pubblica clienti</h2>
-      <div class="card-grid">
-        <article class="card">
-          <span class="tag">Servizi e profilo</span>
-          <h3>Ambiti di competenza</h3>
-          <ul>
-            <li>Diritto civile e contrattualistica</li>
-            <li>Recupero crediti e risarcimento danni</li>
-            <li>Tutela consumatore e privacy</li>
-          </ul>
-          <p class="muted">
-            Profilo professionale con esperienza, metodo di lavoro e tempi medi di risposta.
-          </p>
-        </article>
-
-        <article class="card">
-          <span class="tag">Prenotazione consulenza</span>
-          <h3>Agenda con slot disponibili</h3>
-          <form>
-            <input type="text" placeholder="Nome e cognome" />
-            <input type="email" placeholder="Email" />
-            <select>
-              <option>Consulenza online</option>
-              <option>Consulenza in studio</option>
-            </select>
-            <input type="date" />
-            <button type="button" class="btn">Richiedi appuntamento</button>
-          </form>
-        </article>
-
-        <article class="card">
-          <span class="tag">FAQ e contenuti</span>
-          <h3>Informazioni utili</h3>
-          <ul>
-            <li>Come preparare i documenti per il primo incontro</li>
-            <li>Tempi tipici di una pratica civile</li>
-            <li>Costi orientativi e modalità di pagamento</li>
-          </ul>
-        </article>
-
-        <article class="card">
-          <span class="tag">Contatti</span>
-          <h3>Richiesta rapida</h3>
-          <form>
-            <input type="text" placeholder="Oggetto richiesta" />
-            <textarea placeholder="Descrivi brevemente il problema"></textarea>
-            <button type="button" class="btn secondary">Invia richiesta</button>
-          </form>
-        </article>
+      <div class="hero-card">
+        <div class="hero-card-icon"><i class="fas fa-shield-alt"></i></div>
+        <h3>La Vostra Tutela è la Nostra Priorità</h3>
+        <p>Con esperienza ventennale nel settore legale, offriamo una difesa solida e personalizzata per ogni tipo di causa.</p>
+        <br>
+        <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:0.5rem;">
+          <span style="background:rgba(255,255,255,0.15);padding:0.35rem 0.75rem;border-radius:20px;font-size:0.8rem;">Diritto Civile</span>
+          <span style="background:rgba(255,255,255,0.15);padding:0.35rem 0.75rem;border-radius:20px;font-size:0.8rem;">Diritto Penale</span>
+          <span style="background:rgba(255,255,255,0.15);padding:0.35rem 0.75rem;border-radius:20px;font-size:0.8rem;">Diritto Commerciale</span>
+          <span style="background:rgba(255,255,255,0.15);padding:0.35rem 0.75rem;border-radius:20px;font-size:0.8rem;">Diritto di Famiglia</span>
+        </div>
       </div>
-    </main>
-  </body>
+    </div>
+  </section>
+
+  <!-- Servizi -->
+  <section id="servizi">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-badge">I Nostri Servizi</span>
+        <h2>Competenza in Ogni Ambito del Diritto</h2>
+        <p>Offriamo assistenza legale completa in diversi settori del diritto, con un approccio personalizzato per ogni cliente.</p>
+      </div>
+      <div class="servizi-grid">
+        <div class="servizio-card reveal">
+          <div class="servizio-icon"><i class="fas fa-gavel"></i></div>
+          <h3>Diritto Civile</h3>
+          <p>Assistenza in cause civili, contratti, risarcimento danni, tutela dei consumatori e contenziosi tra privati.</p>
+        </div>
+        <div class="servizio-card reveal">
+          <div class="servizio-icon"><i class="fas fa-shield-alt"></i></div>
+          <h3>Diritto Penale</h3>
+          <p>Difesa in procedimenti penali, assistenza alle vittime di reato e consulenza in materia criminale.</p>
+        </div>
+        <div class="servizio-card reveal">
+          <div class="servizio-icon"><i class="fas fa-briefcase"></i></div>
+          <h3>Diritto Commerciale</h3>
+          <p>Consulenza societaria, contratti commerciali, fusioni e acquisizioni, startup e diritto d'impresa.</p>
+        </div>
+        <div class="servizio-card reveal">
+          <div class="servizio-icon"><i class="fas fa-heart"></i></div>
+          <h3>Diritto di Famiglia</h3>
+          <p>Separazioni, divorzi, affido minori, adozioni e tutela del patrimonio familiare.</p>
+        </div>
+        <div class="servizio-card reveal">
+          <div class="servizio-icon"><i class="fas fa-home"></i></div>
+          <h3>Diritto Immobiliare</h3>
+          <p>Compravendite immobiliari, locazioni, condominio, usucapione e controversie fondiarie.</p>
+        </div>
+        <div class="servizio-card reveal">
+          <div class="servizio-icon"><i class="fas fa-file-contract"></i></div>
+          <h3>Consulenza Contrattuale</h3>
+          <p>Redazione e revisione di contratti, accordi commerciali e tutela contrattuale.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Chi Siamo -->
+  <section id="chisiamo">
+    <div class="container">
+      <div class="chisiamo-grid">
+        <div class="chisiamo-image reveal">
+          <i class="fas fa-balance-scale"></i>
+          <h3>Studio Legale Associato</h3>
+          <p>Un team di professionisti esperti, uniti dalla passione per la giustizia e dalla dedizione ai propri clienti. Ogni caso viene trattato con la massima attenzione e professionalità.</p>
+        </div>
+        <div class="chisiamo-text reveal">
+          <span class="section-badge">Chi Siamo</span>
+          <h2>Un Partner Legale di Fiducia</h2>
+          <p>Il nostro studio legale nasce dalla volontà di offrire assistenza legale di alta qualità, accessibile e personalizzata. Crediamo che ogni cliente meriti attenzione individuale e una strategia legale su misura.</p>
+          <p>Con oltre vent'anni di esperienza, abbiamo costruito una solida reputazione basata su competenza, etica professionale e risultati concreti.</p>
+          <div class="chisiamo-features">
+            <div class="chisiamo-feature">
+              <i class="fas fa-check-circle"></i>
+              <div><h4>Professionalità</h4><p>Team di avvocati specializzati con aggiornamento continuo.</p></div>
+            </div>
+            <div class="chisiamo-feature">
+              <i class="fas fa-check-circle"></i>
+              <div><h4>Trasparenza</h4><p>Comunicazione chiara su strategie, tempi e costi.</p></div>
+            </div>
+            <div class="chisiamo-feature">
+              <i class="fas fa-check-circle"></i>
+              <div><h4>Disponibilità</h4><p>Sempre raggiungibili per aggiornamenti e consulenze urgenti.</p></div>
+            </div>
+            <div class="chisiamo-feature">
+              <i class="fas fa-check-circle"></i>
+              <div><h4>Risultati</h4><p>Track record di successo in centinaia di cause vinte.</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contatti + Form -->
+  <section id="contatti">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-badge">Contattaci</span>
+        <h2>Siamo a Vostra Disposizione</h2>
+        <p>Non esitate a contattarci per una prima consulenza o per qualsiasi informazione.</p>
+      </div>
+      <div class="contatti-grid">
+        <div class="reveal">
+          <div class="contatti-info">
+            <h3>Informazioni di Contatto</h3>
+            <div class="contatto-item">
+              <div class="contatto-icon"><i class="fas fa-map-marker-alt"></i></div>
+              <div><h4>Indirizzo</h4><p>Via della Giustizia, 12<br>00100 Roma (RM)</p></div>
+            </div>
+            <div class="contatto-item">
+              <div class="contatto-icon"><i class="fas fa-phone"></i></div>
+              <div><h4>Telefono</h4><p>+39 06 1234 5678</p></div>
+            </div>
+            <div class="contatto-item">
+              <div class="contatto-icon"><i class="fas fa-envelope"></i></div>
+              <div><h4>Email</h4><p>info@studiolegalexyz.it</p></div>
+            </div>
+            <div class="contatto-item">
+              <div class="contatto-icon"><i class="fas fa-clock"></i></div>
+              <div><h4>Orari</h4><p>Lun-Ven: 9:00 - 18:00<br>Sab: 9:00 - 13:00</p></div>
+            </div>
+          </div>
+        </div>
+        <div class="reveal" id="richiesta">
+          <div class="form-card">
+            <h3>Inviaci un Messaggio</h3>
+            <p>Compila il modulo sottostante e ti risponderemo al più presto.</p>
+            <div class="tabs">
+              <button class="tab-btn active" onclick="switchTab('informazioni')">Richiesta Informazioni</button>
+              <button class="tab-btn" onclick="switchTab('appuntamento')">Richiedi Appuntamento</button>
+            </div>
+
+            <!-- Tab Informazioni -->
+            <div class="tab-pane active" id="tab-informazioni">
+              <div id="form-info-success" class="form-success">✓ Messaggio inviato! Ti risponderemo presto.</div>
+              <div id="form-info-error" class="form-error">✗ Errore nell'invio. Riprova.</div>
+              <form class="pub-form" id="formInformazioni" onsubmit="submitFormInfo(event)">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                  <div class="form-group">
+                    <label>Nome *</label>
+                    <input type="text" id="info-nome" required placeholder="Mario">
+                  </div>
+                  <div class="form-group">
+                    <label>Cognome *</label>
+                    <input type="text" id="info-cognome" required placeholder="Rossi">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Email *</label>
+                  <input type="email" id="info-email" required placeholder="mario.rossi@email.it">
+                </div>
+                <div class="form-group">
+                  <label>Telefono</label>
+                  <input type="tel" id="info-telefono" placeholder="+39 xxx xxx xxxx">
+                </div>
+                <div class="form-group">
+                  <label>Area di interesse</label>
+                  <select id="info-area">
+                    <option value="">Seleziona...</option>
+                    <option>Diritto Civile</option>
+                    <option>Diritto Penale</option>
+                    <option>Diritto Commerciale</option>
+                    <option>Diritto di Famiglia</option>
+                    <option>Diritto Immobiliare</option>
+                    <option>Altro</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Messaggio *</label>
+                  <textarea id="info-messaggio" required placeholder="Descrivi brevemente la tua situazione..."></textarea>
+                </div>
+                <button type="submit" class="btn-form-submit" id="btnInfoSubmit">
+                  <i class="fas fa-paper-plane"></i> Invia Messaggio
+                </button>
+              </form>
+            </div>
+
+            <!-- Tab Appuntamento -->
+            <div class="tab-pane" id="tab-appuntamento">
+              <div id="form-apt-success" class="form-success">✓ Richiesta inviata! Ti contatteremo per confermare l'appuntamento.</div>
+              <div id="form-apt-error" class="form-error">✗ Errore nell'invio. Riprova.</div>
+              <form class="pub-form" id="formAppuntamento" onsubmit="submitFormAppuntamento(event)">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                  <div class="form-group">
+                    <label>Nome *</label>
+                    <input type="text" id="apt-nome" required placeholder="Mario">
+                  </div>
+                  <div class="form-group">
+                    <label>Cognome *</label>
+                    <input type="text" id="apt-cognome" required placeholder="Rossi">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Email *</label>
+                  <input type="email" id="apt-email" required placeholder="mario.rossi@email.it">
+                </div>
+                <div class="form-group">
+                  <label>Telefono *</label>
+                  <input type="tel" id="apt-telefono" required placeholder="+39 xxx xxx xxxx">
+                </div>
+                <div class="form-group">
+                  <label>Data preferita</label>
+                  <input type="date" id="apt-data">
+                </div>
+                <div class="form-group">
+                  <label>Motivo della consulenza</label>
+                  <textarea id="apt-motivo" placeholder="Descrivi brevemente il motivo della consulenza..."></textarea>
+                </div>
+                <button type="submit" class="btn-form-submit" id="btnAptSubmit">
+                  <i class="fas fa-calendar-check"></i> Richiedi Appuntamento
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <i class="fas fa-balance-scale"></i>
+        <h3>Studio Legale</h3>
+        <p>Assistenza legale professionale e personalizzata dal 2004. Il vostro diritto è la nostra missione.</p>
+      </div>
+      <div class="footer-links">
+        <h4>Servizi</h4>
+        <ul>
+          <li><a href="#servizi">Diritto Civile</a></li>
+          <li><a href="#servizi">Diritto Penale</a></li>
+          <li><a href="#servizi">Diritto Commerciale</a></li>
+          <li><a href="#servizi">Diritto di Famiglia</a></li>
+        </ul>
+      </div>
+      <div class="footer-links">
+        <h4>Link Utili</h4>
+        <ul>
+          <li><a href="#chisiamo">Chi Siamo</a></li>
+          <li><a href="#contatti">Contatti</a></li>
+          <li><a href="#richiesta">Richiedi Appuntamento</a></li>
+          <li><a href="pages/login.html">Area Riservata</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2024 Studio Legale. Tutti i diritti riservati. | P.IVA: 01234567890</p>
+    </div>
+  </footer>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+
+  <script>
+    // Tab switching
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById('tab-' + tab).classList.add('active');
+    }
+
+    // Submit richiesta informazioni
+    async function submitFormInfo(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnInfoSubmit');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Invio in corso...';
+      document.getElementById('form-info-success').style.display = 'none';
+      document.getElementById('form-info-error').style.display = 'none';
+
+      try {
+        const nome = document.getElementById('info-nome').value.trim();
+        const cognome = document.getElementById('info-cognome').value.trim();
+        const email = document.getElementById('info-email').value.trim();
+        const telefono = document.getElementById('info-telefono').value.trim();
+        const area = document.getElementById('info-area').value;
+        const messaggio = document.getElementById('info-messaggio').value.trim();
+
+        await db.collection('richiesteContatto').add({
+          nome: nome + ' ' + cognome,
+          email,
+          telefono,
+          messaggio: (area ? '[' + area + '] ' : '') + messaggio,
+          dataInvio: firebase.firestore.FieldValue.serverTimestamp(),
+          stato: 'Nuova',
+          tipo: 'informazioni'
+        });
+
+        document.getElementById('formInformazioni').reset();
+        document.getElementById('form-info-success').style.display = 'block';
+      } catch (err) {
+        console.error(err);
+        document.getElementById('form-info-error').style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Invia Messaggio';
+      }
+    }
+
+    // Submit richiesta appuntamento
+    async function submitFormAppuntamento(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnAptSubmit');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Invio in corso...';
+      document.getElementById('form-apt-success').style.display = 'none';
+      document.getElementById('form-apt-error').style.display = 'none';
+
+      try {
+        const nome = document.getElementById('apt-nome').value.trim();
+        const cognome = document.getElementById('apt-cognome').value.trim();
+        const email = document.getElementById('apt-email').value.trim();
+        const telefono = document.getElementById('apt-telefono').value.trim();
+        const data = document.getElementById('apt-data').value;
+        const motivo = document.getElementById('apt-motivo').value.trim();
+
+        await db.collection('richiesteContatto').add({
+          nome: nome + ' ' + cognome,
+          email,
+          telefono,
+          messaggio: (data ? 'Data preferita: ' + data + '. ' : '') + motivo,
+          dataInvio: firebase.firestore.FieldValue.serverTimestamp(),
+          stato: 'Nuova',
+          tipo: 'appuntamento'
+        });
+
+        document.getElementById('formAppuntamento').reset();
+        document.getElementById('form-apt-success').style.display = 'block';
+      } catch (err) {
+        console.error(err);
+        document.getElementById('form-apt-error').style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-calendar-check"></i> Richiedi Appuntamento';
+      }
+    }
+
+    // Scroll reveal
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        e.preventDefault();
+        const target = document.querySelector(a.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  </script>
+</body>
 </html>
