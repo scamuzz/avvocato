@@ -19,14 +19,22 @@ var _allClienti     = [];          // cache locale
 var _currentView    = 'table';     // 'table' | 'card'
 var _deleteTargetId = null;        // id cliente da eliminare
 var _unsubscribeClienti = null;    // listener Firestore
+var _newModalOpenedFromUrl = false;
 
 // --- Init ---
 
 function initClienti() {
   // URL ?new=1 → apre subito il modale
-  if (new URLSearchParams(window.location.search).get('new') === '1') {
-    auth.onAuthStateChanged(function (user) {
-      if (user) setTimeout(openAddModal, 400);
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('new') === '1') {
+    var unsubscribeAuth = auth.onAuthStateChanged(function (user) {
+      if (!user || _newModalOpenedFromUrl) return;
+      _newModalOpenedFromUrl = true;
+      setTimeout(openAddModal, 400);
+      params.delete('new');
+      var query = params.toString();
+      window.history.replaceState(null, '', window.location.pathname + (query ? ('?' + query) : ''));
+      if (typeof unsubscribeAuth === 'function') unsubscribeAuth();
     });
   }
   loadClienti();
@@ -226,7 +234,15 @@ function openAddModal() {
   document.getElementById('modalTitle').textContent = 'Nuovo Cliente';
   document.getElementById('clienteForm').reset();
   document.getElementById('clienteId').value = '';
+  document.getElementById('submitBtn').disabled = false;
+  document.getElementById('submitBtn').innerHTML = '<i class="fas fa-save"></i> Salva';
   openModal('clienteModal');
+}
+
+function closeClienteModal() {
+  document.getElementById('clienteForm').reset();
+  document.getElementById('clienteId').value = '';
+  closeModal('clienteModal');
 }
 
 function openEditModal(id) {
@@ -274,7 +290,7 @@ function submitClienteForm(e) {
   var promise = id ? updateCliente(id, data) : addCliente(data);
   promise
     .then(function () {
-      closeModal('clienteModal');
+      closeClienteModal();
       showToast(id ? 'Cliente aggiornato con successo' : 'Cliente aggiunto con successo', 'success');
     })
     .catch(function (err) {
