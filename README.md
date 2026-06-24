@@ -36,4 +36,6 @@ Se vuoi anche inizializzare automaticamente Firestore con i TODO statici present
 </script>
 ```
 
+Nota: per evitare sovrascritture involontarie, se esiste una nota locale diversa da quella remota viene mantenuta quella locale.
+
 Se la configurazione non è presente o Firebase non è raggiungibile, la pagina continua a funzionare in locale (senza blocchi).
