@@ -116,7 +116,6 @@ function makeIconBtn(icon, title) {
   const btn = document.createElement("button");
   btn.type = "button";
   btn.className = "btn-icon";
-  btn.title = title;
   btn.textContent = `${icon} ${title}`;
   return btn;
 }
@@ -124,6 +123,7 @@ function makeIconBtn(icon, title) {
 function toDateTimeLocalValue(value) {
   const safe = String(value || "").trim();
   if (!safe) return "";
+  // Mantiene il formato richiesto da input[type="datetime-local"] senza perdere dati.
   if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(safe)) return safe;
   const parsed = new Date(safe);
   if (Number.isNaN(parsed.getTime())) return "";
@@ -711,10 +711,10 @@ async function handleDeletePratica(id, tr) {
 function handleEditPratica(pratica, tr) {
   if (!tr.isConnected) return;
 
-  function makeInputTd(value, placeholder) {
+  function makeInputTd(value, placeholder, type = "text") {
     const td = document.createElement("td");
     const input = document.createElement("input");
-    input.type = "text";
+    input.type = type;
     input.value = value || "";
     input.placeholder = placeholder || "";
     input.style.cssText = "width:100%;min-width:60px;";
@@ -739,8 +739,7 @@ function handleEditPratica(pratica, tr) {
   const { td: tdC, input: inpC } = makeInputTd(pratica.cliente, "Cliente");
   const { td: tdP, input: inpP } = makeInputTd(pratica.pratica, "Pratica");
   const { td: tdS, select: selS } = makeSelectTd(pratica.stato);
-  const { td: tdSc, input: inpSc } = makeInputTd(pratica.scadenza, "");
-  inpSc.type = "date";
+  const { td: tdSc, input: inpSc } = makeInputTd(pratica.scadenza, "", "date");
   const { td: tdA, input: inpA } = makeInputTd(pratica.prossimaAzione, "Prossima azione");
 
   const tdBtn = document.createElement("td");
