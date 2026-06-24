@@ -528,7 +528,8 @@
       </section>
     </main>
 
-    <script>
+    <script type="module">
+      // Script modulare necessario per importare Firebase SDK via ESM.
       const tabs = document.querySelectorAll(".tab");
       const panels = document.querySelectorAll(".panel");
 
@@ -548,36 +549,92 @@
       const newTodoInput = document.getElementById("new-todo");
       const saveNoteBtn = document.getElementById("save-note");
       const noteFeedback = document.getElementById("note-feedback");
+      const internalNoteInput = document.getElementById("internal-note");
       const kpiAttivita = document.getElementById("kpi-attivita");
       const TODO_CHECKBOX_SELECTOR = 'input[type="checkbox"]';
+      const NOTE_STORAGE_KEY = "avvocato.internal.note";
+      const FIREBASE_SDK_VERSION = "10.12.2";
+      const TODOS_COLLECTION = "internal_todos";
+      const INTERNAL_AREA_COLLECTION = "internal_area";
+      const INTERNAL_AREA_MAIN_DOC = "main";
 
-      if (addTodoBtn && todoList && newTodoInput) {
-        addTodoBtn.addEventListener("click", () => {
-          const value = newTodoInput.value.trim();
-          if (!value) return;
+      const normalizePriority = (priority) => {
+        if (priority !== "high" && priority !== "medium" && priority !== "low") {
+          console.warn("Priorità non valida, imposto 'medium':", priority);
+        }
+        if (priority === "high" || priority === "low") return priority;
+        return "medium";
+      };
 
-          const item = document.createElement("li");
-          const checkbox = document.createElement("input");
-          checkbox.type = "checkbox";
-          checkbox.setAttribute("aria-label", value);
+      const priorityLabel = (priority) => {
+        if (priority === "high") return "Alta";
+        if (priority === "low") return "Bassa";
+        return "Media";
+      };
 
-          const label = document.createElement("label");
-          const text = document.createElement("span");
-          text.textContent = value;
-          label.appendChild(checkbox);
-          label.appendChild(text);
+      const createTodoElement = (todo) => {
+        const item = document.createElement("li");
+        const safeText = String(todo.text || "").trim();
+        const priority = normalizePriority(todo.priority);
 
-          const badge = document.createElement("span");
-          badge.className = "priority medium";
-          badge.textContent = "Media";
+        const label = document.createElement("label");
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.setAttribute("aria-label", safeText);
+        checkbox.checked = Boolean(todo.completed);
+        if (todo.id) checkbox.dataset.id = todo.id;
 
-          item.appendChild(label);
-          item.appendChild(badge);
-          todoList.appendChild(item);
-          newTodoInput.value = "";
-          syncTodoKpi();
+        const text = document.createElement("span");
+        text.textContent = safeText;
+        label.appendChild(checkbox);
+        label.appendChild(text);
+
+        const badge = document.createElement("span");
+        badge.className = `priority ${priority}`;
+        badge.textContent = priorityLabel(priority);
+
+        item.appendChild(label);
+        item.appendChild(badge);
+        return item;
+      };
+
+      const renderTodos = (todos) => {
+        if (!todoList) return;
+        todoList.innerHTML = "";
+        todos.forEach((todo) => {
+          if (!todo.text) return;
+          todoList.appendChild(createTodoElement(todo));
         });
-      }
+        syncTodoKpi();
+      };
+
+      const getTodosFromDom = () => {
+        if (!todoList) return [];
+        return Array.from(todoList.querySelectorAll("li"))
+          .map((item) => {
+            const checkbox = item.querySelector('input[type="checkbox"]');
+            const text = item.querySelector("label span");
+            const badge = item.querySelector(".priority");
+            if (!(checkbox instanceof HTMLInputElement) || !text) return null;
+
+            const textValue = text.textContent?.trim() || "";
+            if (!textValue) return null;
+
+            const priority = badge?.classList.contains("high")
+              ? "high"
+              : badge?.classList.contains("low")
+                ? "low"
+                : "medium";
+
+            return {
+              id: checkbox.dataset.id || undefined,
+              text: textValue,
+              completed: checkbox.checked,
+              priority,
+            };
+          })
+          .filter(Boolean);
+      };
 
       const syncTodoKpi = () => {
         if (!todoList || !kpiAttivita) return;
@@ -585,20 +642,247 @@
         kpiAttivita.textContent = String(remaining);
       };
 
-      if (todoList) {
-        syncTodoKpi();
-        todoList.addEventListener("change", (event) => {
-          const target = event.target;
-          if (!(target instanceof HTMLInputElement) || !target.matches(TODO_CHECKBOX_SELECTOR)) return;
+      const appFirebaseConfig = globalThis.AVVOCATO_FIREBASE_CONFIG;
+      const shouldSeedTodos = Boolean(globalThis.AVVOCATO_ENABLE_TODO_SEED);
+      const hasNonEmptyString = (value) => typeof value === "string" && value.trim().length > 0;
+      const hasFirebaseConfig =
+        appFirebaseConfig &&
+        typeof appFirebaseConfig === "object" &&
+        hasNonEmptyString(appFirebaseConfig.apiKey) &&
+        hasNonEmptyString(appFirebaseConfig.projectId) &&
+        hasNonEmptyString(appFirebaseConfig.authDomain) &&
+        hasNonEmptyString(appFirebaseConfig.appId);
+
+      let firebaseEnabled = false;
+      let firestoreDb = null;
+      let firestoreApi = null;
+      let seedInProgress = false;
+      const isFirestoreReady = () => Boolean(firebaseEnabled && firestoreDb && firestoreApi);
+
+      const setNoteMessage = (message) => {
+        if (noteFeedback) noteFeedback.textContent = message;
+      };
+
+      const loadLocalNote = () => {
+        if (!(internalNoteInput instanceof HTMLTextAreaElement)) return;
+        const localNote = localStorage.getItem(NOTE_STORAGE_KEY);
+        if (localNote) internalNoteInput.value = localNote;
+      };
+
+      const saveLocalNote = () => {
+        if (!(internalNoteInput instanceof HTMLTextAreaElement)) return;
+        localStorage.setItem(NOTE_STORAGE_KEY, internalNoteInput.value.trim());
+      };
+
+      const initializeFirebase = async () => {
+        if (!hasFirebaseConfig) return;
+        try {
+          const [{ initializeApp }, firestoreModule] = await Promise.all([
+            import(`https://www.gstatic.com/firebasejs/${FIREBASE_SDK_VERSION}/firebase-app.js`),
+            import(`https://www.gstatic.com/firebasejs/${FIREBASE_SDK_VERSION}/firebase-firestore.js`),
+          ]);
+
+          const app = initializeApp(appFirebaseConfig);
+          firestoreDb = firestoreModule.getFirestore(app);
+          firestoreApi = firestoreModule;
+          firebaseEnabled = true;
+        } catch (error) {
+          console.error("Errore inizializzazione Firebase:", error);
+          setNoteMessage("Firebase non disponibile: uso salvataggio locale.");
+        }
+      };
+
+      const syncTodosFromFirestore = async () => {
+        if (!isFirestoreReady()) return;
+        try {
+          const todosRef = firestoreApi.collection(firestoreDb, TODOS_COLLECTION);
+          const todosSnapshot = await firestoreApi.getDocs(
+            firestoreApi.query(todosRef, firestoreApi.orderBy("createdAt", "asc")),
+          );
+
+          if (todosSnapshot.empty) {
+            if (shouldSeedTodos) {
+              try {
+                // Seed esplicito: usa i TODO iniziali in pagina come base del primo dataset Firestore.
+                seedInProgress = true;
+                if (todoList) todoList.style.pointerEvents = "none";
+                if (addTodoBtn) addTodoBtn.disabled = true;
+                const currentTodos = getTodosFromDom();
+                const batch = firestoreApi.writeBatch(firestoreDb);
+                currentTodos.forEach((todo) => {
+                  const todoDoc = firestoreApi.doc(todosRef);
+                  batch.set(todoDoc, {
+                    text: todo.text,
+                    completed: todo.completed,
+                    priority: normalizePriority(todo.priority),
+                    createdAt: firestoreApi.serverTimestamp(),
+                  });
+                });
+                await batch.commit();
+                const seededSnapshot = await firestoreApi.getDocs(
+                  firestoreApi.query(todosRef, firestoreApi.orderBy("createdAt", "asc")),
+                );
+                const seededTodos = seededSnapshot.docs.map((docItem) => ({
+                  id: docItem.id,
+                  text: String(docItem.data().text || ""),
+                  completed: Boolean(docItem.data().completed),
+                  priority: normalizePriority(docItem.data().priority),
+                }));
+                renderTodos(seededTodos);
+                setNoteMessage("Firestore inizializzato con TODO locali.");
+              } finally {
+                seedInProgress = false;
+                if (todoList) todoList.style.pointerEvents = "";
+                if (addTodoBtn) addTodoBtn.disabled = false;
+              }
+            }
+            return;
+          }
+
+          const dbTodos = todosSnapshot.docs.map((docItem) => ({
+            id: docItem.id,
+            text: String(docItem.data().text || ""),
+            completed: Boolean(docItem.data().completed),
+            priority: normalizePriority(docItem.data().priority),
+          }));
+          renderTodos(dbTodos);
+        } catch (error) {
+          console.error("Errore caricamento TODO da Firebase:", error);
+          setNoteMessage("Errore lettura TODO da Firebase: uso elenco locale.");
+        }
+      };
+
+      const syncNoteFromFirestore = async () => {
+        const canSyncNote =
+          firebaseEnabled &&
+          firestoreDb &&
+          firestoreApi &&
+          internalNoteInput instanceof HTMLTextAreaElement;
+        if (!canSyncNote) return;
+        try {
+          const noteRef = firestoreApi.doc(firestoreDb, INTERNAL_AREA_COLLECTION, INTERNAL_AREA_MAIN_DOC);
+          const noteSnapshot = await firestoreApi.getDoc(noteRef);
+          if (!noteSnapshot.exists()) return;
+          const noteValue = String(noteSnapshot.data().note || "").trim();
+          if (!noteValue) return;
+          const localNote = localStorage.getItem(NOTE_STORAGE_KEY)?.trim();
+          if (localNote && localNote !== noteValue) {
+            setNoteMessage("Conflitto nota locale/remota: mantenuta nota locale.");
+            console.warn("Conflitto nota locale/remota: mantenuta nota locale.");
+            return;
+          }
+          internalNoteInput.value = noteValue;
+          localStorage.setItem(NOTE_STORAGE_KEY, noteValue);
+        } catch (error) {
+          console.error("Errore caricamento nota da Firebase:", error);
+          setNoteMessage("Errore lettura nota da Firebase: uso nota locale.");
+        }
+      };
+
+      if (addTodoBtn && todoList && newTodoInput) {
+        addTodoBtn.addEventListener("click", async () => {
+          if (seedInProgress) {
+            setNoteMessage("Sincronizzazione iniziale in corso, attendi pochi secondi.");
+            return;
+          }
+          const value = newTodoInput.value.trim();
+          if (!value) return;
+
+          if (isFirestoreReady()) {
+            try {
+              const created = await firestoreApi.addDoc(firestoreApi.collection(firestoreDb, TODOS_COLLECTION), {
+                text: value,
+                completed: false,
+                priority: "medium",
+                createdAt: firestoreApi.serverTimestamp(),
+              });
+              todoList.appendChild(createTodoElement({ id: created.id, text: value, completed: false, priority: "medium" }));
+              newTodoInput.value = "";
+              syncTodoKpi();
+              return;
+            } catch (error) {
+              console.error("Errore salvataggio TODO su Firebase:", error);
+              setNoteMessage("Errore Firebase: TODO aggiunto solo in locale.");
+            }
+          }
+
+          todoList.appendChild(createTodoElement({ text: value, completed: false, priority: "medium" }));
+          newTodoInput.value = "";
           syncTodoKpi();
         });
       }
 
-      if (saveNoteBtn && noteFeedback) {
-        saveNoteBtn.addEventListener("click", () => {
-          noteFeedback.textContent = "Nota interna salvata localmente.";
+      if (todoList) {
+        todoList.addEventListener("change", async (event) => {
+          const target = event.target;
+          if (!(target instanceof HTMLInputElement) || !target.matches(TODO_CHECKBOX_SELECTOR)) return;
+          if (seedInProgress) {
+            setNoteMessage("Sincronizzazione iniziale in corso, riprova tra pochi secondi.");
+            return;
+          }
+          const todoId = target.dataset.id;
+          syncTodoKpi();
+
+          if (!isFirestoreReady()) return;
+          if (!todoId) {
+            setNoteMessage("TODO locale senza ID Firebase: modifica salvata solo in locale.");
+            return;
+          }
+          try {
+            await firestoreApi.updateDoc(firestoreApi.doc(firestoreDb, TODOS_COLLECTION, todoId), {
+              completed: target.checked,
+            });
+          } catch (error) {
+            console.error("Errore aggiornamento TODO su Firebase:", error);
+            setNoteMessage("Errore aggiornamento su Firebase: stato mantenuto solo localmente.");
+          }
         });
       }
+
+      if (saveNoteBtn && noteFeedback) {
+        saveNoteBtn.addEventListener("click", async () => {
+          saveLocalNote();
+
+          if (isFirestoreReady() && internalNoteInput instanceof HTMLTextAreaElement) {
+            try {
+              await firestoreApi.setDoc(
+                firestoreApi.doc(firestoreDb, INTERNAL_AREA_COLLECTION, INTERNAL_AREA_MAIN_DOC),
+                {
+                  note: internalNoteInput.value.trim(),
+                  updatedAt: firestoreApi.serverTimestamp(),
+                },
+                { merge: true },
+              );
+              setNoteMessage("Nota interna salvata su Firebase.");
+              return;
+            } catch (error) {
+              console.error("Errore salvataggio nota su Firebase:", error);
+              setNoteMessage("Errore salvataggio su Firebase: nota salvata localmente.");
+              return;
+            }
+          }
+
+          setNoteMessage("Nota interna salvata localmente.");
+        });
+      }
+
+      const bootstrapInternalArea = async () => {
+        loadLocalNote();
+        syncTodoKpi();
+        try {
+          await initializeFirebase();
+          await syncTodosFromFirestore();
+          await syncNoteFromFirestore();
+        } catch (error) {
+          console.error("Errore bootstrap area interna:", error);
+          setNoteMessage("Errore inizializzazione: uso dati locali.");
+        }
+      };
+
+      bootstrapInternalArea().catch((error) => {
+        console.error("Errore non gestito bootstrap area interna:", error);
+        setNoteMessage("Errore inizializzazione: uso dati locali.");
+      });
     </script>
   </body>
 </html>
