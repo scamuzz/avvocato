@@ -122,7 +122,7 @@
               <!-- caricato da Firestore da internal.js -->
             </ul>
             <div class="flex" style="margin-top:0.6rem;">
-              <input id="new-agenda-datetime" type="text" placeholder="Es. Lun 09:30" style="width:7.5rem;flex-shrink:0" />
+              <input id="new-agenda-datetime" type="datetime-local" style="width:13rem;flex-shrink:0" />
               <input id="new-agenda-text" type="text" placeholder="Descrizione appuntamento" />
               <button class="btn" type="button" id="add-agenda">Aggiungi</button>
             </div>
@@ -138,6 +138,7 @@
                     <th>Cliente</th>
                     <th>Pratica</th>
                     <th>Stato</th>
+                    <th>Scadenza</th>
                     <th>Prossima azione</th>
                     <th></th>
                   </tr>
@@ -158,6 +159,7 @@
               </select>
             </div>
             <div class="flex" style="margin-top:0.4rem;">
+              <input id="new-pratica-scadenza" type="date" style="flex-shrink:0" />
               <input id="new-pratica-azione" type="text" placeholder="Prossima azione" style="flex:1" />
               <button class="btn" type="button" id="add-pratica">Aggiungi</button>
             </div>
@@ -179,6 +181,7 @@
           <!-- Promemoria e note interne -->
           <article class="card">
             <h3>Promemoria e note interne</h3>
+            <p class="note">Aggiungi promemoria brevi nella lista seguente.</p>
             <ul id="promemoria-list" class="promemoria-list">
               <!-- caricato da Firestore da internal.js -->
             </ul>
@@ -191,6 +194,7 @@
               id="internal-note"
               placeholder="Annotazioni rapide per la giornata"
             ></textarea>
+            <p class="note">Usa “Salva nota” per salvare il testo dell’area annotazioni.</p>
             <button class="btn" type="button" id="save-note" style="margin-top: 0.5rem;">
               Salva nota
             </button>

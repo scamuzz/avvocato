@@ -449,20 +449,19 @@ td {
 
 /* === Pulsanti azione (edit/delete inline) === */
 .btn-icon {
-  border: 0;
-  background: transparent;
+  border: 1px solid #d1d5db;
+  background: #fff;
   cursor: pointer;
-  font-size: 0.88rem;
-  padding: 0.1rem 0.25rem;
+  font-size: 0.76rem;
+  padding: 0.2rem 0.4rem;
   border-radius: 5px;
   line-height: 1;
-  opacity: 0.45;
+  opacity: 1;
   flex-shrink: 0;
 }
 
 .btn-icon:hover {
-  opacity: 1;
-  background: var(--surface-alt);
+  background: #f1f5f9;
 }
 
 .item-actions {

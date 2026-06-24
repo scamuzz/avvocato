@@ -64,6 +64,7 @@ const addPraticaBtn = document.getElementById("add-pratica");
 const newPraticaCliente = document.getElementById("new-pratica-cliente");
 const newPraticaNome = document.getElementById("new-pratica-nome");
 const newPraticaStato = document.getElementById("new-pratica-stato");
+const newPraticaScadenza = document.getElementById("new-pratica-scadenza");
 const newPraticaAzione = document.getElementById("new-pratica-azione");
 
 // === Riferimenti DOM – Archivio ===
@@ -116,8 +117,23 @@ function makeIconBtn(icon, title) {
   btn.type = "button";
   btn.className = "btn-icon";
   btn.title = title;
-  btn.textContent = icon;
+  btn.setAttribute("aria-label", title);
+  btn.textContent = `${icon} ${title}`;
   return btn;
+}
+
+function formatAgendaDateTime(value) {
+  const safe = String(value || "").trim();
+  if (!safe) return "";
+  const parsed = new Date(safe);
+  if (Number.isNaN(parsed.getTime())) return safe;
+  return parsed.toLocaleString("it-IT", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 /**
@@ -329,7 +345,10 @@ async function syncTodosFromFirestore() {
 async function handleAddTodo() {
   if (seedInProgress) { setNoteMessage("Sincronizzazione in corso, attendi."); return; }
   const value = newTodoInput instanceof HTMLInputElement ? newTodoInput.value.trim() : "";
-  if (!value || !todoList) return;
+  if (!value || !todoList) {
+    setNoteMessage("Inserisci una descrizione per il to-do.");
+    return;
+  }
 
   if (isFirestoreReady()) {
     try {
@@ -395,7 +414,7 @@ function createAgendaElement(item) {
   content.className = "item-content";
 
   const strongEl = document.createElement("strong");
-  strongEl.textContent = item.dataOra || "";
+  strongEl.textContent = formatAgendaDateTime(item.dataOra);
 
   const textSpan = document.createElement("span");
   textSpan.textContent = item.testo ? ` ${item.testo}` : "";
@@ -448,7 +467,10 @@ async function syncAgendaFromFirestore() {
 async function handleAddAgenda() {
   const dt = newAgendaDatetime instanceof HTMLInputElement ? newAgendaDatetime.value.trim() : "";
   const txt = newAgendaText instanceof HTMLInputElement ? newAgendaText.value.trim() : "";
-  if (!txt || !agendaList) return;
+  if (!dt || !txt || !agendaList) {
+    setNoteMessage("Compila data/ora e descrizione per aggiungere un elemento agenda.");
+    return;
+  }
 
   const newItem = { dataOra: dt, testo: txt };
 
@@ -491,10 +513,9 @@ function handleEditAgenda(item, li, contentEl, strongEl, textSpan) {
   if (!contentEl.isConnected) return;
 
   const dtInput = document.createElement("input");
-  dtInput.type = "text";
+  dtInput.type = "datetime-local";
   dtInput.value = item.dataOra || "";
-  dtInput.placeholder = "Es. Lun 09:30";
-  dtInput.style.cssText = "width:7.5rem;flex-shrink:0;";
+  dtInput.style.cssText = "width:13rem;flex-shrink:0;";
 
   const txtInput = document.createElement("input");
   txtInput.type = "text";
@@ -525,7 +546,11 @@ function handleEditAgenda(item, li, contentEl, strongEl, textSpan) {
   saveBtn.addEventListener("click", async () => {
     const newDt = dtInput.value.trim() || item.dataOra || "";
     const newTxt = txtInput.value.trim() || item.testo || "";
-    strongEl.textContent = newDt;
+    if (!newDt || !newTxt) {
+      setNoteMessage("Data/ora e descrizione sono obbligatorie.");
+      return;
+    }
+    strongEl.textContent = formatAgendaDateTime(newDt);
     textSpan.textContent = newTxt ? ` ${newTxt}` : "";
     editContent.replaceWith(contentEl);
     item.dataOra = newDt;
@@ -570,6 +595,9 @@ function createPraticaRow(pratica) {
   statoSpan.textContent = pratica.stato || "";
   tdS.appendChild(statoSpan);
 
+  const tdSc = document.createElement("td");
+  tdSc.textContent = pratica.scadenza || "";
+
   const tdA = document.createElement("td");
   tdA.textContent = pratica.prossimaAzione || "";
 
@@ -585,6 +613,7 @@ function createPraticaRow(pratica) {
   tr.appendChild(tdC);
   tr.appendChild(tdP);
   tr.appendChild(tdS);
+  tr.appendChild(tdSc);
   tr.appendChild(tdA);
   tr.appendChild(tdBtn);
   return tr;
@@ -620,11 +649,15 @@ async function handleAddPratica() {
   const cliente = newPraticaCliente instanceof HTMLInputElement ? newPraticaCliente.value.trim() : "";
   const pratica = newPraticaNome instanceof HTMLInputElement ? newPraticaNome.value.trim() : "";
   const stato = newPraticaStato instanceof HTMLSelectElement ? newPraticaStato.value : "In corso";
+  const scadenza = newPraticaScadenza instanceof HTMLInputElement ? newPraticaScadenza.value : "";
   const prossimaAzione = newPraticaAzione instanceof HTMLInputElement ? newPraticaAzione.value.trim() : "";
 
-  if (!cliente || !pratica || !praticheTbody) return;
+  if (!cliente || !pratica || !praticheTbody) {
+    setNoteMessage("Inserisci almeno cliente e nome pratica.");
+    return;
+  }
 
-  const newPratica = { cliente, pratica, stato, prossimaAzione };
+  const newPratica = { cliente, pratica, stato, scadenza, prossimaAzione };
 
   if (isFirestoreReady()) {
     try {
@@ -633,7 +666,7 @@ async function handleAddPratica() {
         { ...newPratica, createdAt: firestoreApi.serverTimestamp() },
       );
       praticheTbody.appendChild(createPraticaRow({ id: docRef.id, ...newPratica }));
-      [newPraticaCliente, newPraticaNome, newPraticaAzione].forEach((el) => {
+      [newPraticaCliente, newPraticaNome, newPraticaScadenza, newPraticaAzione].forEach((el) => {
         if (el instanceof HTMLInputElement) el.value = "";
       });
       syncKpiPratiche();
@@ -646,7 +679,7 @@ async function handleAddPratica() {
   }
 
   praticheTbody.appendChild(createPraticaRow(newPratica));
-  [newPraticaCliente, newPraticaNome, newPraticaAzione].forEach((el) => {
+  [newPraticaCliente, newPraticaNome, newPraticaScadenza, newPraticaAzione].forEach((el) => {
     if (el instanceof HTMLInputElement) el.value = "";
   });
   syncKpiPratiche();
@@ -697,6 +730,8 @@ function handleEditPratica(pratica, tr) {
   const { td: tdC, input: inpC } = makeInputTd(pratica.cliente, "Cliente");
   const { td: tdP, input: inpP } = makeInputTd(pratica.pratica, "Pratica");
   const { td: tdS, select: selS } = makeSelectTd(pratica.stato);
+  const { td: tdSc, input: inpSc } = makeInputTd(pratica.scadenza, "YYYY-MM-DD");
+  inpSc.type = "date";
   const { td: tdA, input: inpA } = makeInputTd(pratica.prossimaAzione, "Prossima azione");
 
   const tdBtn = document.createElement("td");
@@ -720,6 +755,7 @@ function handleEditPratica(pratica, tr) {
   editTr.appendChild(tdC);
   editTr.appendChild(tdP);
   editTr.appendChild(tdS);
+  editTr.appendChild(tdSc);
   editTr.appendChild(tdA);
   editTr.appendChild(tdBtn);
 
@@ -734,6 +770,7 @@ function handleEditPratica(pratica, tr) {
       cliente: inpC.value.trim() || pratica.cliente,
       pratica: inpP.value.trim() || pratica.pratica,
       stato: selS.value,
+      scadenza: inpSc.value,
       prossimaAzione: inpA.value.trim(),
     };
     editTr.replaceWith(createPraticaRow(updated));
@@ -743,7 +780,13 @@ function handleEditPratica(pratica, tr) {
       try {
         await firestoreApi.updateDoc(
           firestoreApi.doc(firestoreDb, PRATICHE_COLLECTION, pratica.id),
-          { cliente: updated.cliente, pratica: updated.pratica, stato: updated.stato, prossimaAzione: updated.prossimaAzione },
+          {
+            cliente: updated.cliente,
+            pratica: updated.pratica,
+            stato: updated.stato,
+            scadenza: updated.scadenza,
+            prossimaAzione: updated.prossimaAzione,
+          },
         );
       } catch (err) {
         console.error("Errore modifica pratica:", err);
@@ -821,7 +864,10 @@ async function syncArchivioFromFirestore() {
 
 async function handleAddArchivio() {
   const nome = newArchivioNome instanceof HTMLInputElement ? newArchivioNome.value.trim() : "";
-  if (!nome || !archivioList) return;
+  if (!nome || !archivioList) {
+    setNoteMessage("Inserisci un nome per lo strumento/voce di archivio.");
+    return;
+  }
 
   if (isFirestoreReady()) {
     try {
@@ -922,7 +968,10 @@ async function syncPromemoriaFromFirestore() {
 
 async function handleAddPromemoria() {
   const testo = newPromemoriaInput instanceof HTMLInputElement ? newPromemoriaInput.value.trim() : "";
-  if (!testo || !promemoriaList) return;
+  if (!testo || !promemoriaList) {
+    setNoteMessage("Inserisci un testo per il promemoria.");
+    return;
+  }
 
   if (isFirestoreReady()) {
     try {
