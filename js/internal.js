@@ -117,7 +117,6 @@ function makeIconBtn(icon, title) {
   const btn = document.createElement("button");
   btn.type = "button";
   btn.className = "btn-icon";
-  btn.setAttribute("aria-label", title);
   const iconSpan = document.createElement("span");
   iconSpan.setAttribute("aria-hidden", "true");
   iconSpan.textContent = icon;
@@ -760,7 +759,7 @@ function handleEditPratica(pratica, tr) {
   const { td: tdC, input: inpC } = makeInputTd(pratica.cliente, "Cliente");
   const { td: tdP, input: inpP } = makeInputTd(pratica.pratica, "Pratica");
   const { td: tdS, select: selS } = makeSelectTd(pratica.stato);
-  const { td: tdScadenza, input: inpScadenza } = makeInputTd(pratica.scadenza, "", "date");
+  const { td: tdScadenza, input: inpSc } = makeInputTd(pratica.scadenza, "", "date");
   const { td: tdA, input: inpA } = makeInputTd(pratica.prossimaAzione, "Prossima azione");
 
   const tdBtn = document.createElement("td");
@@ -799,7 +798,7 @@ function handleEditPratica(pratica, tr) {
       cliente: inpC.value.trim() || pratica.cliente,
       pratica: inpP.value.trim() || pratica.pratica,
       stato: selS.value,
-      scadenza: inpScadenza.value,
+      scadenza: inpSc.value,
       prossimaAzione: inpA.value.trim(),
     };
     editTr.replaceWith(createPraticaRow(updated));
