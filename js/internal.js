@@ -24,6 +24,7 @@ const loginPassword = document.getElementById("login-password");
 const loginError = document.getElementById("login-error");
 const logoutBtn = document.getElementById("logout-btn");
 const userEmailDisplay = document.getElementById("user-email-display");
+const userBar = document.getElementById("user-bar");
 
 const dbStatusBadge = document.getElementById("db-status-badge");
 const dbStatusMsg = document.getElementById("db-status-msg");
@@ -341,12 +342,14 @@ function showLogin() {
   if (loadingSection) loadingSection.hidden = true;
   if (loginSection) loginSection.hidden = false;
   if (internalSection) internalSection.hidden = true;
+  if (userBar) userBar.hidden = true;
 }
 
 function showInternal(user) {
   if (loadingSection) loadingSection.hidden = true;
   if (loginSection) loginSection.hidden = true;
   if (internalSection) internalSection.hidden = false;
+  if (userBar) userBar.hidden = false;
   if (userEmailDisplay) userEmailDisplay.textContent = user.email ?? "utente locale";
 }
 

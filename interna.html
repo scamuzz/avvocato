@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Area Interna – Studio Legale Avv. Corrado Scamuzzi</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <header>
+      <div class="container">
+        <div class="topbar">
+          <div class="brand">Studio Legale Avv. Corrado Scamuzzi</div>
+          <nav>
+            <a href="index.html" class="nav-link">Area Pubblica</a>
+            <a href="clienti.html" class="nav-link">Area Clienti</a>
+            <a href="interna.html" class="nav-link active">Area Interna</a>
+          </nav>
+          <!-- Mostrato dopo il login -->
+          <div id="user-bar" class="user-bar" hidden>
+            <span id="user-email-display"></span>
+            <button id="logout-btn" type="button">Esci</button>
+          </div>
+        </div>
+        <div class="hero">
+          <h1>Area interna (avvocato)</h1>
+          <p>Gestione operativa dello studio: pratiche, agenda, TODO e note giornaliere.</p>
+        </div>
+      </div>
+
+      <!-- Barra stato connessione DB (sempre visibile) -->
+      <div class="db-status-bar">
+        <div class="container">
+          <span id="db-status-badge" class="db-badge connecting">⏳ Connessione…</span>
+          <span id="db-status-msg"></span>
+          <span id="db-status-time"></span>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+
+      <!-- Sezione caricamento iniziale -->
+      <div id="loading-section">
+        <div class="loading-wrapper">
+          <p>Verifica autenticazione in corso…</p>
+        </div>
+      </div>
+
+      <!-- Sezione login -->
+      <div id="login-section" hidden>
+        <div class="login-wrapper">
+          <h2>Accesso area interna</h2>
+          <form id="login-form">
+            <label for="login-email" class="sr-only">Email</label>
+            <input
+              id="login-email"
+              type="email"
+              placeholder="Email"
+              autocomplete="username"
+              required
+            />
+            <label for="login-password" class="sr-only">Password</label>
+            <input
+              id="login-password"
+              type="password"
+              placeholder="Password"
+              autocomplete="current-password"
+              required
+            />
+            <button type="submit" class="btn">Accedi</button>
+            <p id="login-error" class="login-error" aria-live="polite"></p>
+          </form>
+        </div>
+      </div>
+
+      <!-- Sezione area interna (visibile dopo login) -->
+      <div id="internal-section" hidden>
+        <h2>Cruscotto operativo</h2>
+        <div class="card-grid">
+
+          <!-- KPI -->
+          <article class="card">
+            <h3>Riepilogo giornata</h3>
+            <dl class="kpi-grid">
+              <div class="kpi">
+                <dt>Pratiche aperte</dt>
+                <dd><strong id="kpi-pratiche">18</strong></dd>
+              </div>
+              <div class="kpi">
+                <dt>Attività odierne</dt>
+                <dd><strong id="kpi-attivita">—</strong></dd>
+              </div>
+              <div class="kpi">
+                <dt>Udienze mese</dt>
+                <dd><strong>9</strong></dd>
+              </div>
+              <div class="kpi">
+                <dt>Parcelle da emettere</dt>
+                <dd><strong>4</strong></dd>
+              </div>
+            </dl>
+            <p class="note">Vista rapida per pianificare il lavoro della giornata.</p>
+          </article>
+
+          <!-- TODO giornaliero -->
+          <article class="card">
+            <h3>To-do giornaliero</h3>
+            <ul class="checklist" id="todo-list">
+              <!-- I TODO vengono caricati da Firestore da internal.js -->
+            </ul>
+            <div class="flex" style="margin-top: 0.6rem;">
+              <input id="new-todo" type="text" placeholder="Nuova attività interna" />
+              <button class="btn" type="button" id="add-todo">Aggiungi</button>
+            </div>
+          </article>
+
+          <!-- Agenda -->
+          <article class="card">
+            <h3>Agenda e udienze</h3>
+            <ul class="timeline">
+              <li><strong>Lun 09:30</strong> Udienza Tribunale Civile – R.G. 214/2025</li>
+              <li><strong>Mar 15:00</strong> Consulenza online (nuovo cliente)</li>
+              <li><strong>Gio 11:00</strong> Scadenza deposito memoria</li>
+              <li><strong>Ven 16:30</strong> Riunione consulente fiscale</li>
+            </ul>
+          </article>
+
+          <!-- Pipeline pratiche -->
+          <article class="card">
+            <h3>Pipeline pratiche</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Cliente</th>
+                    <th>Pratica</th>
+                    <th>Stato</th>
+                    <th>Prossima azione</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Bianchi</td>
+                    <td>Recupero crediti</td>
+                    <td><span class="status-warn">In corso</span></td>
+                    <td>Deposito memoria 27/06</td>
+                  </tr>
+                  <tr>
+                    <td>Verdi</td>
+                    <td>Contrattualistica</td>
+                    <td><span class="status-ok">Quasi chiusa</span></td>
+                    <td>Invio bozza finale</td>
+                  </tr>
+                  <tr>
+                    <td>Neri</td>
+                    <td>Risarcimento danni</td>
+                    <td><span class="status-warn">Precontenzioso</span></td>
+                    <td>Sollecito controparte</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+
+          <!-- Archivio e strumenti -->
+          <article class="card">
+            <h3>Archivio e strumenti</h3>
+            <div class="quick-actions">
+              <button class="btn secondary" type="button">Apri fascicoli</button>
+              <button class="btn secondary" type="button">Modelli atti</button>
+              <button class="btn secondary" type="button">Verbali udienza</button>
+              <button class="btn secondary" type="button">Registro PEC</button>
+            </div>
+            <p class="note">Accesso rapido ai documenti usati più spesso.</p>
+          </article>
+
+          <!-- Promemoria e note interne -->
+          <article class="card">
+            <h3>Promemoria e note interne</h3>
+            <ul>
+              <li>Follow-up cliente Bianchi entro domani</li>
+              <li>Invio parcella pratica Verdi entro 28/06</li>
+              <li>Rinnovo PEC tra 10 giorni</li>
+            </ul>
+            <label class="sr-only" for="internal-note">Annotazioni interne giornaliere</label>
+            <textarea
+              id="internal-note"
+              placeholder="Annotazioni rapide per la giornata"
+              style="margin-top: 0.75rem;"
+            ></textarea>
+            <button class="btn" type="button" id="save-note" style="margin-top: 0.5rem;">
+              Salva nota
+            </button>
+            <p class="note" id="note-feedback" aria-live="polite"></p>
+          </article>
+
+        </div>
+      </div>
+    </main>
+
+    <script type="module" src="js/internal.js"></script>
+  </body>
+</html>
