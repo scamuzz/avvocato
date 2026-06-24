@@ -28,13 +28,17 @@ function initClienti() {
   var params = new URLSearchParams(window.location.search);
   if (params.get('new') === '1') {
     var unsubscribeAuth = auth.onAuthStateChanged(function (user) {
-      if (!user || _newModalOpenedFromUrl) return;
+      if (!user) return;
+      if (typeof unsubscribeAuth === 'function') {
+        unsubscribeAuth();
+        unsubscribeAuth = null;
+      }
+      if (_newModalOpenedFromUrl) return;
       _newModalOpenedFromUrl = true;
       setTimeout(openAddModal, 400);
       params.delete('new');
       var query = params.toString();
       window.history.replaceState(null, '', window.location.pathname + (query ? ('?' + query) : ''));
-      if (typeof unsubscribeAuth === 'function') unsubscribeAuth();
     });
   }
   loadClienti();
