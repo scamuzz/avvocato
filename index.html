@@ -540,6 +540,7 @@
       const saveNoteBtn = document.getElementById("save-note");
       const noteFeedback = document.getElementById("note-feedback");
       const kpiAttivita = document.getElementById("kpi-attivita");
+      const TODO_CHECKBOX_SELECTOR = 'input[type="checkbox"]';
 
       if (addTodoBtn && todoList && newTodoInput) {
         addTodoBtn.addEventListener("click", () => {
@@ -571,7 +572,7 @@
 
       const syncTodoKpi = () => {
         if (!todoList || !kpiAttivita) return;
-        const remaining = todoList.querySelectorAll('input[type="checkbox"]:not(:checked)').length;
+        const remaining = todoList.querySelectorAll(`${TODO_CHECKBOX_SELECTOR}:not(:checked)`).length;
         kpiAttivita.textContent = String(remaining);
       };
 
@@ -579,7 +580,7 @@
         syncTodoKpi();
         todoList.addEventListener("change", (event) => {
           const target = event.target;
-          if (!(target instanceof HTMLInputElement) || target.type !== "checkbox") return;
+          if (!(target instanceof HTMLInputElement) || !target.matches(TODO_CHECKBOX_SELECTOR)) return;
           syncTodoKpi();
         });
       }
