@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pratiche - Studio Legale</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/pratiche.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body data-protected="true">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <i class="fas fa-balance-scale"></i>
+      <span>Studio Legale</span>
+    </div>
+    <nav class="sidebar-nav">
+      <ul>
+        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+        <li><a href="clienti.html"><i class="fas fa-users"></i> Clienti</a></li>
+        <li><a href="pratiche.html"><i class="fas fa-briefcase"></i> Pratiche</a></li>
+        <li><a href="appuntamenti.html"><i class="fas fa-calendar-check"></i> Appuntamenti</a></li>
+        <li><a href="udienze.html"><i class="fas fa-gavel"></i> Udienze</a></li>
+        <li><a href="documenti.html"><i class="fas fa-file-alt"></i> Documenti</a></li>
+        <li><a href="note.html"><i class="fas fa-sticky-note"></i> Note</a></li>
+        <li><a href="richieste.html"><i class="fas fa-inbox"></i> Richieste</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <!-- Top navbar -->
+  <nav class="topnav">
+    <button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+    <span class="topnav-title">Gestione Pratiche</span>
+    <div class="topnav-user">
+      <span id="userDisplayName"></span>
+      <button onclick="logoutUser()" class="btn btn-sm btn-danger">
+        <i class="fas fa-sign-out-alt"></i> Esci
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <div>
+        <h2 class="page-title"><i class="fas fa-briefcase"></i> Gestione Pratiche</h2>
+        <p class="page-subtitle" id="praticheCount">Caricamento…</p>
+      </div>
+      <button class="btn btn-primary" onclick="openAddModal()">
+        <i class="fas fa-plus"></i> Nuova Pratica
+      </button>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="card filter-bar">
+      <div class="search-wrap">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" id="filterSearch"
+               placeholder="Cerca per titolo, cliente, fascicolo…"
+               oninput="applyFilters()">
+      </div>
+
+      <div class="filter-group">
+        <label>Stato</label>
+        <select id="filterStato" onchange="applyFilters()">
+          <option value="">Tutti</option>
+          <option value="Aperta">Aperta</option>
+          <option value="In lavorazione">In lavorazione</option>
+          <option value="In attesa">In attesa</option>
+          <option value="Chiusa">Chiusa</option>
+          <option value="Archiviata">Archiviata</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Priorità</label>
+        <select id="filterPriorita" onchange="applyFilters()">
+          <option value="">Tutte</option>
+          <option value="Alta">Alta</option>
+          <option value="Media">Media</option>
+          <option value="Bassa">Bassa</option>
+        </select>
+      </div>
+
+      <button class="btn btn-sm btn-secondary" onclick="resetFilters()" title="Reimposta filtri">
+        <i class="fas fa-times"></i> Reset
+      </button>
+    </div>
+
+    <!-- Pratiche Table -->
+    <div class="card" style="margin-top:0;">
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width:4px;padding:0;"></th>
+              <th>Titolo / Fascicolo</th>
+              <th>Cliente</th>
+              <th>Stato</th>
+              <th>Priorità</th>
+              <th>Data apertura</th>
+              <th>Azioni</th>
+            </tr>
+          </thead>
+          <tbody id="praticheTableBody">
+            <tr>
+              <td colspan="7">
+                <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Caricamento…</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ====== Modale Nuova / Modifica Pratica ====== -->
+  <div class="modal-overlay" id="praticaModal">
+    <div class="modal" style="max-width:600px;">
+      <div class="modal-header">
+        <h3 id="praticaModalTitle">Nuova Pratica</h3>
+        <button class="modal-close" onclick="closeModal('praticaModal')">&times;</button>
+      </div>
+      <form id="praticaForm" onsubmit="submitPraticaForm(event)" novalidate>
+        <input type="hidden" id="praticaId">
+
+        <div class="form-group">
+          <label for="fTitolo">Titolo pratica <span style="color:#dc2626">*</span></label>
+          <input type="text" id="fTitolo" required placeholder="Es. Causa risarcimento danni Tizio c/ Caio">
+        </div>
+
+        <div class="form-group">
+          <label for="fDescrizione">Descrizione</label>
+          <textarea id="fDescrizione" rows="3"
+                    placeholder="Descrizione dettagliata della pratica…"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="fClienteId">Cliente <span style="color:#dc2626">*</span></label>
+          <select id="fClienteId" required>
+            <option value="">— Seleziona cliente —</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="fStato">Stato <span style="color:#dc2626">*</span></label>
+            <select id="fStato" required>
+              <option value="Aperta">Aperta</option>
+              <option value="In lavorazione">In lavorazione</option>
+              <option value="In attesa">In attesa</option>
+              <option value="Chiusa">Chiusa</option>
+              <option value="Archiviata">Archiviata</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="fPriorita">Priorità <span style="color:#dc2626">*</span></label>
+            <select id="fPriorita" required>
+              <option value="Alta">Alta</option>
+              <option value="Media" selected>Media</option>
+              <option value="Bassa">Bassa</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="fDataApertura">Data apertura <span style="color:#dc2626">*</span></label>
+            <input type="date" id="fDataApertura" required>
+          </div>
+          <div class="form-group">
+            <label for="fNumeroFascicolo">N. fascicolo</label>
+            <input type="text" id="fNumeroFascicolo" placeholder="Es. 2024/001"
+                   style="font-family:monospace;">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm"
+                  onclick="closeModal('praticaModal')">Annulla</button>
+          <button type="submit" class="btn btn-primary btn-sm" id="praticaSubmitBtn">
+            <i class="fas fa-save"></i> Salva
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ====== Conferma eliminazione ====== -->
+  <div class="confirm-overlay" id="confirmDeleteOverlay">
+    <div class="confirm-box">
+      <i class="fas fa-exclamation-triangle"
+         style="font-size:2.5rem;color:#dc2626;margin-bottom:0.75rem;display:block;"></i>
+      <h4>Elimina pratica</h4>
+      <p id="confirmDeleteMsg">Sei sicuro di voler eliminare questa pratica?</p>
+      <div class="confirm-actions">
+        <button class="btn btn-secondary btn-sm" onclick="closeConfirmDelete()">Annulla</button>
+        <button class="btn btn-danger btn-sm" id="confirmDeleteBtn" onclick="executeDelete()">
+          <i class="fas fa-trash"></i> Elimina
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+  <script src="../js/firebase-config.js"></script>
+  <script src="../js/utilities.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/pratiche.js"></script>
+</body>
+</html>

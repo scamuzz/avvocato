@@ -1,0 +1,142 @@
+/* ============================================================
+   DASHBOARD.CSS
+   ============================================================ */
+
+/* Welcome banner */
+.welcome-banner {
+  background: linear-gradient(135deg, #1E3A5F 0%, #2563eb 100%);
+  color: white;
+  border-radius: 16px;
+  padding: 1.75rem 2rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.welcome-title { margin: 0 0 0.3rem; font-size: 1.4rem; font-weight: 700; }
+.welcome-date  { margin: 0; opacity: 0.85; font-size: 0.9rem; }
+.quick-actions-top { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.quick-actions-top .btn { background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3); }
+.quick-actions-top .btn:hover { background: rgba(255,255,255,0.3); }
+
+/* Stats row */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 14px;
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 2px 8px rgba(15,23,42,0.06);
+  border: 1px solid #f1f4fb;
+  transition: box-shadow 0.2s;
+}
+.stat-card:hover { box-shadow: 0 4px 16px rgba(30,58,95,0.1); }
+
+.stat-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+.stat-icon-blue   { background: #dbeafe; color: #1d4ed8; }
+.stat-icon-orange { background: #fef3c7; color: #d97706; }
+.stat-icon-green  { background: #d1fae5; color: #059669; }
+.stat-icon-red    { background: #fee2e2; color: #dc2626; }
+
+.stat-num   { font-size: 1.8rem; font-weight: 700; line-height: 1; color: #1E3A5F; }
+.stat-label { font-size: 0.78rem; color: #6b7280; margin-top: 0.2rem; }
+
+/* Two-column layout */
+.dashboard-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Agenda items */
+.agenda-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 10px;
+  background: #f8fafc;
+  margin-bottom: 0.5rem;
+  border-left: 3px solid #2563eb;
+}
+.agenda-item.udienza { border-left-color: #dc2626; }
+.agenda-item:last-child { margin-bottom: 0; }
+
+.agenda-time {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #1E3A5F;
+  min-width: 46px;
+  padding-top: 0.05rem;
+}
+.agenda-body h4  { margin: 0 0 0.15rem; font-size: 0.88rem; color: #111827; }
+.agenda-body p   { margin: 0; font-size: 0.78rem; color: #6b7280; }
+
+.empty-agenda {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: #9ca3af;
+  font-size: 0.875rem;
+}
+.empty-agenda i { display: block; font-size: 2rem; margin-bottom: 0.5rem; color: #d1d5db; }
+
+/* Promemoria items */
+.promemoria-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 10px;
+  background: #f8fafc;
+  margin-bottom: 0.45rem;
+  border-left: 3px solid #e5e7eb;
+}
+.promemoria-item.scade-oggi  { background: #fff1f2; border-left-color: #dc2626; }
+.promemoria-item.scade-presto{ background: #fffbeb; border-left-color: #d97706; }
+.promemoria-item:last-child  { margin-bottom: 0; }
+
+.promemoria-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  border-radius: 5px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.promemoria-label.oggi   { background: #dc2626; color: white; }
+.promemoria-label.presto { background: #d97706; color: white; }
+.promemoria-label.ok     { background: #059669; color: white; }
+
+.promemoria-text { font-size: 0.85rem; color: #374151; }
+
+/* Section cards */
+.section-card { margin-bottom: 1.25rem; }
+
+@media (max-width: 1100px) {
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 768px) {
+  .stats-row { grid-template-columns: 1fr; }
+  .dashboard-columns { grid-template-columns: 1fr; }
+  .welcome-banner { flex-direction: column; align-items: flex-start; }
+}

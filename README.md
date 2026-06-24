@@ -1,83 +1,141 @@
-# avvocato
+# Studio Legale – Gestionale Web
 
-Portale web per Studio Legale individuale strutturato in tre aree distinte:
+Applicazione web completa per la gestione di uno studio legale, basata su HTML5, CSS3, JavaScript Vanilla e Firebase.
 
-- **Area Pubblica** (`index.html`) – presentazione servizi, prenotazione consulenza, contatti
-- **Area Clienti** (`clienti.html`) – stato pratica, documenti, messaggi, fatture
-- **Area Interna** (`interna.html`) – uso esclusivo dell'avvocato; richiede autenticazione Firebase
-
-## Struttura del progetto
+## 🏗️ Struttura del Progetto
 
 ```
-avvocato/
-├── index.html          # Area Pubblica
-├── clienti.html        # Area Clienti
-├── interna.html        # Area Interna (protetta da Firebase Auth)
-├── css/
-│   └── style.css       # Stili condivisi tra tutte le pagine
-├── js/
-│   ├── firebase-config.js  # Configurazione Firebase centralizzata
-│   └── internal.js         # Logica area interna: Auth, Firestore, indicatore DB
-└── README.md
+/
+├── index.html              # Home pubblica (servizi, contatti, form)
+├── firebase.json           # Configurazione Firebase Hosting
+├── firestore.rules         # Regole sicurezza Firestore
+├── storage.rules           # Regole sicurezza Firebase Storage
+│
+├── /css
+│   ├── style.css           # Design system globale (sidebar, navbar, componenti)
+│   ├── dashboard.css       # Stili dashboard
+│   ├── clienti.css         # Stili gestione clienti
+│   ├── pratiche.css        # Stili gestione pratiche
+│   └── calendario.css      # Stili calendario e agenda
+│
+├── /js
+│   ├── firebase-config.js  # ⚠️ Configurazione Firebase (da aggiornare)
+│   ├── utilities.js        # Funzioni condivise (date, toast, modal, ecc.)
+│   ├── auth.js             # Autenticazione Firebase
+│   ├── dashboard.js        # Logica dashboard
+│   ├── clienti.js          # CRUD clienti
+│   ├── pratiche.js         # CRUD pratiche
+│   ├── appuntamenti.js     # CRUD appuntamenti
+│   ├── udienze.js          # CRUD udienze
+│   ├── documenti.js        # Upload/download documenti (Firebase Storage)
+│   ├── note.js             # CRUD note interne
+│   └── richieste.js        # Gestione richieste di contatto
+│
+└── /pages
+    ├── login.html          # Pagina di accesso
+    ├── dashboard.html      # Dashboard principale
+    ├── clienti.html        # Gestione clienti
+    ├── pratiche.html       # Gestione pratiche
+    ├── appuntamenti.html   # Gestione appuntamenti
+    ├── udienze.html        # Gestione udienze
+    ├── documenti.html      # Gestione documenti
+    ├── note.html           # Note interne
+    ├── richieste.html      # Richieste di contatto
+    └── profilo-cliente.html # Scheda dettaglio cliente
 ```
 
-## Come avviare
+## ⚙️ Setup Firebase
 
-Apri `index.html` in un browser (dalla copia locale del repository).
-Non è richiesto alcun server – tutti i file sono statici.
+### 1. Crea un progetto Firebase
+1. Vai su [Firebase Console](https://console.firebase.google.com/)
+2. Crea un nuovo progetto
+3. Abilita **Authentication** → Email/Password
+4. Crea un database **Firestore** (modalità produzione)
+5. Abilita **Firebase Storage**
 
-> **Nota:** Per caricare file `.js` come moduli ES (`type="module"`) alcuni browser
-> richiedono un server locale invece di aprire il file direttamente come `file://`.
-> Usa ad esempio `npx serve .` oppure l'estensione **Live Server** di VS Code.
+### 2. Configura le credenziali
+Apri `js/firebase-config.js` e sostituisci i valori con quelli del tuo progetto:
 
-## Area Interna e Firebase
+```javascript
+const firebaseConfig = {
+  apiKey: "LA_TUA_API_KEY",
+  authDomain: "IL_TUO_PROJECT_ID.firebaseapp.com",
+  projectId: "IL_TUO_PROJECT_ID",
+  storageBucket: "IL_TUO_PROJECT_ID.appspot.com",
+  messagingSenderId: "IL_TUO_SENDER_ID",
+  appId: "IL_TUO_APP_ID"
+};
+```
 
-### Autenticazione
+Le credenziali si trovano in:  
+**Firebase Console → Impostazioni Progetto → Generale → Le tue app**
 
-L'accesso all'area interna è protetto da **Firebase Authentication** (email/password).
+### 3. Crea il primo utente (Avvocato)
+1. In Firebase Console, vai su **Authentication → Utenti**
+2. Aggiungi un utente con email e password
+3. In **Firestore**, crea un documento nella collezione `users`:
 
-1. Vai su [Firebase Console](https://console.firebase.google.com/) → progetto **studio-avvocato**
-2. Apri **Authentication → Users** e aggiungi un utente con email e password
-3. Apri `interna.html`, inserisci le credenziali e accedi
-
-### Indicatore stato connessione DB
-
-L'header dell'area interna mostra sempre la barra di stato Firebase:
-
-| Badge | Significato |
-|---|---|
-| ⏳ Connessione… | Inizializzazione in corso |
-| 🟢 Connesso a Firebase | Firestore e Auth operativi |
-| 🔴 Errore Firebase | Problema di rete o configurazione |
-| 🟡 Solo locale | Firebase non raggiungibile; dati solo in `localStorage` |
-
-### Funzionalità Firestore
-
-| Funzione | Collection / Document |
-|---|---|
-| TODO giornalieri | `internal_todos` |
-| Nota interna | `internal_area/main` |
-
-Le modifiche (aggiunta TODO, spunta completato, salvataggio nota) sono sincronizzate
-in tempo reale su Firestore. In caso di assenza di connessione la pagina rimane
-funzionante in modalità locale (`localStorage`).
-
-### Configurazione Firebase
-
-La configurazione è centralizzata in `js/firebase-config.js`.
-La chiave API web di Firebase è **pubblica per design**: la sicurezza è gestita
-server-side tramite le **Firebase Security Rules** sul progetto.
-
-Esempio di regole Firestore consigliate (solo utenti autenticati):
-
-```js
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if request.auth != null;
-    }
-  }
+```json
+{
+  "uid": "UID_DELL_UTENTE",
+  "nome": "Mario",
+  "cognome": "Rossi",
+  "email": "mario.rossi@studio.it",
+  "ruolo": "avvocato",
+  "dataCreazione": "2024-01-01T00:00:00Z"
 }
 ```
 
+### 4. Applica le regole Firestore e Storage
+```bash
+# Installa Firebase CLI
+npm install -g firebase-tools
+
+# Login
+firebase login
+
+# Deploy regole
+firebase deploy --only firestore:rules,storage
+```
+
+### 5. Deploy su Firebase Hosting
+```bash
+firebase deploy --only hosting
+```
+
+## 🔐 Ruoli Utente
+
+| Ruolo | Accesso |
+|-------|---------|
+| `avvocato` | Accesso completo a tutto |
+| `collaboratore` | Accesso lettura/scrittura (no eliminazione) |
+| `cliente` | Solo visualizzazione propri dati |
+
+## 📦 Collezioni Firestore
+
+| Collezione | Descrizione |
+|-----------|-------------|
+| `users` | Profili utente con ruoli |
+| `clienti` | Anagrafica clienti |
+| `pratiche` | Pratiche legali |
+| `documenti` | Metadati documenti (file su Storage) |
+| `appuntamenti` | Appuntamenti con clienti |
+| `udienze` | Udienze in tribunale |
+| `promemoria` | Promemoria e scadenze |
+| `noteInterne` | Note private per pratica |
+| `richiesteContatto` | Richieste dal sito pubblico |
+
+## 🎨 Design
+
+- **Colori**: Blu scuro `#1E3A5F`, bianco, grigio chiaro
+- **Font**: system-ui (no dipendenze)
+- **Icone**: Font Awesome 6.4 (CDN)
+- **Layout**: Sidebar fissa + navbar superiore
+- **Responsive**: Breakpoint mobile a 768px con sidebar collassabile
+
+## ⚠️ Indici Firestore Necessari
+
+Alcune query richiedono indici compositi. Firebase mostrerà un link in console per crearli automaticamente. I principali:
+- `promemoria`: `completato ASC + dataScadenza ASC`
+- `appuntamenti`: `data ASC + ora ASC`
+- `noteInterne`: `praticaId ASC + dataCreazione DESC`

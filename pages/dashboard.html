@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Studio Legale</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body data-protected="true">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <i class="fas fa-balance-scale"></i>
+      <span>Studio Legale</span>
+    </div>
+    <nav class="sidebar-nav">
+      <ul>
+        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+        <li><a href="clienti.html"><i class="fas fa-users"></i> Clienti</a></li>
+        <li><a href="pratiche.html"><i class="fas fa-briefcase"></i> Pratiche</a></li>
+        <li><a href="appuntamenti.html"><i class="fas fa-calendar-check"></i> Appuntamenti</a></li>
+        <li><a href="udienze.html"><i class="fas fa-gavel"></i> Udienze</a></li>
+        <li><a href="documenti.html"><i class="fas fa-file-alt"></i> Documenti</a></li>
+        <li><a href="note.html"><i class="fas fa-sticky-note"></i> Note</a></li>
+        <li><a href="richieste.html"><i class="fas fa-inbox"></i> Richieste</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <!-- Top navbar -->
+  <nav class="topnav">
+    <button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+    <span class="topnav-title">Dashboard</span>
+    <div class="topnav-user">
+      <span id="userDisplayName"></span>
+      <button onclick="logoutUser()" class="btn btn-sm btn-danger">
+        <i class="fas fa-sign-out-alt"></i> Esci
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- Welcome Banner -->
+    <div class="welcome-banner">
+      <div>
+        <h1 class="welcome-title">Benvenuto, <span id="welcomeName">—</span></h1>
+        <p class="welcome-date" id="welcomeDate"></p>
+      </div>
+      <div class="quick-actions-top">
+        <button class="btn btn-sm" onclick="window.location.href='clienti.html?new=1'">
+          <i class="fas fa-user-plus"></i> Nuovo Cliente
+        </button>
+        <button class="btn btn-sm" onclick="window.location.href='pratiche.html?new=1'">
+          <i class="fas fa-briefcase"></i> Nuova Pratica
+        </button>
+        <button class="btn btn-sm" onclick="window.location.href='appuntamenti.html?new=1'">
+          <i class="fas fa-calendar-plus"></i> Nuovo Appuntamento
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-blue"><i class="fas fa-users"></i></div>
+        <div>
+          <div class="stat-num" id="statClienti">—</div>
+          <div class="stat-label">Clienti totali</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-orange"><i class="fas fa-briefcase"></i></div>
+        <div>
+          <div class="stat-num" id="statPratiche">—</div>
+          <div class="stat-label">Pratiche aperte</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-green"><i class="fas fa-calendar-check"></i></div>
+        <div>
+          <div class="stat-num" id="statAppuntamenti">—</div>
+          <div class="stat-label">Appuntamenti oggi</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-red"><i class="fas fa-gavel"></i></div>
+        <div>
+          <div class="stat-num" id="statUdienze">—</div>
+          <div class="stat-label">Udienze imminenti</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Two-column: Agenda + Promemoria -->
+    <div class="dashboard-columns">
+      <div class="card section-card">
+        <div class="card-header">
+          <h3><i class="fas fa-calendar-day"></i> Agenda di oggi</h3>
+          <a href="appuntamenti.html" class="btn btn-sm btn-outline">Vedi tutto</a>
+        </div>
+        <div id="agendaList">
+          <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Caricamento…</div>
+        </div>
+      </div>
+
+      <div class="card section-card">
+        <div class="card-header">
+          <h3><i class="fas fa-bell"></i> Promemoria in scadenza</h3>
+        </div>
+        <div id="promemoriaList">
+          <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Caricamento…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Pratiche -->
+    <div class="card section-card">
+      <div class="card-header">
+        <h3><i class="fas fa-briefcase"></i> Pratiche recenti</h3>
+        <a href="pratiche.html" class="btn btn-sm btn-outline">Vedi tutte</a>
+      </div>
+      <div class="table-wrap" id="recentiPraticheWrap">
+        <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Caricamento…</div>
+      </div>
+    </div>
+
+    <!-- Recent Richieste -->
+    <div class="card section-card" style="margin-bottom:0;">
+      <div class="card-header">
+        <h3><i class="fas fa-inbox"></i> Richieste recenti</h3>
+        <a href="richieste.html" class="btn btn-sm btn-outline">Vedi tutte</a>
+      </div>
+      <div class="table-wrap" id="recentiRichiesteWrap">
+        <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Caricamento…</div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+  <script src="../js/firebase-config.js"></script>
+  <script src="../js/utilities.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/dashboard.js"></script>
+</body>
+</html>

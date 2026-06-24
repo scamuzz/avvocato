@@ -1,0 +1,112 @@
+/* ============================================================
+   CLIENTI.CSS
+   ============================================================ */
+
+/* Toolbar */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+.toolbar-right { display: flex; align-items: center; gap: 0.65rem; flex-shrink: 0; }
+
+/* View toggle */
+.view-toggle {
+  display: flex;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.view-btn {
+  background: white;
+  border: none;
+  padding: 0.48rem 0.75rem;
+  cursor: pointer;
+  color: #6b7280;
+  font-size: 0.85rem;
+  transition: background 0.18s, color 0.18s;
+  line-height: 1;
+}
+.view-btn.active, .view-btn:hover { background: #1E3A5F; color: white; }
+
+/* Avatar */
+.avatar-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1E3A5F, #3b82f6);
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.72rem;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+
+.client-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+.client-name-text { font-weight: 600; color: #1E3A5F; }
+
+/* Card grid for client cards */
+.clienti-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 1rem;
+}
+
+.client-card {
+  background: white;
+  border-radius: 14px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 8px rgba(15,23,42,0.06);
+  border: 1px solid #f1f4fb;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.client-card:hover {
+  box-shadow: 0 6px 20px rgba(30,58,95,0.12);
+  transform: translateY(-2px);
+}
+
+.client-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 0.9rem;
+}
+.avatar-lg {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1E3A5F, #3b82f6);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+.client-card-name { font-weight: 700; font-size: 1rem; color: #1E3A5F; line-height: 1.2; }
+.client-card-cf   { font-size: 0.72rem; color: #6b7280; margin-top: 0.15rem; font-family: monospace; }
+
+.client-card-body {
+  font-size: 0.8rem;
+  color: #4b5563;
+  display: grid;
+  gap: 0.28rem;
+  margin-bottom: 0.9rem;
+}
+.client-card-body span { display: flex; align-items: center; gap: 0.4rem; }
+.client-card-body i    { color: #9ca3af; width: 14px; text-align: center; flex-shrink: 0; }
+
+.client-card-actions { display: flex; gap: 0.45rem; flex-wrap: wrap; }
+
+/* Inline action buttons */
+.action-btns { display: flex; gap: 0.3rem; }

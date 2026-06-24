@@ -1,0 +1,96 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper: check if user is authenticated
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    // Helper: get user role from Firestore
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.ruolo;
+    }
+
+    // Helper: check if user is avvocato or collaboratore
+    function isStaff() {
+      return isAuth() && getUserRole() in ['avvocato', 'collaboratore'];
+    }
+
+    // Helper: check if user is avvocato (admin)
+    function isAdmin() {
+      return isAuth() && getUserRole() == 'avvocato';
+    }
+
+    // Helper: check if the document belongs to the authenticated client
+    function isOwner(clienteId) {
+      return isAuth() && request.auth.uid == clienteId;
+    }
+
+    // USERS collection
+    match /users/{userId} {
+      allow read: if isAuth() && (request.auth.uid == userId || isStaff());
+      allow create: if isAdmin();
+      allow update: if isAuth() && (request.auth.uid == userId || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // CLIENTI collection
+    match /clienti/{clienteId} {
+      allow read: if isStaff() || isOwner(clienteId);
+      allow create, update: if isStaff();
+      allow delete: if isAdmin();
+    }
+
+    // PRATICHE collection
+    match /pratiche/{praticaId} {
+      allow read: if isStaff() ||
+        (isAuth() && resource.data.clienteId == request.auth.uid);
+      allow create, update: if isStaff();
+      allow delete: if isAdmin();
+    }
+
+    // DOCUMENTI collection
+    match /documenti/{docId} {
+      allow read: if isStaff() ||
+        (isAuth() && get(/databases/$(database)/documents/pratiche/$(resource.data.praticaId)).data.clienteId == request.auth.uid);
+      allow create, update: if isStaff();
+      allow delete: if isAdmin();
+    }
+
+    // APPUNTAMENTI collection
+    match /appuntamenti/{appId} {
+      allow read: if isStaff() ||
+        (isAuth() && resource.data.clienteId == request.auth.uid);
+      allow create, update: if isStaff();
+      allow delete: if isAdmin();
+    }
+
+    // UDIENZE collection
+    match /udienze/{udienzaId} {
+      allow read: if isStaff();
+      allow create, update: if isStaff();
+      allow delete: if isAdmin();
+    }
+
+    // PROMEMORIA collection
+    match /promemoria/{promId} {
+      allow read, write: if isStaff();
+      allow delete: if isAdmin();
+    }
+
+    // NOTE INTERNE collection (NOT visible to clients)
+    match /note/{notaId} {
+      allow read, write: if isStaff();
+      allow delete: if isAdmin();
+    }
+
+    // RICHIESTE CONTATTO - public write (from contact form), staff read
+    match /richieste/{richiestaId} {
+      allow read: if isStaff();
+      allow create: if true; // Public form can submit without auth
+      allow update: if isStaff();
+      allow delete: if isAdmin();
+    }
+  }
+}
