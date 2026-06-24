@@ -634,13 +634,19 @@
         kpiAttivita.textContent = String(remaining);
       };
 
-      const firebaseConfig = globalThis.AVVOCATO_FIREBASE_CONFIG;
+      const userFirebaseConfig = globalThis.AVVOCATO_FIREBASE_CONFIG;
       const hasFirebaseConfig =
-        firebaseConfig && typeof firebaseConfig === "object" && firebaseConfig.apiKey && firebaseConfig.projectId;
+        userFirebaseConfig &&
+        typeof userFirebaseConfig === "object" &&
+        userFirebaseConfig.apiKey &&
+        userFirebaseConfig.projectId &&
+        userFirebaseConfig.authDomain &&
+        userFirebaseConfig.appId;
 
       let firebaseEnabled = false;
       let firestoreDb = null;
       let firestoreApi = null;
+      let shouldSeedTodos = false;
 
       const setNoteMessage = (message) => {
         if (noteFeedback) noteFeedback.textContent = message;
@@ -665,10 +671,11 @@
             import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"),
           ]);
 
-          const app = initializeApp(firebaseConfig);
+          const app = initializeApp(userFirebaseConfig);
           firestoreDb = firestoreModule.getFirestore(app);
           firestoreApi = firestoreModule;
           firebaseEnabled = true;
+          shouldSeedTodos = globalThis.AVVOCATO_ENABLE_TODO_SEED === true;
         } catch (error) {
           console.error("Errore inizializzazione Firebase:", error);
           setNoteMessage("Firebase non disponibile: uso salvataggio locale.");
@@ -684,17 +691,20 @@
           );
 
           if (todosSnapshot.empty) {
-            const currentTodos = getTodosFromDom();
-            await Promise.all(
-              currentTodos.map((todo) =>
-                firestoreApi.addDoc(todosRef, {
-                  text: todo.text,
-                  completed: todo.completed,
-                  priority: normalizePriority(todo.priority),
-                  createdAt: firestoreApi.serverTimestamp(),
-                }),
-              ),
-            );
+            if (shouldSeedTodos) {
+              const currentTodos = getTodosFromDom();
+              await Promise.all(
+                currentTodos.map((todo) =>
+                  firestoreApi.addDoc(todosRef, {
+                    text: todo.text,
+                    completed: todo.completed,
+                    priority: normalizePriority(todo.priority),
+                    createdAt: firestoreApi.serverTimestamp(),
+                  }),
+                ),
+              );
+              setNoteMessage("Firestore inizializzato con TODO locali.");
+            }
             return;
           }
 
@@ -719,6 +729,11 @@
           if (!noteSnapshot.exists()) return;
           const noteValue = String(noteSnapshot.data().note || "").trim();
           if (!noteValue) return;
+          const localNote = localStorage.getItem(NOTE_STORAGE_KEY)?.trim();
+          if (localNote && localNote !== noteValue) {
+            setNoteMessage("Nota locale diversa: mantengo il contenuto locale.");
+            return;
+          }
           internalNoteInput.value = noteValue;
           localStorage.setItem(NOTE_STORAGE_KEY, noteValue);
         } catch (error) {
@@ -802,11 +817,20 @@
         });
       }
 
-      loadLocalNote();
-      syncTodoKpi();
-      await initializeFirebase();
-      await syncTodosFromFirestore();
-      await syncNoteFromFirestore();
+      const bootstrapInternalArea = async () => {
+        loadLocalNote();
+        syncTodoKpi();
+        try {
+          await initializeFirebase();
+          await syncTodosFromFirestore();
+          await syncNoteFromFirestore();
+        } catch (error) {
+          console.error("Errore bootstrap area interna:", error);
+          setNoteMessage("Errore inizializzazione: uso dati locali.");
+        }
+      };
+
+      void bootstrapInternalArea();
     </script>
   </body>
 </html>

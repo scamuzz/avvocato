@@ -28,4 +28,12 @@ Per abilitare Firebase, prima dello script principale in `index.html` imposta un
 </script>
 ```
 
+Se vuoi anche inizializzare automaticamente Firestore con i TODO statici presenti in pagina quando la collection è vuota:
+
+```html
+<script>
+  window.AVVOCATO_ENABLE_TODO_SEED = true;
+</script>
+```
+
 Se la configurazione non è presente o Firebase non è raggiungibile, la pagina continua a funzionare in locale (senza blocchi).
