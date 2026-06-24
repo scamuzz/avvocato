@@ -19,15 +19,31 @@ var _allClienti     = [];          // cache locale
 var _currentView    = 'table';     // 'table' | 'card'
 var _deleteTargetId = null;        // id cliente da eliminare
 var _unsubscribeClienti = null;    // listener Firestore
+var _hasAutoOpenedModal = false;
 
 // --- Init ---
 
 function initClienti() {
   // URL ?new=1 → apre subito il modale
   if (new URLSearchParams(window.location.search).get('new') === '1') {
-    auth.onAuthStateChanged(function (user) {
-      if (user) setTimeout(openAddModal, 400);
-    });
+    var autoOpenModalOnce = function () {
+      if (_hasAutoOpenedModal) return;
+      _hasAutoOpenedModal = true;
+      setTimeout(openAddModal, 400);
+      var params = new URLSearchParams(window.location.search);
+      params.delete('new');
+      var query = params.toString();
+      var newQuery = query ? ('?' + query) : '';
+      window.history.replaceState(null, '', window.location.pathname + newQuery);
+    };
+
+    if (auth.currentUser) {
+      autoOpenModalOnce();
+    } else {
+      auth.onAuthStateChanged(function (user) {
+        if (user) autoOpenModalOnce();
+      });
+    }
   }
   loadClienti();
 }
@@ -222,11 +238,22 @@ function viewCliente(id) {
 
 // --- Modale add/edit ---
 
-function openAddModal() {
-  document.getElementById('modalTitle').textContent = 'Nuovo Cliente';
+function _resetClienteForm() {
   document.getElementById('clienteForm').reset();
   document.getElementById('clienteId').value = '';
+}
+
+function openAddModal() {
+  document.getElementById('modalTitle').textContent = 'Nuovo Cliente';
+  _resetClienteForm();
+  document.getElementById('submitBtn').disabled = false;
+  document.getElementById('submitBtn').innerHTML = '<i class="fas fa-save"></i> Salva';
   openModal('clienteModal');
+}
+
+function closeClienteModal() {
+  _resetClienteForm();
+  closeModal('clienteModal');
 }
 
 function openEditModal(id) {
@@ -274,7 +301,7 @@ function submitClienteForm(e) {
   var promise = id ? updateCliente(id, data) : addCliente(data);
   promise
     .then(function () {
-      closeModal('clienteModal');
+      closeClienteModal();
       showToast(id ? 'Cliente aggiornato con successo' : 'Cliente aggiunto con successo', 'success');
     })
     .catch(function (err) {
