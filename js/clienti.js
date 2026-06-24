@@ -26,21 +26,22 @@ var _hasAutoOpenedModal = false;
 function initClienti() {
   // URL ?new=1 → apre subito il modale
   if (new URLSearchParams(window.location.search).get('new') === '1') {
-    var handleAutoOpenModal = function () {
+    var autoOpenModalOnce = function () {
       if (_hasAutoOpenedModal) return;
       _hasAutoOpenedModal = true;
       setTimeout(openAddModal, 400);
       var params = new URLSearchParams(window.location.search);
       params.delete('new');
       var query = params.toString();
-      window.history.replaceState(null, '', window.location.pathname + (query ? ('?' + query) : ''));
+      var newQuery = query ? ('?' + query) : '';
+      window.history.replaceState(null, '', window.location.pathname + newQuery);
     };
 
     if (auth.currentUser) {
-      handleAutoOpenModal();
+      autoOpenModalOnce();
     } else {
       auth.onAuthStateChanged(function (user) {
-        if (user) handleAutoOpenModal();
+        if (user) autoOpenModalOnce();
       });
     }
   }
