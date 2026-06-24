@@ -652,6 +652,7 @@
       let firebaseEnabled = false;
       let firestoreDb = null;
       let firestoreApi = null;
+      const isFirestoreReady = () => Boolean(firebaseEnabled && firestoreDb && firestoreApi);
 
       const setNoteMessage = (message) => {
         if (noteFeedback) noteFeedback.textContent = message;
@@ -687,7 +688,7 @@
       };
 
       const syncTodosFromFirestore = async () => {
-        if (!firebaseEnabled || !firestoreDb || !firestoreApi) return;
+        if (!isFirestoreReady()) return;
         try {
           const todosRef = firestoreApi.collection(firestoreDb, TODOS_COLLECTION);
           const todosSnapshot = await firestoreApi.getDocs(
@@ -696,7 +697,7 @@
 
           if (todosSnapshot.empty) {
             if (shouldSeedTodos) {
-              // Seeding esplicito: usa i TODO iniziali in pagina come base del primo dataset Firestore.
+              // Seed esplicito: usa i TODO iniziali in pagina come base del primo dataset Firestore.
               const currentTodos = getTodosFromDom();
               const batch = firestoreApi.writeBatch(firestoreDb);
               currentTodos.forEach((todo) => {
@@ -742,7 +743,7 @@
           if (!noteValue) return;
           const localNote = localStorage.getItem(NOTE_STORAGE_KEY)?.trim();
           if (localNote && localNote !== noteValue) {
-            setNoteMessage("Conflitto nota locale/remota: mantenuta versione locale.");
+            setNoteMessage("Conflitto nota locale/remota: mantenuta nota locale.");
             console.warn("Conflitto nota locale/remota: mantenuta nota locale.");
             return;
           }
@@ -759,7 +760,7 @@
           const value = newTodoInput.value.trim();
           if (!value) return;
 
-          if (firebaseEnabled && firestoreDb && firestoreApi) {
+          if (isFirestoreReady()) {
             try {
               const created = await firestoreApi.addDoc(firestoreApi.collection(firestoreDb, TODOS_COLLECTION), {
                 text: value,
@@ -773,7 +774,7 @@
               return;
             } catch (error) {
               console.error("Errore salvataggio TODO su Firebase:", error);
-              setNoteMessage("Errore salvataggio su Firebase: attività aggiunta solo localmente.");
+              setNoteMessage("Errore Firebase: TODO aggiunto solo in locale.");
             }
           }
 
@@ -790,7 +791,7 @@
           const todoId = target.dataset.id;
           syncTodoKpi();
 
-          if (!firebaseEnabled || !firestoreDb || !firestoreApi || !todoId) return;
+          if (!isFirestoreReady() || !todoId) return;
           try {
             await firestoreApi.updateDoc(firestoreApi.doc(firestoreDb, TODOS_COLLECTION, todoId), {
               completed: target.checked,
@@ -806,7 +807,7 @@
         saveNoteBtn.addEventListener("click", async () => {
           saveLocalNote();
 
-          if (firebaseEnabled && firestoreDb && firestoreApi && internalNoteInput instanceof HTMLTextAreaElement) {
+          if (isFirestoreReady() && internalNoteInput instanceof HTMLTextAreaElement) {
             try {
               await firestoreApi.setDoc(
                 firestoreApi.doc(firestoreDb, INTERNAL_AREA_COLLECTION, INTERNAL_AREA_MAIN_DOC),
