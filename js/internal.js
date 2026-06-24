@@ -116,7 +116,13 @@ function makeIconBtn(icon, title) {
   const btn = document.createElement("button");
   btn.type = "button";
   btn.className = "btn-icon";
-  btn.textContent = `${icon} ${title}`;
+  const iconSpan = document.createElement("span");
+  iconSpan.setAttribute("aria-hidden", "true");
+  iconSpan.textContent = icon;
+  const labelSpan = document.createElement("span");
+  labelSpan.textContent = title;
+  btn.appendChild(iconSpan);
+  btn.appendChild(labelSpan);
   return btn;
 }
 
@@ -124,6 +130,7 @@ function toDateTimeLocalValue(value) {
   const safe = String(value || "").trim();
   if (!safe) return "";
   // Mantiene il formato richiesto da input[type="datetime-local"] senza perdere dati.
+  // La conversione usa il fuso locale del browser.
   if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(safe)) return safe;
   const parsed = new Date(safe);
   if (Number.isNaN(parsed.getTime())) return "";
@@ -354,7 +361,11 @@ async function syncTodosFromFirestore() {
 async function handleAddTodo() {
   if (seedInProgress) { setNoteMessage("Sincronizzazione in corso, attendi."); return; }
   const value = newTodoInput instanceof HTMLInputElement ? newTodoInput.value.trim() : "";
-  if (!value || !todoList) {
+  if (!todoList) {
+    setNoteMessage("Sezione To-do non disponibile.");
+    return;
+  }
+  if (!value) {
     setNoteMessage("Inserisci una descrizione per il to-do.");
     return;
   }
@@ -476,7 +487,11 @@ async function syncAgendaFromFirestore() {
 async function handleAddAgenda() {
   const dt = newAgendaDatetime instanceof HTMLInputElement ? newAgendaDatetime.value.trim() : "";
   const txt = newAgendaText instanceof HTMLInputElement ? newAgendaText.value.trim() : "";
-  if (!dt || !txt || !agendaList) {
+  if (!agendaList) {
+    setNoteMessage("Sezione agenda non disponibile.");
+    return;
+  }
+  if (!dt || !txt) {
     setNoteMessage("Compila data/ora e descrizione per aggiungere un elemento agenda.");
     return;
   }
@@ -661,7 +676,11 @@ async function handleAddPratica() {
   const scadenza = newPraticaScadenza instanceof HTMLInputElement ? newPraticaScadenza.value : "";
   const prossimaAzione = newPraticaAzione instanceof HTMLInputElement ? newPraticaAzione.value.trim() : "";
 
-  if (!cliente || !pratica || !praticheTbody) {
+  if (!praticheTbody) {
+    setNoteMessage("Sezione pratiche non disponibile.");
+    return;
+  }
+  if (!cliente || !pratica) {
     setNoteMessage("Inserisci almeno cliente e nome pratica.");
     return;
   }
@@ -872,7 +891,11 @@ async function syncArchivioFromFirestore() {
 
 async function handleAddArchivio() {
   const nome = newArchivioNome instanceof HTMLInputElement ? newArchivioNome.value.trim() : "";
-  if (!nome || !archivioList) {
+  if (!archivioList) {
+    setNoteMessage("Sezione archivio non disponibile.");
+    return;
+  }
+  if (!nome) {
     setNoteMessage("Inserisci un nome per lo strumento/voce di archivio.");
     return;
   }
@@ -976,7 +999,11 @@ async function syncPromemoriaFromFirestore() {
 
 async function handleAddPromemoria() {
   const testo = newPromemoriaInput instanceof HTMLInputElement ? newPromemoriaInput.value.trim() : "";
-  if (!testo || !promemoriaList) {
+  if (!promemoriaList) {
+    setNoteMessage("Sezione promemoria non disponibile.");
+    return;
+  }
+  if (!testo) {
     setNoteMessage("Inserisci un testo per il promemoria.");
     return;
   }

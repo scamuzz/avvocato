@@ -449,6 +449,9 @@ td {
 
 /* === Pulsanti azione (edit/delete inline) === */
 .btn-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
   border: 1px solid #d1d5db;
   background: #fff;
   cursor: pointer;
