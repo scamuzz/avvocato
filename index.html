@@ -214,6 +214,80 @@
         font-size: 0.9rem;
         color: var(--muted);
       }
+
+      .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        gap: 0.55rem;
+      }
+
+      .kpi {
+        background: var(--surface-alt);
+        border-radius: 10px;
+        padding: 0.6rem 0.65rem;
+      }
+
+      .kpi strong {
+        font-size: 1.1rem;
+      }
+
+      .priority {
+        font-size: 0.78rem;
+        font-weight: 600;
+        border-radius: 999px;
+        padding: 0.12rem 0.45rem;
+        margin-left: 0.35rem;
+      }
+
+      .priority.high {
+        background: #fee2e2;
+        color: #b91c1c;
+      }
+
+      .priority.medium {
+        background: #fef3c7;
+        color: #92400e;
+      }
+
+      .priority.low {
+        background: #dcfce7;
+        color: #166534;
+      }
+
+      .checklist {
+        list-style: none;
+        padding: 0;
+      }
+
+      .checklist li {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.45rem;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.92rem;
+      }
+
+      th,
+      td {
+        text-align: left;
+        border-bottom: 1px solid #e5e7eb;
+        padding: 0.5rem 0.35rem;
+      }
+
+      .quick-actions {
+        display: grid;
+        gap: 0.55rem;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      }
     </style>
   </head>
   <body>
@@ -331,39 +405,96 @@
         <h2>Area interna (avvocato unico)</h2>
         <div class="card-grid">
           <article class="card">
-            <h3>Dashboard priorità</h3>
-            <ul>
-              <li>Pratiche urgenti oggi: <strong>2</strong></li>
-              <li>Udienze questa settimana: <strong>3</strong></li>
-              <li>Scadenze entro 48h: <strong>4</strong></li>
-            </ul>
+            <h3>Cruscotto operativo</h3>
+            <div class="kpi-grid">
+              <div class="kpi">Pratiche aperte<br /><strong id="kpi-pratiche">18</strong></div>
+              <div class="kpi">Scadenze 7 giorni<br /><strong id="kpi-scadenze">6</strong></div>
+              <div class="kpi">Udienze mese<br /><strong>9</strong></div>
+              <div class="kpi">Parcelle da emettere<br /><strong>4</strong></div>
+            </div>
+            <p class="note">Vista rapida per pianificare il lavoro della giornata.</p>
           </article>
 
           <article class="card">
-            <h3>Calendario integrato</h3>
-            <ul>
-              <li>Lun 09:30 - Udienza Tribunale Civile</li>
-              <li>Mar 15:00 - Consulenza online (nuovo cliente)</li>
-              <li>Gio 11:00 - Scadenza deposito memoria</li>
+            <h3>To-do giornaliero</h3>
+            <ul class="checklist" id="todo-list">
+              <li><input type="checkbox" /> Deposito memoria - Pratica Bianchi <span class="priority high">Alta</span></li>
+              <li><input type="checkbox" /> Chiamata cliente Neri <span class="priority medium">Media</span></li>
+              <li><input type="checkbox" /> Verifica bozza contratto <span class="priority low">Bassa</span></li>
             </ul>
-          </article>
-
-          <article class="card">
-            <h3>Archivio fascicoli e modelli</h3>
             <div class="flex">
+              <input id="new-todo" type="text" placeholder="Nuova attività interna" />
+              <button class="btn" type="button" id="add-todo">Aggiungi</button>
+            </div>
+          </article>
+
+          <article class="card">
+            <h3>Agenda e udienze</h3>
+            <ul class="timeline">
+              <li><strong>Lun 09:30</strong> Udienza Tribunale Civile - R.G. 214/2025</li>
+              <li><strong>Mar 15:00</strong> Consulenza online (nuovo cliente)</li>
+              <li><strong>Gio 11:00</strong> Scadenza deposito memoria</li>
+              <li><strong>Ven 16:30</strong> Riunione consulente fiscale</li>
+            </ul>
+          </article>
+
+          <article class="card">
+            <h3>Pipeline pratiche</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Cliente</th>
+                    <th>Pratica</th>
+                    <th>Stato</th>
+                    <th>Prossima azione</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Bianchi</td>
+                    <td>Recupero crediti</td>
+                    <td><span class="status-warn">In corso</span></td>
+                    <td>Deposito memoria 27/06</td>
+                  </tr>
+                  <tr>
+                    <td>Verdi</td>
+                    <td>Contrattualistica</td>
+                    <td><span class="status-ok">Quasi chiusa</span></td>
+                    <td>Invio bozza finale</td>
+                  </tr>
+                  <tr>
+                    <td>Neri</td>
+                    <td>Risarcimento danni</td>
+                    <td><span class="status-warn">Precontenzioso</span></td>
+                    <td>Sollecito controparte</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+
+          <article class="card">
+            <h3>Archivio e strumenti</h3>
+            <div class="quick-actions">
               <button class="btn secondary" type="button">Apri fascicoli</button>
               <button class="btn secondary" type="button">Modelli atti</button>
+              <button class="btn secondary" type="button">Verbali udienza</button>
+              <button class="btn secondary" type="button">Registro PEC</button>
             </div>
-            <p class="note">Accesso rapido a documenti ricorrenti per aumentare la produttività.</p>
+            <p class="note">Accesso rapido ai documenti usati più spesso.</p>
           </article>
 
           <article class="card">
-            <h3>Promemoria automatici</h3>
+            <h3>Promemoria automatici e note interne</h3>
             <ul>
               <li>Follow-up cliente Bianchi entro domani</li>
-              <li>Invio parcella pratica Verdi</li>
+              <li>Invio parcella pratica Verdi entro venerdì</li>
               <li>Rinnovo PEC tra 10 giorni</li>
             </ul>
+            <textarea id="internal-note" placeholder="Annotazioni rapide per la giornata"></textarea>
+            <button class="btn" type="button" id="save-note">Salva nota</button>
+            <p class="note" id="note-feedback"></p>
           </article>
         </div>
       </section>
@@ -383,6 +514,32 @@
           document.getElementById(target).classList.add("active");
         });
       });
+
+      const todoList = document.getElementById("todo-list");
+      const addTodoBtn = document.getElementById("add-todo");
+      const newTodoInput = document.getElementById("new-todo");
+      const saveNoteBtn = document.getElementById("save-note");
+      const noteFeedback = document.getElementById("note-feedback");
+      const kpiScadenze = document.getElementById("kpi-scadenze");
+
+      if (addTodoBtn && todoList && newTodoInput) {
+        addTodoBtn.addEventListener("click", () => {
+          const value = newTodoInput.value.trim();
+          if (!value) return;
+
+          const item = document.createElement("li");
+          item.innerHTML = `<input type="checkbox" /> ${value} <span class="priority medium">Media</span>`;
+          todoList.appendChild(item);
+          newTodoInput.value = "";
+          kpiScadenze.textContent = String(Number(kpiScadenze.textContent) + 1);
+        });
+      }
+
+      if (saveNoteBtn && noteFeedback) {
+        saveNoteBtn.addEventListener("click", () => {
+          noteFeedback.textContent = "Nota interna salvata localmente.";
+        });
+      }
     </script>
   </body>
 </html>
