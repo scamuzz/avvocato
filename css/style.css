@@ -446,3 +446,97 @@ td {
 #note-feedback {
   min-height: 1.2em;
 }
+
+/* === Pulsanti azione (edit/delete inline) === */
+.btn-icon {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.88rem;
+  padding: 0.1rem 0.25rem;
+  border-radius: 5px;
+  line-height: 1;
+  opacity: 0.45;
+  flex-shrink: 0;
+}
+
+.btn-icon:hover {
+  opacity: 1;
+  background: var(--surface-alt);
+}
+
+.item-actions {
+  display: inline-flex;
+  gap: 0.1rem;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* === Checklist con azioni === */
+.checklist li {
+  justify-content: space-between;
+}
+
+/* === Timeline con azioni === */
+.timeline li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.timeline li .item-content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* === Archivio strumenti dinamico === */
+.archivio-list {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.archivio-item {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.archivio-item .btn.secondary {
+  flex: 1;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* === Lista promemoria dinamica === */
+.promemoria-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.promemoria-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.promemoria-list li:last-child {
+  border-bottom: none;
+}
+
+.promemoria-list li .item-text {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* === Stile input inline edit === */
+.archivio-item input[type="text"] {
+  flex: 1;
+  width: auto;
+}
