@@ -266,6 +266,12 @@
         margin-bottom: 0.45rem;
       }
 
+      .checklist label {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+      }
+
       .table-wrap {
         overflow-x: auto;
       }
@@ -430,9 +436,9 @@
           <article class="card">
             <h3>To-do giornaliero</h3>
             <ul class="checklist" id="todo-list">
-              <li><input type="checkbox" aria-label="Deposito memoria - Pratica Bianchi" /> Deposito memoria - Pratica Bianchi <span class="priority high">Alta</span></li>
-              <li><input type="checkbox" aria-label="Chiamata cliente Neri" /> Chiamata cliente Neri <span class="priority medium">Media</span></li>
-              <li><input type="checkbox" aria-label="Verifica bozza contratto" /> Verifica bozza contratto <span class="priority low">Bassa</span></li>
+              <li><label><input type="checkbox" aria-label="Deposito memoria - Pratica Bianchi" /><span>Deposito memoria - Pratica Bianchi</span></label><span class="priority high">Alta</span></li>
+              <li><label><input type="checkbox" aria-label="Chiamata cliente Neri" /><span>Chiamata cliente Neri</span></label><span class="priority medium">Media</span></li>
+              <li><label><input type="checkbox" aria-label="Verifica bozza contratto" /><span>Verifica bozza contratto</span></label><span class="priority low">Bassa</span></li>
             </ul>
             <div class="flex">
               <input id="new-todo" type="text" placeholder="Nuova attività interna" />
@@ -545,27 +551,36 @@
           checkbox.type = "checkbox";
           checkbox.setAttribute("aria-label", value);
 
-          const textNode = document.createTextNode(value);
+          const label = document.createElement("label");
+          const text = document.createElement("span");
+          text.textContent = value;
+          label.appendChild(checkbox);
+          label.appendChild(text);
 
           const badge = document.createElement("span");
           badge.className = "priority medium";
           badge.textContent = "Media";
 
-          item.appendChild(checkbox);
-          item.appendChild(textNode);
+          item.appendChild(label);
           item.appendChild(badge);
           todoList.appendChild(item);
           newTodoInput.value = "";
-          kpiAttivita.textContent = String(Number(kpiAttivita.textContent) + 1);
+          syncTodoKpi();
         });
       }
 
-      if (todoList && kpiAttivita) {
+      const syncTodoKpi = () => {
+        if (!todoList || !kpiAttivita) return;
+        const remaining = todoList.querySelectorAll('input[type="checkbox"]:not(:checked)').length;
+        kpiAttivita.textContent = String(remaining);
+      };
+
+      if (todoList) {
+        syncTodoKpi();
         todoList.addEventListener("change", (event) => {
           const target = event.target;
           if (!(target instanceof HTMLInputElement) || target.type !== "checkbox") return;
-          const current = Number(kpiAttivita.textContent);
-          kpiAttivita.textContent = String(target.checked ? Math.max(current - 1, 0) : current + 1);
+          syncTodoKpi();
         });
       }
 
