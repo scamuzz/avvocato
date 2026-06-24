@@ -529,8 +529,6 @@
     </main>
 
     <script type="module">
-
-      <script>
   window.AVVOCATO_FIREBASE_CONFIG = {
    apiKey: "AIzaSyDP-OTmxD0w3a1GwV4Swv5al4iD7LjkRQc",
   authDomain: "studio-avvocato.firebaseapp.com",
@@ -668,6 +666,7 @@
       let firestoreDb = null;
       let firestoreApi = null;
       let seedInProgress = false;
+      const FIREBASE_CONNECTED_MESSAGE = "Connessione Firebase eseguita con successo.";
       const isFirestoreReady = () => Boolean(firebaseEnabled && firestoreDb && firestoreApi);
 
       const setNoteMessage = (message) => {
@@ -686,7 +685,10 @@
       };
 
       const initializeFirebase = async () => {
-        if (!hasFirebaseConfig) return;
+        if (!hasFirebaseConfig) {
+          setNoteMessage("Firebase non configurato: uso salvataggio locale.");
+          return;
+        }
         try {
           const [{ initializeApp }, firestoreModule] = await Promise.all([
             import(`https://www.gstatic.com/firebasejs/${FIREBASE_SDK_VERSION}/firebase-app.js`),
@@ -697,6 +699,8 @@
           firestoreDb = firestoreModule.getFirestore(app);
           firestoreApi = firestoreModule;
           firebaseEnabled = true;
+          setNoteMessage(FIREBASE_CONNECTED_MESSAGE);
+          console.info(FIREBASE_CONNECTED_MESSAGE);
         } catch (error) {
           console.error("Errore inizializzazione Firebase:", error);
           setNoteMessage("Firebase non disponibile: uso salvataggio locale.");
