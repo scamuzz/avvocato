@@ -559,6 +559,9 @@
       const INTERNAL_AREA_MAIN_DOC = "main";
 
       const normalizePriority = (priority) => {
+        if (priority !== "high" && priority !== "medium" && priority !== "low") {
+          console.warn("Priorità non valida, imposto 'medium':", priority);
+        }
         if (priority === "high" || priority === "low") return priority;
         return "medium";
       };
@@ -641,13 +644,14 @@
 
       const appFirebaseConfig = globalThis.AVVOCATO_FIREBASE_CONFIG;
       const shouldSeedTodos = Boolean(globalThis.AVVOCATO_ENABLE_TODO_SEED);
+      const hasNonEmptyString = (value) => typeof value === "string" && value.trim().length > 0;
       const hasFirebaseConfig =
         appFirebaseConfig &&
         typeof appFirebaseConfig === "object" &&
-        appFirebaseConfig.apiKey &&
-        appFirebaseConfig.projectId &&
-        appFirebaseConfig.authDomain &&
-        appFirebaseConfig.appId;
+        hasNonEmptyString(appFirebaseConfig.apiKey) &&
+        hasNonEmptyString(appFirebaseConfig.projectId) &&
+        hasNonEmptyString(appFirebaseConfig.authDomain) &&
+        hasNonEmptyString(appFirebaseConfig.appId);
 
       let firebaseEnabled = false;
       let firestoreDb = null;
@@ -702,6 +706,7 @@
                 // Seed esplicito: usa i TODO iniziali in pagina come base del primo dataset Firestore.
                 seedInProgress = true;
                 if (todoList) todoList.style.pointerEvents = "none";
+                if (addTodoBtn) addTodoBtn.disabled = true;
                 const currentTodos = getTodosFromDom();
                 const batch = firestoreApi.writeBatch(firestoreDb);
                 currentTodos.forEach((todo) => {
@@ -728,6 +733,7 @@
               } finally {
                 seedInProgress = false;
                 if (todoList) todoList.style.pointerEvents = "";
+                if (addTodoBtn) addTodoBtn.disabled = false;
               }
             }
             return;
@@ -775,6 +781,10 @@
 
       if (addTodoBtn && todoList && newTodoInput) {
         addTodoBtn.addEventListener("click", async () => {
+          if (seedInProgress) {
+            setNoteMessage("Sincronizzazione iniziale in corso, attendi pochi secondi.");
+            return;
+          }
           const value = newTodoInput.value.trim();
           if (!value) return;
 
