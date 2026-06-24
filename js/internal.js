@@ -117,9 +117,18 @@ function makeIconBtn(icon, title) {
   btn.type = "button";
   btn.className = "btn-icon";
   btn.title = title;
-  btn.setAttribute("aria-label", title);
   btn.textContent = `${icon} ${title}`;
   return btn;
+}
+
+function toDateTimeLocalValue(value) {
+  const safe = String(value || "").trim();
+  if (!safe) return "";
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(safe)) return safe;
+  const parsed = new Date(safe);
+  if (Number.isNaN(parsed.getTime())) return "";
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${parsed.getFullYear()}-${pad(parsed.getMonth() + 1)}-${pad(parsed.getDate())}T${pad(parsed.getHours())}:${pad(parsed.getMinutes())}`;
 }
 
 function formatAgendaDateTime(value) {
@@ -514,7 +523,7 @@ function handleEditAgenda(item, li, contentEl, strongEl, textSpan) {
 
   const dtInput = document.createElement("input");
   dtInput.type = "datetime-local";
-  dtInput.value = item.dataOra || "";
+  dtInput.value = toDateTimeLocalValue(item.dataOra);
   dtInput.style.cssText = "width:13rem;flex-shrink:0;";
 
   const txtInput = document.createElement("input");
@@ -730,7 +739,7 @@ function handleEditPratica(pratica, tr) {
   const { td: tdC, input: inpC } = makeInputTd(pratica.cliente, "Cliente");
   const { td: tdP, input: inpP } = makeInputTd(pratica.pratica, "Pratica");
   const { td: tdS, select: selS } = makeSelectTd(pratica.stato);
-  const { td: tdSc, input: inpSc } = makeInputTd(pratica.scadenza, "YYYY-MM-DD");
+  const { td: tdSc, input: inpSc } = makeInputTd(pratica.scadenza, "");
   inpSc.type = "date";
   const { td: tdA, input: inpA } = makeInputTd(pratica.prossimaAzione, "Prossima azione");
 
