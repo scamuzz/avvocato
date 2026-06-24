@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profilo Cliente — Studio Legale</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <style>
+    .modal-overlay.active { opacity: 1; visibility: visible; }
+    .modal-overlay.active .modal { transform: scale(1) translateY(0); }
+
+    .client-header-card {
+      background: linear-gradient(135deg, var(--primary) 0%, #2C5282 100%);
+      color: white;
+      border-radius: var(--radius-xl);
+      padding: 32px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: flex-start;
+      gap: 24px;
+    }
+    .client-avatar-lg {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem; font-weight: 700;
+      color: white; flex-shrink: 0;
+      border: 3px solid rgba(255,255,255,0.4);
+    }
+    .client-header-info { flex: 1; }
+    .client-name { font-size: 1.6rem; font-weight: 700; margin: 0 0 6px; }
+    .client-meta { font-size: 14px; opacity: 0.85; display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 12px; }
+    .client-meta span { display: flex; align-items: center; gap: 6px; }
+    .client-header-actions { display: flex; gap: 8px; margin-top: 4px; }
+
+    /* Edit fields inline */
+    .field-display { display: block; }
+    .field-input  { display: none; }
+    body.editing-client .field-display { display: none; }
+    body.editing-client .field-input  { display: block; }
+
+    /* Tabs */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* Doc grid */
+    .doc-mini-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+    .doc-mini-card {
+      background: var(--grey-50); border: 1px solid var(--grey-200);
+      border-radius: var(--radius); padding: 12px; text-align: center;
+    }
+    .doc-mini-card .doc-icon { font-size: 1.6rem; color: var(--accent); margin-bottom: 6px; }
+    .doc-mini-card .doc-name { font-size: 12px; word-break: break-all; }
+  </style>
+</head>
+<body data-protected="true">
+
+  <aside class="sidebar" id="sidebar">
+    <a class="sidebar-logo" href="dashboard.html">
+      <div class="sidebar-logo-icon">⚖</div>
+      <div class="sidebar-logo-text">
+        <span class="sidebar-logo-title">Studio Legale</span>
+        <span class="sidebar-logo-sub">Avv. C. Scamuzzi</span>
+      </div>
+    </a>
+    <button class="sidebar-toggle" id="sidebarCollapseBtn" aria-label="Comprimi">‹</button>
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">Gestione</span>
+      <a href="dashboard.html" class="nav-item">
+        <span class="nav-item-icon"><i class="fas fa-tachometer-alt"></i></span>
+        <span class="nav-item-text">Dashboard</span>
+      </a>
+      <a href="clienti.html" class="nav-item active">
+        <span class="nav-item-icon"><i class="fas fa-users"></i></span>
+        <span class="nav-item-text">Clienti</span>
+      </a>
+      <a href="pratiche.html" class="nav-item">
+        <span class="nav-item-icon"><i class="fas fa-folder-open"></i></span>
+        <span class="nav-item-text">Pratiche</span>
+      </a>
+      <a href="appuntamenti.html" class="nav-item">
+        <span class="nav-item-icon"><i class="fas fa-calendar-alt"></i></span>
+        <span class="nav-item-text">Appuntamenti</span>
+      </a>
+      <a href="udienze.html" class="nav-item">
+        <span class="nav-item-icon"><i class="fas fa-gavel"></i></span>
+        <span class="nav-item-text">Udienze</span>
+      </a>
+      <a href="documenti.html" class="nav-item">
+        <span class="nav-item-icon"><i class="fas fa-file-alt"></i></span>
+        <span class="nav-item-text">Documenti</span>
+      </a>
+      <a href="note.html" class="nav-item">
+        <span class="nav-item-icon"><i class="fas fa-sticky-note"></i></span>
+        <span class="nav-item-text">Note</span>
+      </a>
+      <a href="richieste.html" class="nav-item">
+        <span class="nav-item-icon"><i class="fas fa-envelope"></i></span>
+        <span class="nav-item-text">Richieste</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar" id="userAvatar">?</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="userDisplayName">—</div>
+          <div class="sidebar-user-role">Avvocato</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <nav class="navbar">
+      <div class="navbar-left">
+        <button class="navbar-hamburger" id="sidebarToggle" aria-label="Menu">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="navbar-breadcrumb">
+          <span>Studio Legale</span>
+          <span>›</span>
+          <a href="clienti.html" style="color:inherit;">Clienti</a>
+          <span>›</span>
+          <span class="current" id="breadcrumb-nome">Profilo</span>
+        </div>
+      </div>
+      <div class="navbar-right">
+        <button class="btn-logout" onclick="logoutUser()">
+          <i class="fas fa-sign-out-alt"></i> Esci
+        </button>
+      </div>
+    </nav>
+
+    <div class="page-container">
+      <div class="mb-4">
+        <a href="clienti.html" class="btn btn-ghost">
+          <i class="fas fa-arrow-left"></i> Clienti
+        </a>
+      </div>
+
+      <!-- Loading state -->
+      <div id="profile-loading" class="text-center" style="padding:60px;">
+        <i class="fas fa-spinner fa-spin" style="font-size:2rem; color:var(--accent);"></i>
+        <p class="text-muted mt-4">Caricamento profilo cliente...</p>
+      </div>
+
+      <!-- Client Header Card -->
+      <div id="client-header" class="d-none">
+        <div class="client-header-card">
+          <div class="client-avatar-lg" id="profile-avatar">?</div>
+          <div class="client-header-info">
+            <h1 class="client-name" id="profile-name">—</h1>
+            <div class="client-meta">
+              <span id="profile-email-display"><i class="fas fa-envelope"></i> <span id="profile-email-text">—</span></span>
+              <span id="profile-tel-display"><i class="fas fa-phone"></i> <span id="profile-tel-text">—</span></span>
+            </div>
+            <div class="client-header-actions">
+              <button class="btn btn-sm" style="background:rgba(255,255,255,0.2); color:white; border:1px solid rgba(255,255,255,0.4);" onclick="openEditModal()">
+                <i class="fas fa-edit"></i> Modifica
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs mb-4">
+          <button class="tab-btn active" onclick="switchTab('pratiche')">
+            <i class="fas fa-folder-open"></i> Pratiche
+          </button>
+          <button class="tab-btn" onclick="switchTab('appuntamenti')">
+            <i class="fas fa-calendar-alt"></i> Appuntamenti
+          </button>
+          <button class="tab-btn" onclick="switchTab('documenti')">
+            <i class="fas fa-file-alt"></i> Documenti
+          </button>
+          <button class="tab-btn" onclick="switchTab('note')">
+            <i class="fas fa-sticky-note"></i> Note
+          </button>
+        </div>
+
+        <!-- Pratiche Tab -->
+        <div class="tab-panel active" id="tab-pratiche">
+          <div class="table-wrapper">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Numero</th>
+                  <th>Titolo</th>
+                  <th>Stato</th>
+                  <th>Data Apertura</th>
+                </tr>
+              </thead>
+              <tbody id="tab-pratiche-body">
+                <tr><td colspan="4" class="text-center text-muted">Caricamento...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Appuntamenti Tab -->
+        <div class="tab-panel" id="tab-appuntamenti">
+          <div class="table-wrapper">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Ora</th>
+                  <th>Luogo</th>
+                  <th>Stato</th>
+                </tr>
+              </thead>
+              <tbody id="tab-appuntamenti-body">
+                <tr><td colspan="4" class="text-center text-muted">Caricamento...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Documenti Tab -->
+        <div class="tab-panel" id="tab-documenti">
+          <div class="doc-mini-grid" id="tab-documenti-grid">
+            <p class="text-muted">Caricamento...</p>
+          </div>
+        </div>
+
+        <!-- Note Tab -->
+        <div class="tab-panel" id="tab-note">
+          <div id="tab-note-list">
+            <p class="text-muted">Caricamento...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Cliente Modal -->
+  <div class="modal-overlay" id="modal-edit-cliente">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h3 class="modal-title">Modifica Cliente</h3>
+        <button class="modal-close" onclick="closeModal('modal-edit-cliente')">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Nome <span class="required">*</span></label>
+            <input type="text" class="form-control" id="ec-nome">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Cognome <span class="required">*</span></label>
+            <input type="text" class="form-control" id="ec-cognome">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" id="ec-email">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Telefono</label>
+            <input type="text" class="form-control" id="ec-telefono">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Codice Fiscale</label>
+            <input type="text" class="form-control" id="ec-cf" placeholder="RSSMRA80A01H501U">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Data di nascita</label>
+            <input type="date" class="form-control" id="ec-dataNascita">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Indirizzo</label>
+          <input type="text" class="form-control" id="ec-indirizzo">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Note</label>
+          <textarea class="form-control" id="ec-note" rows="3"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('modal-edit-cliente')">Annulla</button>
+        <button class="btn btn-primary" onclick="saveClienteEdit()">
+          <i class="fas fa-save"></i> Salva Modifiche
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var CLIENT_ID = new URLSearchParams(window.location.search).get('id');
+  </script>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+  <script src="../js/firebase-config.js"></script>
+  <script src="../js/utilities.js"></script>
+  <script src="../js/auth.js"></script>
+
+  <script>
+    // ── Page state ─────────────────────────────────────────────
+    var _clienteData    = null;
+    var _praticheProfilo = [];
+    var _docsProfilo    = [];
+    var _noteProfilo    = [];
+    var _praticheMap    = {};
+
+    // ── Init ──────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', function() {
+      if (!CLIENT_ID) {
+        alert('ID cliente non specificato.');
+        window.location.href = 'clienti.html';
+        return;
+      }
+      loadClienteProfile();
+    });
+
+    // ── Load profile ──────────────────────────────────────────
+    async function loadClienteProfile() {
+      try {
+        var doc = await db.collection('clienti').doc(CLIENT_ID).get();
+        if (!doc.exists) {
+          alert('Cliente non trovato.');
+          window.location.href = 'clienti.html';
+          return;
+        }
+        _clienteData = Object.assign({ id: doc.id }, doc.data());
+        renderHeader(_clienteData);
+        document.getElementById('profile-loading').style.display = 'none';
+        document.getElementById('client-header').classList.remove('d-none');
+        loadPratiche();
+        loadAppuntamentiCliente();
+        loadDocumentiCliente();
+        loadNoteCliente();
+      } catch (e) {
+        console.error(e);
+        showToast('Errore nel caricamento del profilo', 'error');
+      }
+    }
+
+    function renderHeader(c) {
+      var nome   = ((c.nome || '') + ' ' + (c.cognome || '')).trim();
+      var initials = getInitials(c.nome || '', c.cognome || '');
+      document.getElementById('profile-avatar').textContent = initials || '?';
+      document.getElementById('profile-name').textContent   = nome || '—';
+      document.getElementById('profile-email-text').textContent = c.email || '—';
+      document.getElementById('profile-tel-text').textContent   = c.telefono || '—';
+      document.getElementById('breadcrumb-nome').textContent    = nome || 'Profilo';
+      document.title = nome + ' — Studio Legale';
+    }
+
+    // ── Tab switch ────────────────────────────────────────────
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+      document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+      document.getElementById('tab-' + tab).classList.add('active');
+      // Find matching button
+      document.querySelectorAll('.tab-btn').forEach(function(b) {
+        if (b.getAttribute('onclick') && b.getAttribute('onclick').indexOf("'" + tab + "'") !== -1) {
+          b.classList.add('active');
+        }
+      });
+    }
+
+    // ── Pratiche ──────────────────────────────────────────────
+    async function loadPratiche() {
+      try {
+        var snap = await db.collection('pratiche').where('clienteId', '==', CLIENT_ID).get();
+        _praticheProfilo = [];
+        _praticheMap = {};
+        snap.forEach(function(doc) {
+          var p = Object.assign({ id: doc.id }, doc.data());
+          _praticheProfilo.push(p);
+          _praticheMap[doc.id] = p.titolo || ('Pratica ' + doc.id);
+        });
+        renderPratiche(_praticheProfilo);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function _fmtDateStr(str) {
+      if (!str) return '—';
+      var p = str.split('-');
+      if (p.length !== 3) return str;
+      return p[2] + '/' + p[1] + '/' + p[0];
+    }
+
+    function renderPratiche(list) {
+      var tbody = document.getElementById('tab-pratiche-body');
+      if (!list || list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4">' + emptyStateHtml('fas fa-folder-open', 'Nessuna pratica') + '</td></tr>';
+        return;
+      }
+      var html = '';
+      list.forEach(function(p) {
+        html += '<tr>';
+        html += '<td>' + escapeHtml(p.numero || '—') + '</td>';
+        html += '<td><a href="pratiche.html?id=' + p.id + '" style="color:var(--accent);">' + escapeHtml(p.titolo || '—') + '</a></td>';
+        html += '<td>' + statoBadge(p.stato) + '</td>';
+        html += '<td>' + _fmtDateStr(p.dataApertura) + '</td>';
+        html += '</tr>';
+      });
+      tbody.innerHTML = html;
+    }
+
+    // ── Appuntamenti ──────────────────────────────────────────
+    async function loadAppuntamentiCliente() {
+      try {
+        var snap = await db.collection('appuntamenti').where('clienteId', '==', CLIENT_ID).get();
+        var list = [];
+        snap.forEach(function(doc) { list.push(Object.assign({ id: doc.id }, doc.data())); });
+        list.sort(function(a, b) { return (b.data || '').localeCompare(a.data || ''); });
+        renderAppuntamentiTab(list);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function renderAppuntamentiTab(list) {
+      var tbody = document.getElementById('tab-appuntamenti-body');
+      if (!list || list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4">' + emptyStateHtml('fas fa-calendar-alt', 'Nessun appuntamento') + '</td></tr>';
+        return;
+      }
+      var html = '';
+      list.forEach(function(a) {
+        var statoCls = { 'Programmato':'badge-info','Confermato':'badge-success','Cancellato':'badge-danger','Completato':'badge-neutral' };
+        html += '<tr>';
+        html += '<td>' + _fmtDateStr(a.data) + '</td>';
+        html += '<td>' + escapeHtml(a.ora || '—') + '</td>';
+        html += '<td>' + escapeHtml(a.luogo || '—') + '</td>';
+        html += '<td><span class="badge ' + (statoCls[a.stato] || 'badge-neutral') + '">' + escapeHtml(a.stato || '—') + '</span></td>';
+        html += '</tr>';
+      });
+      tbody.innerHTML = html;
+    }
+
+    // ── Documenti ─────────────────────────────────────────────
+    async function loadDocumentiCliente() {
+      try {
+        // Get pratiche IDs for this client
+        var praticaIds = _praticheProfilo.map(function(p) { return p.id; });
+        if (praticaIds.length === 0) {
+          document.getElementById('tab-documenti-grid').innerHTML = emptyStateHtml('fas fa-file-alt', 'Nessun documento');
+          return;
+        }
+        var allDocs = [];
+        // Firestore 'in' allows max 10 items at once
+        var chunks = [];
+        for (var i = 0; i < praticaIds.length; i += 10) {
+          chunks.push(praticaIds.slice(i, i + 10));
+        }
+        for (var c = 0; c < chunks.length; c++) {
+          var snap = await db.collection('documenti').where('praticaId', 'in', chunks[c]).get();
+          snap.forEach(function(doc) { allDocs.push(Object.assign({ id: doc.id }, doc.data())); });
+        }
+        renderDocumentiTab(allDocs);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function renderDocumentiTab(list) {
+      var grid = document.getElementById('tab-documenti-grid');
+      if (!list || list.length === 0) {
+        grid.innerHTML = emptyStateHtml('fas fa-file-alt', 'Nessun documento');
+        return;
+      }
+      var iconMap = { 'Atto':'fa-file-pdf','Contratto':'fa-file-contract','Fattura':'fa-file-invoice','Corrispondenza':'fa-envelope' };
+      var html = '';
+      list.forEach(function(d) {
+        var icon = 'fas ' + (iconMap[d.tipo] || 'fa-file');
+        html += '<div class="doc-mini-card">';
+        html += '<div class="doc-icon"><i class="' + icon + '"></i></div>';
+        html += '<div class="doc-name">' + escapeHtml(truncate(d.nome || 'Documento', 30)) + '</div>';
+        if (d.url) {
+          html += '<a href="' + escapeHtml(d.url) + '" target="_blank" class="btn btn-ghost btn-sm" style="margin-top:8px;" download="' + escapeHtml(d.nome || '') + '">';
+          html += '<i class="fas fa-download"></i></a>';
+        }
+        html += '</div>';
+      });
+      grid.innerHTML = html;
+    }
+
+    // ── Note ──────────────────────────────────────────────────
+    async function loadNoteCliente() {
+      try {
+        var praticaIds = _praticheProfilo.map(function(p) { return p.id; });
+        if (praticaIds.length === 0) {
+          document.getElementById('tab-note-list').innerHTML = emptyStateHtml('fas fa-sticky-note', 'Nessuna nota');
+          return;
+        }
+        var allNote = [];
+        var chunks = [];
+        for (var i = 0; i < praticaIds.length; i += 10) {
+          chunks.push(praticaIds.slice(i, i + 10));
+        }
+        for (var c = 0; c < chunks.length; c++) {
+          var snap = await db.collection('note').where('praticaId', 'in', chunks[c]).get();
+          snap.forEach(function(doc) { allNote.push(Object.assign({ id: doc.id }, doc.data())); });
+        }
+        allNote.sort(function(a,b) {
+          var ta = a.dataCreazione && a.dataCreazione.toDate ? a.dataCreazione.toDate() : new Date(0);
+          var tb = b.dataCreazione && b.dataCreazione.toDate ? b.dataCreazione.toDate() : new Date(0);
+          return tb - ta;
+        });
+        renderNoteTab(allNote);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function renderNoteTab(list) {
+      var container = document.getElementById('tab-note-list');
+      if (!list || list.length === 0) {
+        container.innerHTML = emptyStateHtml('fas fa-sticky-note', 'Nessuna nota interna');
+        return;
+      }
+      var html = '';
+      list.forEach(function(nota) {
+        var pratica = _praticheMap[nota.praticaId] || '—';
+        var ds = nota.dataCreazione && nota.dataCreazione.toDate ? formatDate(nota.dataCreazione) : '—';
+        html += '<div class="note-card" style="border-left:4px solid var(--accent); border-radius:var(--radius-lg); padding:16px; margin-bottom:10px; background:var(--white); border:1px solid var(--grey-200);">';
+        html += '<div style="display:flex; gap:8px; margin-bottom:8px;">';
+        html += '<span class="badge badge-info">' + escapeHtml(pratica) + '</span>';
+        html += '<span class="badge badge-neutral"><i class="fas fa-lock"></i> Interno</span>';
+        html += '</div>';
+        html += '<div style="font-size:14px; color:var(--text); line-height:1.6;">' + escapeHtml(truncate(nota.contenuto || '', 200)) + '</div>';
+        html += '<div style="font-size:12px; color:var(--text-muted); margin-top:8px;">';
+        html += '<i class="fas fa-user"></i> ' + escapeHtml(nota.autore || 'Avvocato') + ' &nbsp; <i class="fas fa-calendar"></i> ' + ds;
+        html += '</div></div>';
+      });
+      container.innerHTML = html;
+    }
+
+    // ── Edit modal ────────────────────────────────────────────
+    function openEditModal() {
+      if (!_clienteData) return;
+      document.getElementById('ec-nome').value        = _clienteData.nome || '';
+      document.getElementById('ec-cognome').value     = _clienteData.cognome || '';
+      document.getElementById('ec-email').value       = _clienteData.email || '';
+      document.getElementById('ec-telefono').value    = _clienteData.telefono || '';
+      document.getElementById('ec-cf').value          = _clienteData.codiceFiscale || '';
+      document.getElementById('ec-dataNascita').value = _clienteData.dataNascita || '';
+      document.getElementById('ec-indirizzo').value   = _clienteData.indirizzo || '';
+      document.getElementById('ec-note').value        = _clienteData.note || '';
+      openModal('modal-edit-cliente');
+    }
+
+    async function saveClienteEdit() {
+      var nome    = document.getElementById('ec-nome').value.trim();
+      var cognome = document.getElementById('ec-cognome').value.trim();
+      if (!nome || !cognome) { showToast('Nome e cognome sono obbligatori', 'error'); return; }
+
+      var payload = {
+        nome:          nome,
+        cognome:       cognome,
+        email:         document.getElementById('ec-email').value.trim(),
+        telefono:      document.getElementById('ec-telefono').value.trim(),
+        codiceFiscale: document.getElementById('ec-cf').value.trim(),
+        dataNascita:   document.getElementById('ec-dataNascita').value,
+        indirizzo:     document.getElementById('ec-indirizzo').value.trim(),
+        note:          document.getElementById('ec-note').value.trim(),
+        updatedAt:     firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      try {
+        await db.collection('clienti').doc(CLIENT_ID).update(payload);
+        _clienteData = Object.assign(_clienteData, payload);
+        renderHeader(_clienteData);
+        closeModal('modal-edit-cliente');
+        showToast('Profilo aggiornato', 'success');
+      } catch (e) {
+        console.error(e);
+        showToast('Errore nel salvataggio', 'error');
+      }
+    }
+  </script>
+</body>
+</html>

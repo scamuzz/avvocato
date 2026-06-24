@@ -3,109 +3,148 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Udienze - Studio Legale</title>
+  <title>Udienze — Studio Legale</title>
   <link rel="stylesheet" href="../css/style.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <style>
+    .modal-overlay.active { opacity: 1; visibility: visible; }
+    .modal-overlay.active .modal { transform: scale(1) translateY(0); }
+    tr.upcoming td { background: var(--warning-light) !important; }
+    .prossime-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--grey-100); }
+    .prossime-item:last-child { border-bottom: none; }
+    .prossime-date-box { min-width: 50px; text-align: center; background: var(--warning-light); border-radius: var(--radius); padding: 8px 6px; color: var(--warning); }
+    .prossime-date-box .day { font-size: 1.3rem; font-weight: 700; line-height: 1; }
+    .prossime-date-box .month { font-size: 10px; text-transform: uppercase; letter-spacing: .05em; }
+    .prossime-info { flex: 1; }
+    .prossime-tribunale { font-weight: 600; color: var(--text); }
+    .prossime-meta { font-size: 12px; color: var(--text-muted); }
+  </style>
 </head>
 <body data-protected="true">
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-<aside class="sidebar" id="sidebar">
-  <div class="sidebar-logo"><i class="fas fa-balance-scale"></i><span>Studio Legale</span></div>
-  <nav class="sidebar-nav"><ul>
-    <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-    <li class="nav-section">Gestione</li>
-    <li><a href="clienti.html"><i class="fas fa-users"></i> Clienti</a></li>
-    <li><a href="pratiche.html"><i class="fas fa-briefcase"></i> Pratiche</a></li>
-    <li class="nav-section">Agenda</li>
-    <li><a href="appuntamenti.html"><i class="fas fa-calendar-check"></i> Appuntamenti</a></li>
-    <li><a href="udienze.html" class="active"><i class="fas fa-gavel"></i> Udienze</a></li>
-    <li class="nav-section">Archivio</li>
-    <li><a href="documenti.html"><i class="fas fa-file-alt"></i> Documenti</a></li>
-    <li><a href="note.html"><i class="fas fa-sticky-note"></i> Note Interne</a></li>
-    <li><a href="richieste.html"><i class="fas fa-inbox"></i> Richieste</a></li>
-  </ul></nav>
-</aside>
-<nav class="topnav">
-  <button class="sidebar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-  <span class="topnav-title">Udienze</span>
-  <div class="topnav-user">
-    <div class="user-avatar" id="userAvatar">--</div>
-    <span class="topnav-user-name" id="userDisplayName"></span>
-    <button onclick="logoutUser()" class="btn btn-sm btn-danger"><i class="fas fa-sign-out-alt"></i> Esci</button>
+  <aside class="sidebar" id="sidebar">
+    <a class="sidebar-logo" href="dashboard.html">
+      <div class="sidebar-logo-icon">⚖</div>
+      <div class="sidebar-logo-text">
+        <span class="sidebar-logo-title">Studio Legale</span>
+        <span class="sidebar-logo-sub">Avv. C. Scamuzzi</span>
+      </div>
+    </a>
+    <button class="sidebar-toggle" id="sidebarCollapseBtn" aria-label="Comprimi">‹</button>
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">Gestione</span>
+      <a href="dashboard.html" class="nav-item"><span class="nav-item-icon"><i class="fas fa-tachometer-alt"></i></span><span class="nav-item-text">Dashboard</span></a>
+      <a href="clienti.html" class="nav-item"><span class="nav-item-icon"><i class="fas fa-users"></i></span><span class="nav-item-text">Clienti</span></a>
+      <a href="pratiche.html" class="nav-item"><span class="nav-item-icon"><i class="fas fa-folder-open"></i></span><span class="nav-item-text">Pratiche</span></a>
+      <a href="appuntamenti.html" class="nav-item"><span class="nav-item-icon"><i class="fas fa-calendar-alt"></i></span><span class="nav-item-text">Appuntamenti</span></a>
+      <a href="udienze.html" class="nav-item active"><span class="nav-item-icon"><i class="fas fa-gavel"></i></span><span class="nav-item-text">Udienze</span></a>
+      <a href="documenti.html" class="nav-item"><span class="nav-item-icon"><i class="fas fa-file-alt"></i></span><span class="nav-item-text">Documenti</span></a>
+      <a href="note.html" class="nav-item"><span class="nav-item-icon"><i class="fas fa-sticky-note"></i></span><span class="nav-item-text">Note</span></a>
+      <a href="richieste.html" class="nav-item"><span class="nav-item-icon"><i class="fas fa-envelope"></i></span><span class="nav-item-text">Richieste</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar" id="userAvatar">?</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="userDisplayName">—</div>
+          <div class="sidebar-user-role">Avvocato</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="main-content">
+    <nav class="navbar">
+      <div class="navbar-left">
+        <button class="navbar-hamburger" id="sidebarToggle" aria-label="Menu"><i class="fas fa-bars"></i></button>
+        <div class="navbar-breadcrumb"><span>Studio Legale</span><span>›</span><span class="current">Udienze</span></div>
+      </div>
+      <div class="navbar-right">
+        <button class="btn-logout" onclick="logoutUser()"><i class="fas fa-sign-out-alt"></i> Esci</button>
+      </div>
+    </nav>
+    <div class="page-container">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Udienze</h1>
+          <p class="page-subtitle">Calendario delle udienze in tribunale</p>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-primary" onclick="openNewUdModal()"><i class="fas fa-plus"></i> Nuova Udienza</button>
+        </div>
+      </div>
+      <div class="card mb-4">
+        <div class="card-header">
+          <h3 class="card-title"><span class="card-title-icon"><i class="fas fa-bell"></i></span>Prossime Udienze (7 giorni)</h3>
+        </div>
+        <div class="card-body">
+          <div id="prossime-udienze-list"><p class="text-muted text-sm"><i class="fas fa-spinner fa-spin"></i> Caricamento...</p></div>
+        </div>
+      </div>
+      <div class="card mb-4">
+        <div class="card-body">
+          <div class="d-flex align-center gap-3" style="flex-wrap:wrap;">
+            <div class="form-group" style="margin:0;min-width:220px;flex:1;">
+              <select class="form-control" id="filter-pratica-ud" onchange="applyUdFilters()">
+                <option value="">Tutte le pratiche</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label class="form-label text-sm" style="margin-bottom:4px;">Dal</label>
+              <input type="date" class="form-control" id="filter-da" onchange="applyUdFilters()">
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label class="form-label text-sm" style="margin-bottom:4px;">Al</label>
+              <input type="date" class="form-control" id="filter-a" onchange="applyUdFilters()">
+            </div>
+            <button class="btn btn-ghost btn-sm" style="align-self:flex-end;" onclick="document.getElementById('filter-pratica-ud').value='';document.getElementById('filter-da').value='';document.getElementById('filter-a').value='';applyUdFilters();">
+              <i class="fas fa-times"></i> Reset
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table class="table table-hover" id="tbl-udienze">
+          <thead><tr><th>Data</th><th>Ora</th><th>Tribunale</th><th>Giudice</th><th>Pratica</th><th>Note</th><th>Azioni</th></tr></thead>
+          <tbody id="tbl-udienze-body">
+            <tr><td colspan="7" class="text-center text-muted" style="padding:40px;"><i class="fas fa-spinner fa-spin"></i> Caricamento...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
-</nav>
-<main class="main-content">
-  <div class="page-content">
-    <div class="page-header">
-      <div class="page-header-left">
-        <h1>Udienze</h1>
-        <p>Gestisci le udienze in tribunale</p>
+  <div class="modal-overlay" id="modal-udienza">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-ud-title">Nuova Udienza</h3>
+        <button class="modal-close" onclick="closeModal('modal-udienza')"><i class="fas fa-times"></i></button>
       </div>
-      <div class="page-header-actions">
-        <button class="btn btn-primary" onclick="openAddModal()"><i class="fas fa-plus"></i> Nuova Udienza</button>
-      </div>
-    </div>
-    <!-- Upcoming hearings alert -->
-    <div id="prossimeContainer" class="mb-4"></div>
-    <!-- Filters -->
-    <div class="filter-bar">
-      <select id="filterPratica" class="form-control" style="max-width:220px" onchange="applyFilters()">
-        <option value="">Tutte le pratiche</option>
-      </select>
-      <input type="date" id="filterDa" class="form-control" style="max-width:150px" onchange="applyFilters()" title="Da data">
-      <input type="date" id="filterA" class="form-control" style="max-width:150px" onchange="applyFilters()" title="A data">
-      <button class="btn btn-secondary btn-sm" onclick="clearFilters()"><i class="fas fa-times"></i> Cancella</button>
-      <span class="text-muted text-small" id="countLabel"></span>
-    </div>
-    <div id="udienzeContainer">
-      <div class="empty-state">
-        <i class="fas fa-spinner fa-spin" style="font-size:2rem;color:var(--text-light)"></i>
-        <p>Caricamento...</p>
-      </div>
-    </div>
-  </div>
-</main>
-
-<!-- Add/Edit Modal -->
-<div class="modal-overlay" id="udienzaModalOverlay">
-  <div class="modal modal-lg">
-    <div class="modal-header">
-      <h3 id="udienzaModalTitle">Nuova Udienza</h3>
-      <button class="modal-close" onclick="closeModal('udienzaModalOverlay')"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="modal-body">
-      <form id="udienzaForm">
-        <input type="hidden" id="udienzaId">
+      <div class="modal-body">
         <div class="form-group">
-          <label class="form-label">Pratica *</label>
-          <select id="uPraticaId" class="form-control" required><option value="">Seleziona pratica...</option></select>
+          <label class="form-label">Pratica <span class="required">*</span></label>
+          <select class="form-control" id="f-ud-praticaId"><option value="">Seleziona pratica...</option></select>
         </div>
         <div class="form-row">
-          <div class="form-group"><label class="form-label">Data *</label><input type="date" id="uData" class="form-control" required></div>
-          <div class="form-group"><label class="form-label">Ora</label><input type="time" id="uOra" class="form-control"></div>
+          <div class="form-group"><label class="form-label">Data <span class="required">*</span></label><input type="date" class="form-control" id="f-ud-data"></div>
+          <div class="form-group"><label class="form-label">Ora <span class="required">*</span></label><input type="time" class="form-control" id="f-ud-ora"></div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label class="form-label">Tribunale *</label><input type="text" id="uTribunale" class="form-control" required placeholder="Tribunale di Roma"></div>
-          <div class="form-group"><label class="form-label">Giudice</label><input type="text" id="uGiudice" class="form-control" placeholder="Dott.ssa Verdi"></div>
+          <div class="form-group"><label class="form-label">Tribunale <span class="required">*</span></label><input type="text" class="form-control" id="f-ud-tribunale" placeholder="Es: Tribunale di Milano"></div>
+          <div class="form-group"><label class="form-label">Giudice</label><input type="text" class="form-control" id="f-ud-giudice" placeholder="Cognome giudice"></div>
         </div>
-        <div class="form-group"><label class="form-label">Note</label><textarea id="uNote" class="form-control" rows="3" placeholder="Note sull'udienza..."></textarea></div>
-      </form>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('udienzaModalOverlay')">Annulla</button>
-      <button class="btn btn-primary" onclick="saveUdienza()"><i class="fas fa-save"></i> Salva</button>
+        <div class="form-group"><label class="form-label">Note</label><textarea class="form-control" id="f-ud-note" rows="3" placeholder="Informazioni aggiuntive..."></textarea></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('modal-udienza')">Annulla</button>
+        <button class="btn btn-primary" onclick="saveUdienza()"><i class="fas fa-save"></i> Salva</button>
+      </div>
     </div>
   </div>
-</div>
-
-<div id="toast-container"></div>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
-<script src="../js/firebase-config.js"></script>
-<script src="../js/utilities.js"></script>
-<script src="../js/auth.js"></script>
-<script src="../js/udienze.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+  <script src="../js/firebase-config.js"></script>
+  <script src="../js/utilities.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/udienze.js"></script>
 </body>
 </html>

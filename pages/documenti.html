@@ -1,105 +1,182 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Documenti - Studio Legale</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documenti — Studio Legale</title>
   <link rel="stylesheet" href="../css/style.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <style>
+    .modal-overlay.active { opacity: 1; visibility: visible; }
+    .modal-overlay.active .modal { transform: scale(1) translateY(0); }
+    #docs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+    .doc-card { background: var(--white); border: 1px solid var(--grey-200); border-radius: var(--radius-lg); padding: 20px 16px 16px; display: flex; flex-direction: column; gap: 10px; transition: var(--transition); }
+    .doc-card:hover { box-shadow: var(--shadow-md); border-color: var(--accent); }
+    .doc-icon { font-size: 2.5rem; text-align: center; margin-bottom: 4px; }
+    .doc-icon .fa-file-pdf { color: #E53E3E; }
+    .doc-icon .fa-file-contract { color: #3182CE; }
+    .doc-icon .fa-file-invoice { color: #38A169; }
+    .doc-icon .fa-envelope { color: #D69E2E; }
+    .doc-icon .fa-file { color: var(--grey-400); }
+    .doc-name { font-weight: 600; font-size: 13px; color: var(--text); line-height: 1.3; word-break: break-all; }
+    .doc-meta { font-size: 11px; color: var(--text-muted); }
+    .doc-actions { display: flex; gap: 8px; margin-top: auto; }
+    .doc-actions .btn { flex: 1; font-size: 12px; padding: 6px 10px; }
+    #drop-zone { border: 2px dashed var(--grey-300); border-radius: var(--radius-lg); padding: 40px 20px; text-align: center; cursor: pointer; transition: var(--transition); color: var(--text-muted); }
+    #drop-zone.drag-over { border-color: var(--accent); background: var(--info-light); color: var(--accent); }
+    #drop-zone .drop-icon { font-size: 2rem; margin-bottom: 12px; display: block; }
+    #drop-zone input[type="file"] { display: none; }
+    #drop-zone .drop-filename { font-size: 13px; font-weight: 600; color: var(--text); margin-top: 8px; }
+    #up-progress { display: none; margin-top: 12px; }
+    .progress-bar-track { background: var(--grey-200); border-radius: var(--radius-full); height: 8px; overflow: hidden; }
+    .progress-bar-fill { background: var(--accent); height: 100%; width: 0%; transition: width 0.2s; border-radius: var(--radius-full); }
+    .progress-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; text-align: center; }
+  </style>
 </head>
 <body data-protected="true">
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-<aside class="sidebar" id="sidebar">
-  <div class="sidebar-logo"><i class="fas fa-balance-scale"></i><span>Studio Legale</span></div>
-  <nav class="sidebar-nav"><ul>
-    <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-    <li class="nav-section">Gestione</li>
-    <li><a href="clienti.html"><i class="fas fa-users"></i> Clienti</a></li>
-    <li><a href="pratiche.html"><i class="fas fa-briefcase"></i> Pratiche</a></li>
-    <li class="nav-section">Agenda</li>
-    <li><a href="appuntamenti.html"><i class="fas fa-calendar-check"></i> Appuntamenti</a></li>
-    <li><a href="udienze.html"><i class="fas fa-gavel"></i> Udienze</a></li>
-    <li class="nav-section">Archivio</li>
-    <li><a href="documenti.html" class="active"><i class="fas fa-file-alt"></i> Documenti</a></li>
-    <li><a href="note.html"><i class="fas fa-sticky-note"></i> Note Interne</a></li>
-    <li><a href="richieste.html"><i class="fas fa-inbox"></i> Richieste</a></li>
-  </ul></nav>
-</aside>
-<nav class="topnav">
-  <button class="sidebar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-  <span class="topnav-title">Documenti</span>
-  <div class="topnav-user">
-    <div class="user-avatar" id="userAvatar">--</div>
-    <span class="topnav-user-name" id="userDisplayName"></span>
-    <button onclick="logoutUser()" class="btn btn-sm btn-danger"><i class="fas fa-sign-out-alt"></i> Esci</button>
-  </div>
-</nav>
-<main class="main-content">
-  <div class="page-content">
-    <div class="page-header">
-      <div class="page-header-left"><h1>Documenti</h1><p>Gestisci i documenti delle pratiche</p></div>
-      <div class="page-header-actions">
-        <button class="btn btn-primary" onclick="openUploadModal()"><i class="fas fa-upload"></i> Carica Documento</button>
+  <aside class="sidebar" id="sidebar">
+    <a class="sidebar-logo" href="dashboard.html">
+      <div class="sidebar-logo-icon">⚖</div>
+      <div class="sidebar-logo-text">
+        <span class="sidebar-logo-title">Studio Legale</span>
+        <span class="sidebar-logo-sub">Avv. C. Scamuzzi</span>
       </div>
-    </div>
-    <div class="filter-bar">
-      <select id="filterPratica" class="form-control" style="max-width:220px" onchange="applyFilters()"><option value="">Tutte le pratiche</option></select>
-      <select id="filterTipo" class="form-control" style="max-width:160px" onchange="applyFilters()">
-        <option value="">Tutti i tipi</option>
-        <option>Atto</option><option>Contratto</option><option>Sentenza</option><option>Procura</option><option>Documento cliente</option><option>Altro</option>
-      </select>
-      <div class="search-input-wrap flex-1"><i class="fas fa-search"></i><input type="text" id="searchInput" class="form-control search-input" placeholder="Cerca documento..." oninput="applyFilters()"></div>
-      <span class="text-muted text-small" id="countLabel"></span>
-    </div>
-    <div id="documentiContainer"><div class="empty-state"><i class="fas fa-spinner fa-spin" style="font-size:2rem;color:var(--text-light)"></i><p>Caricamento...</p></div></div>
-  </div>
-</main>
-
-<!-- Upload Modal -->
-<div class="modal-overlay" id="uploadModalOverlay">
-  <div class="modal">
-    <div class="modal-header"><h3>Carica Documento</h3><button class="modal-close" onclick="closeModal('uploadModalOverlay')"><i class="fas fa-times"></i></button></div>
-    <div class="modal-body">
-      <div class="form-group"><label class="form-label">Pratica *</label><select id="uploadPraticaId" class="form-control" required><option value="">Seleziona pratica...</option></select></div>
-      <div class="form-group"><label class="form-label">Tipo documento</label>
-        <select id="uploadTipo" class="form-control"><option>Atto</option><option>Contratto</option><option>Sentenza</option><option>Procura</option><option>Documento cliente</option><option>Altro</option></select>
-      </div>
-      <div class="form-group"><label class="form-label">File *</label>
-        <div id="dropZone" style="border:2px dashed #E2E8F0;border-radius:8px;padding:2rem;text-align:center;cursor:pointer;transition:all 0.2s" onclick="document.getElementById('fileInput').click()">
-          <i class="fas fa-cloud-upload-alt" style="font-size:2rem;color:var(--text-light);display:block;margin-bottom:0.5rem"></i>
-          <p style="color:var(--text-muted);font-size:0.875rem">Trascina o clicca per selezionare</p>
-          <p style="color:var(--text-light);font-size:0.78rem">PDF, Word, immagini — max 50MB</p>
-          <div id="selectedFileName" style="margin-top:0.5rem;font-weight:600;color:var(--primary)"></div>
+    </a>
+    <button class="sidebar-toggle" id="sidebarCollapseBtn" aria-label="Comprimi">‹</button>
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">Gestione</span>
+      <a href="dashboard.html" class="nav-item"><span class="nav-item-icon"><i class="fas fa-tachometer-alt"></i></span><span class="nav-item-text">Dashboard</span></a>
+      <a href="clienti.html" class="nav-item"><span class="nav-item-icon"><i class="fas fa-users"></i></span><span class="nav-item-text">Clienti</span></a>
+      <a href="pratiche.html" class="nav-item"><span class="nav-item-icon"><i class="fas fa-folder-open"></i></span><span class="nav-item-text">Pratiche</span></a>
+      <a href="appuntamenti.html" class="nav-item"><span class="nav-item-icon"><i class="fas fa-calendar-alt"></i></span><span class="nav-item-text">Appuntamenti</span></a>
+      <a href="udienze.html" class="nav-item"><span class="nav-item-icon"><i class="fas fa-gavel"></i></span><span class="nav-item-text">Udienze</span></a>
+      <a href="documenti.html" class="nav-item active"><span class="nav-item-icon"><i class="fas fa-file-alt"></i></span><span class="nav-item-text">Documenti</span></a>
+      <a href="note.html" class="nav-item"><span class="nav-item-icon"><i class="fas fa-sticky-note"></i></span><span class="nav-item-text">Note</span></a>
+      <a href="richieste.html" class="nav-item"><span class="nav-item-icon"><i class="fas fa-envelope"></i></span><span class="nav-item-text">Richieste</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar" id="userAvatar">?</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="userDisplayName">—</div>
+          <div class="sidebar-user-role">Avvocato</div>
         </div>
-        <input type="file" id="fileInput" style="display:none" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.txt" onchange="fileSelected(this)">
-      </div>
-      <div id="uploadProgress" style="display:none">
-        <div class="progress" style="margin-bottom:0.5rem"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
-        <div class="text-small text-muted text-center" id="progressText">Caricamento...</div>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('uploadModalOverlay')">Annulla</button>
-      <button class="btn btn-primary" id="btnUpload" onclick="uploadDocumento()"><i class="fas fa-upload"></i> Carica</button>
+  </aside>
+  <div class="main-content">
+    <nav class="navbar">
+      <div class="navbar-left">
+        <button class="navbar-hamburger" id="sidebarToggle" aria-label="Menu"><i class="fas fa-bars"></i></button>
+        <div class="navbar-breadcrumb"><span>Studio Legale</span><span>›</span><span class="current">Documenti</span></div>
+      </div>
+      <div class="navbar-right">
+        <button class="btn-logout" onclick="logoutUser()"><i class="fas fa-sign-out-alt"></i> Esci</button>
+      </div>
+    </nav>
+    <div class="page-container">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Documenti</h1>
+          <p class="page-subtitle">Archivio documenti delle pratiche</p>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-primary" onclick="openModal('modal-upload')"><i class="fas fa-upload"></i> Carica Documento</button>
+        </div>
+      </div>
+      <div class="card mb-4">
+        <div class="card-body">
+          <div class="d-flex align-center gap-3" style="flex-wrap:wrap;">
+            <div class="form-group" style="margin:0;min-width:220px;flex:1;">
+              <select class="form-control" id="filter-pratica-doc" onchange="applyDocFilters()">
+                <option value="">Tutte le pratiche</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0;min-width:160px;">
+              <select class="form-control" id="filter-tipo" onchange="applyDocFilters()">
+                <option value="">Tutti i tipi</option>
+                <option value="Atto">Atto</option>
+                <option value="Contratto">Contratto</option>
+                <option value="Fattura">Fattura</option>
+                <option value="Corrispondenza">Corrispondenza</option>
+                <option value="Altro">Altro</option>
+              </select>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('filter-pratica-doc').value='';document.getElementById('filter-tipo').value='';applyDocFilters();">
+              <i class="fas fa-times"></i> Reset
+            </button>
+          </div>
+        </div>
+      </div>
+      <div id="docs-grid">
+        <div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:40px;">
+          <i class="fas fa-spinner fa-spin"></i> Caricamento...
+        </div>
+      </div>
     </div>
   </div>
-</div>
-
-<!-- PDF Preview Modal -->
-<div class="modal-overlay" id="previewModalOverlay">
-  <div class="modal modal-lg">
-    <div class="modal-header"><h3 id="previewTitle">Anteprima</h3><button class="modal-close" onclick="closeModal('previewModalOverlay')"><i class="fas fa-times"></i></button></div>
-    <div class="modal-body" style="padding:0"><iframe id="previewFrame" style="width:100%;height:500px;border:none"></iframe></div>
+  <!-- Upload Modal -->
+  <div class="modal-overlay" id="modal-upload">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Carica Documento</h3>
+        <button class="modal-close" onclick="closeModal('modal-upload')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Pratica <span class="required">*</span></label>
+          <select class="form-control" id="up-praticaId"><option value="">Seleziona pratica...</option></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tipo documento <span class="required">*</span></label>
+          <select class="form-control" id="up-tipo">
+            <option value="">Seleziona tipo...</option>
+            <option value="Atto">Atto</option>
+            <option value="Contratto">Contratto</option>
+            <option value="Fattura">Fattura</option>
+            <option value="Corrispondenza">Corrispondenza</option>
+            <option value="Altro">Altro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">File <span class="required">*</span></label>
+          <div id="drop-zone" onclick="document.getElementById('up-file').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+            <span class="drop-icon"><i class="fas fa-cloud-upload-alt"></i></span>
+            <div>Trascina il file qui o <strong>clicca per selezionare</strong></div>
+            <div id="drop-filename" class="drop-filename d-none"></div>
+            <input type="file" id="up-file" onchange="handleFileSelect(event)">
+          </div>
+        </div>
+        <div id="up-progress">
+          <div class="progress-bar-track"><div class="progress-bar-fill" id="up-progress-fill"></div></div>
+          <div class="progress-label" id="up-progress-label">0%</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('modal-upload')">Annulla</button>
+        <button class="btn btn-primary" id="btn-upload" onclick="saveUpload()"><i class="fas fa-upload"></i> Carica</button>
+      </div>
+    </div>
   </div>
-</div>
-
-<div id="toast-container"></div>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
-<script src="../js/firebase-config.js"></script>
-<script src="../js/utilities.js"></script>
-<script src="../js/auth.js"></script>
-<script src="../js/documenti.js"></script>
+  <!-- PDF Preview Modal -->
+  <div class="modal-overlay" id="modal-pdf">
+    <div class="modal modal-lg" style="max-width:900px;width:95%;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-pdf-title">Anteprima Documento</h3>
+        <button class="modal-close" onclick="closeModal('modal-pdf')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body" style="padding:0;">
+        <iframe id="pdf-iframe" style="width:100%;height:70vh;border:none;"></iframe>
+      </div>
+    </div>
+  </div>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+  <script src="../js/firebase-config.js"></script>
+  <script src="../js/utilities.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/documenti.js"></script>
 </body>
 </html>

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Accesso — Studio Legale Avv. C. Scamuzzi</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1E3A5F 0%, #2C5282 50%, #1a365d 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    .login-wrapper {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .login-card {
+      background: var(--white, #ffffff);
+      border-radius: var(--radius-xl, 16px);
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    .login-logo {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .login-logo-icon {
+      width: 70px; height: 70px;
+      background: linear-gradient(135deg, #1E3A5F, #3182CE);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem;
+      margin: 0 auto 16px;
+      color: white;
+    }
+    .login-logo-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #1E3A5F;
+      display: block;
+    }
+    .login-logo-sub {
+      font-size: 14px;
+      color: #718096;
+      display: block;
+      margin-top: 4px;
+    }
+
+    .login-card .form-group { margin-bottom: 20px; }
+    .login-card .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #2D3748;
+      margin-bottom: 6px;
+    }
+    .login-card .form-control {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #E2E8F0;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #2D3748;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+    .login-card .form-control:focus {
+      border-color: #3182CE;
+      box-shadow: 0 0 0 3px rgba(49,130,206,0.15);
+    }
+
+    .login-error {
+      color: #E53E3E;
+      font-size: 13px;
+      min-height: 1.2em;
+      margin-bottom: 8px;
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #1E3A5F, #3182CE);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn-login:hover { opacity: 0.92; }
+    .btn-login:active { transform: scale(0.99); }
+    .btn-login:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .login-footer {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .login-footer a {
+      color: #3182CE;
+      font-size: 13px;
+      text-decoration: none;
+    }
+    .login-footer a:hover { text-decoration: underline; }
+
+    .reset-section {
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid #E2E8F0;
+    }
+    .reset-section h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #2D3748;
+      margin-bottom: 14px;
+    }
+    .btn-reset {
+      padding: 9px 18px;
+      background: transparent;
+      color: #3182CE;
+      border: 1px solid #3182CE;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 10px;
+    }
+    .btn-reset:hover { background: #EBF8FF; }
+    .reset-msg { font-size: 13px; margin-top: 8px; min-height: 1.2em; }
+    .reset-msg.ok  { color: #38A169; }
+    .reset-msg.err { color: #E53E3E; }
+  </style>
+</head>
+<body data-page="login">
+
+  <div class="login-wrapper">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="login-logo-icon">⚖</div>
+        <span class="login-logo-title">Studio Legale</span>
+        <span class="login-logo-sub">Avv. C. Scamuzzi</span>
+      </div>
+
+      <form id="login-form" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="login-email">Email</label>
+          <input type="email" id="login-email" name="email" class="form-control"
+                 placeholder="avvocato@studio.it" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="login-password">Password</label>
+          <input type="password" id="login-password" name="password" class="form-control"
+                 placeholder="••••••••" required autocomplete="current-password">
+        </div>
+        <div class="login-error" id="login-error"></div>
+        <button type="submit" class="btn-login" id="login-btn">
+          <i class="fas fa-sign-in-alt"></i> Accedi
+        </button>
+      </form>
+
+      <div class="login-footer">
+        <a href="#" id="forgot-link">Password dimenticata?</a>
+      </div>
+
+      <div class="reset-section" id="reset-section" style="display:none;">
+        <h4><i class="fas fa-key"></i> Recupera Password</h4>
+        <input type="email" id="reset-email" class="form-control"
+               placeholder="Inserisci la tua email" autocomplete="email">
+        <button type="button" class="btn-reset" onclick="handleResetPassword()">
+          <i class="fas fa-paper-plane"></i> Invia email di recupero
+        </button>
+        <div class="reset-msg" id="reset-msg"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="../js/firebase-config.js"></script>
+  <script src="../js/utilities.js"></script>
+  <script src="../js/auth.js"></script>
+
+  <script>
+    function initLoginPage() {
+      // If already logged in → go to dashboard
+      auth.onAuthStateChanged(function(user) {
+        if (user) {
+          window.location.href = 'dashboard.html';
+        }
+      });
+
+      // Handle login form submit
+      document.getElementById('login-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        var email    = document.getElementById('login-email').value.trim();
+        var password = document.getElementById('login-password').value;
+        var errorEl  = document.getElementById('login-error');
+        var btn      = document.getElementById('login-btn');
+
+        errorEl.textContent = '';
+        if (!email || !password) {
+          errorEl.textContent = 'Inserisci email e password.';
+          return;
+        }
+
+        btn.disabled   = true;
+        btn.innerHTML  = '<i class="fas fa-spinner fa-spin"></i> Accesso in corso...';
+
+        try {
+          await auth.signInWithEmailAndPassword(email, password);
+          window.location.href = 'dashboard.html';
+        } catch (err) {
+          var msg = 'Credenziali non valide. Riprova.';
+          if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+            msg = 'Email o password errati.';
+          } else if (err.code === 'auth/invalid-email') {
+            msg = 'Indirizzo email non valido.';
+          } else if (err.code === 'auth/too-many-requests') {
+            msg = 'Troppi tentativi. Riprova più tardi.';
+          } else if (err.code === 'auth/user-disabled') {
+            msg = 'Account disabilitato. Contatta l\'amministratore.';
+          }
+          errorEl.textContent = msg;
+          btn.disabled  = false;
+          btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Accedi';
+        }
+      });
+
+      // Toggle reset section
+      document.getElementById('forgot-link').addEventListener('click', function(e) {
+        e.preventDefault();
+        var section = document.getElementById('reset-section');
+        section.style.display = section.style.display === 'none' ? 'block' : 'none';
+        if (section.style.display === 'block') {
+          document.getElementById('reset-email').value = document.getElementById('login-email').value;
+          document.getElementById('reset-msg').textContent = '';
+        }
+      });
+    }
+
+    async function handleResetPassword() {
+      var email  = document.getElementById('reset-email').value.trim();
+      var msgEl  = document.getElementById('reset-msg');
+      msgEl.className = 'reset-msg';
+      msgEl.textContent = '';
+
+      if (!email) {
+        msgEl.className = 'reset-msg err';
+        msgEl.textContent = 'Inserisci un indirizzo email.';
+        return;
+      }
+
+      try {
+        await auth.sendPasswordResetEmail(email);
+        msgEl.className = 'reset-msg ok';
+        msgEl.textContent = 'Email inviata! Controlla la tua casella di posta.';
+      } catch (err) {
+        msgEl.className = 'reset-msg err';
+        if (err.code === 'auth/user-not-found') {
+          msgEl.textContent = 'Nessun account trovato con questa email.';
+        } else if (err.code === 'auth/invalid-email') {
+          msgEl.textContent = 'Indirizzo email non valido.';
+        } else {
+          msgEl.textContent = 'Errore nell\'invio. Riprova più tardi.';
+        }
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', initLoginPage);
+  </script>
+</body>
+</html>

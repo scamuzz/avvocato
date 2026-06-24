@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Richieste di Contatto — Studio Legale</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <style>
+    .modal-overlay.active { opacity: 1; visibility: visible; }
+    .modal-overlay.active .modal { transform: scale(1) translateY(0); }
+
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+    .stat-card { background: var(--white); border: 1px solid var(--grey-200); border-radius: var(--radius-lg); padding: 20px; text-align: center; }
+    .stat-card .stat-number { font-size: 2rem; font-weight: 700; line-height: 1; }
+    .stat-card .stat-label { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+    .stat-card.nuova    .stat-number { color: var(--danger); }
+    .stat-card.gestione .stat-number { color: var(--warning); }
+    .stat-card.chiusa   .stat-number { color: var(--grey-400); }
+
+    .stato-filter-btn { border-radius: var(--radius-full); padding: 6px 16px; font-size: 13px; }
+    .stato-filter-btn.active { background: var(--primary); color: var(--white); border-color: var(--primary); }
+
+    .richiesta-detail-section { margin-bottom: 16px; }
+    .richiesta-detail-label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted); margin-bottom: 4px; font-weight: 600; }
+    .richiesta-detail-value { font-size: 14px; color: var(--text); line-height: 1.5; }
+    .richiesta-detail-message { background: var(--grey-50); border-radius: var(--radius); padding: 14px; line-height: 1.7; white-space: pre-wrap; }
+  </style>
+</head>
+<body data-protected="true">
+
+  <aside class="sidebar" id="sidebar">
+    <a class="sidebar-logo" href="dashboard.html">
+      <div class="sidebar-logo-icon">⚖</div>
+      <div class="sidebar-logo-text">
+        <span class="sidebar-logo-title">Studio Legale</span>
+        <span class="sidebar-logo-sub">Avv. C. Scamuzzi</span>
+      </div>
+    </a>
+    <button class="sidebar-toggle" id="sidebarCollapseBtn" aria-label="Comprimi">‹</button>
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">Gestione</span>
+      <a href="dashboard.html" class="nav-item">
+        <span class="nav-item-icon"><i class="fas fa-tachometer-alt"></i></span>
+        <span class="nav-item-text">Dashboard</span>
+      </a>
+      <a href="clienti.html" class="nav-item">
+        <span class="nav-item-icon"><i class="fas fa-users"></i></span>
+        <span class="nav-item-text">Clienti</span>
+      </a>
+      <a href="pratiche.html" class="nav-item">
+        <span class="nav-item-icon"><i class="fas fa-folder-open"></i></span>
+        <span class="nav-item-text">Pratiche</span>
+      </a>
+      <a href="appuntamenti.html" class="nav-item">
+        <span class="nav-item-icon"><i class="fas fa-calendar-alt"></i></span>
+        <span class="nav-item-text">Appuntamenti</span>
+      </a>
+      <a href="udienze.html" class="nav-item">
+        <span class="nav-item-icon"><i class="fas fa-gavel"></i></span>
+        <span class="nav-item-text">Udienze</span>
+      </a>
+      <a href="documenti.html" class="nav-item">
+        <span class="nav-item-icon"><i class="fas fa-file-alt"></i></span>
+        <span class="nav-item-text">Documenti</span>
+      </a>
+      <a href="note.html" class="nav-item">
+        <span class="nav-item-icon"><i class="fas fa-sticky-note"></i></span>
+        <span class="nav-item-text">Note</span>
+      </a>
+      <a href="richieste.html" class="nav-item active">
+        <span class="nav-item-icon"><i class="fas fa-envelope"></i></span>
+        <span class="nav-item-text">Richieste</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar" id="userAvatar">?</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="userDisplayName">—</div>
+          <div class="sidebar-user-role">Avvocato</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <nav class="navbar">
+      <div class="navbar-left">
+        <button class="navbar-hamburger" id="sidebarToggle" aria-label="Menu">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="navbar-breadcrumb">
+          <span>Studio Legale</span>
+          <span>›</span>
+          <span class="current">Richieste di Contatto</span>
+        </div>
+      </div>
+      <div class="navbar-right">
+        <button class="btn-logout" onclick="logoutUser()">
+          <i class="fas fa-sign-out-alt"></i> Esci
+        </button>
+      </div>
+    </nav>
+
+    <div class="page-container">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Richieste di Contatto</h1>
+          <p class="page-subtitle">Messaggi ricevuti dal form pubblico del sito</p>
+        </div>
+      </div>
+
+      <!-- Stats Row -->
+      <div class="stats-row">
+        <div class="stat-card nuova">
+          <div class="stat-number" id="stat-nuova">—</div>
+          <div class="stat-label"><i class="fas fa-envelope"></i> Nuove</div>
+        </div>
+        <div class="stat-card gestione">
+          <div class="stat-number" id="stat-gestione">—</div>
+          <div class="stat-label"><i class="fas fa-spinner"></i> In Gestione</div>
+        </div>
+        <div class="stat-card chiusa">
+          <div class="stat-number" id="stat-chiusa">—</div>
+          <div class="stat-label"><i class="fas fa-check"></i> Chiuse</div>
+        </div>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <div class="d-flex align-center gap-2 flex-wrap" id="stato-filter-btns">
+            <button class="btn btn-outline-primary stato-filter-btn active" onclick="filterByStato('')">
+              Tutti
+            </button>
+            <button class="btn btn-outline-primary stato-filter-btn" onclick="filterByStato('Nuova')">
+              <i class="fas fa-envelope"></i> Nuova
+            </button>
+            <button class="btn btn-outline-primary stato-filter-btn" onclick="filterByStato('In gestione')">
+              <i class="fas fa-spinner"></i> In gestione
+            </button>
+            <button class="btn btn-outline-primary stato-filter-btn" onclick="filterByStato('Chiusa')">
+              <i class="fas fa-check"></i> Chiusa
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Richieste Table -->
+      <div class="table-wrapper">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Email</th>
+              <th>Telefono</th>
+              <th>Messaggio</th>
+              <th>Data</th>
+              <th>Stato</th>
+              <th>Azioni</th>
+            </tr>
+          </thead>
+          <tbody id="tbl-richieste-body">
+            <tr><td colspan="7" class="text-center text-muted" style="padding:40px;">
+              <i class="fas fa-spinner fa-spin"></i> Caricamento...
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Richiesta Detail Modal -->
+  <div class="modal-overlay" id="modal-richiesta-detail">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h3 class="modal-title">Richiesta di Contatto</h3>
+        <button class="modal-close" onclick="closeModal('modal-richiesta-detail')">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+          <div class="richiesta-detail-section">
+            <div class="richiesta-detail-label">Nome</div>
+            <div class="richiesta-detail-value" id="rd-nome"></div>
+          </div>
+          <div class="richiesta-detail-section">
+            <div class="richiesta-detail-label">Data</div>
+            <div class="richiesta-detail-value" id="rd-data"></div>
+          </div>
+          <div class="richiesta-detail-section">
+            <div class="richiesta-detail-label">Email</div>
+            <div class="richiesta-detail-value" id="rd-email"></div>
+          </div>
+          <div class="richiesta-detail-section">
+            <div class="richiesta-detail-label">Telefono</div>
+            <div class="richiesta-detail-value" id="rd-telefono"></div>
+          </div>
+        </div>
+        <div class="richiesta-detail-section">
+          <div class="richiesta-detail-label">Messaggio</div>
+          <div class="richiesta-detail-value richiesta-detail-message" id="rd-messaggio"></div>
+        </div>
+        <div class="richiesta-detail-section mt-4">
+          <label class="form-label">Aggiorna stato</label>
+          <select class="form-control" id="rd-stato" style="max-width:240px;">
+            <option value="Nuova">Nuova</option>
+            <option value="In gestione">In gestione</option>
+            <option value="Chiusa">Chiusa</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-danger btn-sm" id="rd-btn-delete">
+          <i class="fas fa-trash"></i> Elimina
+        </button>
+        <button class="btn btn-ghost" onclick="closeModal('modal-richiesta-detail')">Chiudi</button>
+        <button class="btn btn-primary" id="rd-btn-save">
+          <i class="fas fa-save"></i> Aggiorna Stato
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+  <script src="../js/firebase-config.js"></script>
+  <script src="../js/utilities.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/richieste.js"></script>
+</body>
+</html>

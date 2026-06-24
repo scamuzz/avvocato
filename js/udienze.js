@@ -1,136 +1,209 @@
 // ============================================================
-// UDIENZE.JS - Hearing management CRUD
+// UDIENZE.JS — Hearing management
 // ============================================================
-var allUdienze = [];
-var praticheMap = {};
+
+var _udList      = [];
+var _udFiltered  = [];
+var _udEditingId = null;
+var _praticheUdMap = {};
+
+document.addEventListener('DOMContentLoaded', function() {
+  loadUdienze();
+  loadPraticheDropdown();
+});
+
+function _fmtDateUd(str) {
+  if (!str) return '—';
+  var p = str.split('-');
+  if (p.length !== 3) return str;
+  return p[2] + '/' + p[1] + '/' + p[0];
+}
+
+function _monthAbbr(str) {
+  var months = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+  if (!str) return '';
+  var p = str.split('-');
+  if (p.length < 2) return '';
+  return months[parseInt(p[1], 10) - 1] || '';
+}
+
+function _dayNum(str) {
+  if (!str) return '';
+  var p = str.split('-');
+  return p[2] ? String(parseInt(p[2], 10)) : '';
+}
+
+function _isUpcoming(dataStr) {
+  if (!dataStr) return false;
+  var today = new Date();
+  today.setHours(0,0,0,0);
+  var d = new Date(dataStr + 'T00:00:00');
+  var diff = Math.floor((d - today) / 86400000);
+  return diff >= 0 && diff <= 7;
+}
 
 async function loadUdienze() {
   try {
-    const [udiSnap, pratSnap] = await Promise.all([
-      db.collection('udienze').orderBy('data').get(),
-      db.collection('pratiche').get()
-    ]);
-    pratSnap.forEach(d => { praticheMap[d.id] = d.data().titolo || 'Pratica'; });
-    allUdienze = udiSnap.docs.map(d => ({ ...d.data(), id: d.id }));
-    loadProssime();
-    populatePraticheFilter();
-    applyFilters();
-  } catch (err) { showToast('Errore caricamento udienze', 'error'); }
-}
-
-function loadProssime() {
-  const today = formatDateInput(new Date());
-  const week = new Date(); week.setDate(week.getDate() + 7);
-  const weekStr = formatDateInput(week);
-  const prossime = allUdienze.filter(u => u.data >= today && u.data <= weekStr);
-  const container = document.getElementById('prossimeContainer');
-  if (!prossime.length) { container.innerHTML = ''; return; }
-  container.innerHTML = `<div class="alert alert-warning"><i class="fas fa-exclamation-triangle"></i>
-    <div><strong>${prossime.length} udienza/e nei prossimi 7 giorni:</strong>
-    <ul style="margin-top:0.4rem;padding-left:1.25rem">
-    ${prossime.map(u=>`<li>${formatDate(u.data)} ${u.ora||''} — ${sanitizeInput(u.tribunale)} (${sanitizeInput(praticheMap[u.praticaId]||'—')})</li>`).join('')}
-    </ul></div></div>`;
-}
-
-function populatePraticheFilter() {
-  const sel = document.getElementById('filterPratica');
-  sel.innerHTML = '<option value="">Tutte le pratiche</option>';
-  Object.entries(praticheMap).forEach(([id,t]) => { sel.innerHTML += `<option value="${id}">${sanitizeInput(t)}</option>`; });
-}
-
-function applyFilters() {
-  const pratica = document.getElementById('filterPratica').value;
-  const da = document.getElementById('filterDa').value;
-  const a = document.getElementById('filterA').value;
-  let filtered = allUdienze.filter(u => (!pratica||u.praticaId===pratica)&&(!da||u.data>=da)&&(!a||u.data<=a));
-  document.getElementById('countLabel').textContent = filtered.length + ' udienze';
-  renderUdienze(filtered);
-}
-
-function clearFilters() {
-  document.getElementById('filterPratica').value = '';
-  document.getElementById('filterDa').value = '';
-  document.getElementById('filterA').value = '';
-  applyFilters();
-}
-
-function renderUdienze(list) {
-  const container = document.getElementById('udienzeContainer');
-  if (!list.length) { container.innerHTML = '<div class="empty-state"><i class="fas fa-gavel"></i><h3>Nessuna udienza trovata</h3></div>'; return; }
-  const today = formatDateInput(new Date());
-  const week = new Date(); week.setDate(week.getDate() + 7);
-  const weekStr = formatDateInput(week);
-  const rows = list.map(u => {
-    const urgent = u.data >= today && u.data <= weekStr;
-    const past = u.data < today;
-    return `<tr style="background:${urgent?'#FFFFF0':''};opacity:${past?'0.7':'1'}">
-      <td><div class="font-semibold">${formatDate(u.data)}</div><div class="text-small text-muted">${sanitizeInput(u.ora||'')}</div></td>
-      <td>${sanitizeInput(u.tribunale||'—')}</td>
-      <td>${sanitizeInput(u.giudice||'—')}</td>
-      <td>${sanitizeInput(praticheMap[u.praticaId]||'—')}</td>
-      <td class="text-small">${sanitizeInput(truncate(u.note||'',60))}</td>
-      <td><div class="table-actions">
-        ${urgent?'<span class="badge badge-warning">Imminente</span>':''}
-        <button class="btn btn-sm btn-secondary" onclick="openEditModal('${u.id}')"><i class="fas fa-edit"></i></button>
-        <button class="btn btn-sm btn-danger" onclick="confirmDelete('${u.id}')"><i class="fas fa-trash"></i></button>
-      </div></td>
-    </tr>`;
-  }).join('');
-  container.innerHTML = `<div class="card"><div class="table-wrapper"><table class="table">
-    <thead><tr><th>Data/Ora</th><th>Tribunale</th><th>Giudice</th><th>Pratica</th><th>Note</th><th style="text-align:right">Azioni</th></tr></thead>
-    <tbody>${rows}</tbody></table></div></div>`;
-}
-
-async function loadPraticheDropdown() {
-  const sel = document.getElementById('uPraticaId');
-  sel.innerHTML = '<option value="">Seleziona pratica...</option>';
-  const snap = await db.collection('pratiche').orderBy('titolo').get();
-  snap.forEach(d => { sel.innerHTML += `<option value="${d.id}">${sanitizeInput(d.data().titolo||'Pratica')}</option>`; });
-}
-
-function openAddModal() {
-  document.getElementById('udienzaId').value = '';
-  document.getElementById('udienzaForm').reset();
-  document.getElementById('uData').value = formatDateInput(new Date());
-  document.getElementById('udienzaModalTitle').textContent = 'Nuova Udienza';
-  loadPraticheDropdown();
-  openModal('udienzaModalOverlay');
-}
-
-async function openEditModal(id) {
-  const doc = await db.collection('udienze').doc(id).get();
-  if (!doc.exists) return;
-  const u = doc.data();
-  await loadPraticheDropdown();
-  populateForm({ udienzaId: id, uPraticaId: u.praticaId, uData: u.data, uOra: u.ora, uTribunale: u.tribunale, uGiudice: u.giudice, uNote: u.note });
-  document.getElementById('udienzaModalTitle').textContent = 'Modifica Udienza';
-  openModal('udienzaModalOverlay');
-}
-
-async function saveUdienza() {
-  const id = document.getElementById('udienzaId').value;
-  const praticaId = document.getElementById('uPraticaId').value;
-  const data = document.getElementById('uData').value;
-  const tribunale = document.getElementById('uTribunale').value.trim();
-  if (!praticaId||!data||!tribunale) { showToast('Compila i campi obbligatori','warning'); return; }
-  const payload = { praticaId, data, ora: document.getElementById('uOra').value, tribunale, giudice: document.getElementById('uGiudice').value.trim(), note: document.getElementById('uNote').value.trim() };
-  try {
-    if (id) { await db.collection('udienze').doc(id).update(payload); showToast('Udienza aggiornata!','success'); }
-    else { await db.collection('udienze').add(payload); showToast('Udienza aggiunta!','success'); }
-    closeModal('udienzaModalOverlay');
-    loadUdienze();
-  } catch (err) { showToast('Errore: '+err.message,'error'); }
-}
-
-async function confirmDelete(id) {
-  if (await confirmDialog('Eliminare questa udienza?')) {
-    await db.collection('udienze').doc(id).delete();
-    showToast('Eliminata','success');
-    loadUdienze();
+    var snap = await db.collection('udienze').orderBy('data', 'asc').get();
+    _udList = [];
+    snap.forEach(function(doc) {
+      _udList.push(Object.assign({ id: doc.id }, doc.data()));
+    });
+    _udFiltered = _udList.slice();
+    renderUdienze(_udFiltered);
+    loadProssimeUdienze();
+  } catch (e) {
+    console.error('Errore caricamento udienze:', e);
+    var tbody = document.getElementById('tbl-udienze-body');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Errore nel caricamento</td></tr>';
+    showToast('Errore nel caricamento delle udienze', 'error');
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  initUI();
-  auth.onAuthStateChanged(u => { if (u) loadUdienze(); });
-});
+function loadProssimeUdienze() {
+  var container = document.getElementById('prossime-udienze-list');
+  if (!container) return;
+  var prossime = _udList.filter(function(u) { return _isUpcoming(u.data); });
+  prossime.sort(function(a, b) { return (a.data || '').localeCompare(b.data || ''); });
+  if (prossime.length === 0) {
+    container.innerHTML = '<p class="text-muted text-sm">Nessuna udienza nei prossimi 7 giorni</p>';
+    return;
+  }
+  var html = '';
+  prossime.forEach(function(u) {
+    var pratica = _praticheUdMap[u.praticaId] || u.praticaId || '—';
+    html += '<div class="prossime-item">';
+    html += '<div class="prossime-date-box"><div class="day">' + _dayNum(u.data) + '</div><div class="month">' + _monthAbbr(u.data) + '</div></div>';
+    html += '<div class="prossime-info"><div class="prossime-tribunale">' + escapeHtml(u.tribunale || '—') + '</div>';
+    html += '<div class="prossime-meta">' + escapeHtml(u.ora || '') + ' · ' + escapeHtml(pratica) + '</div>';
+    if (u.giudice) html += '<div class="prossime-meta">Giudice: ' + escapeHtml(u.giudice) + '</div>';
+    html += '</div>';
+    html += '<button class="btn btn-ghost btn-sm btn-icon" onclick="openEditUdModal(\'' + u.id + '\')" title="Modifica"><i class="fas fa-edit"></i></button>';
+    html += '</div>';
+  });
+  container.innerHTML = html;
+}
+
+function renderUdienze(list) {
+  var tbody = document.getElementById('tbl-udienze-body');
+  if (!list || list.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7">' + emptyStateHtml('fas fa-gavel', 'Nessuna udienza trovata') + '</td></tr>';
+    return;
+  }
+  var html = '';
+  list.forEach(function(u) {
+    var pratica  = _praticheUdMap[u.praticaId] || u.praticaId || '—';
+    var rowClass = _isUpcoming(u.data) ? ' class="upcoming"' : '';
+    html += '<tr' + rowClass + '>';
+    html += '<td>' + _fmtDateUd(u.data) + '</td>';
+    html += '<td>' + escapeHtml(u.ora || '—') + '</td>';
+    html += '<td>' + escapeHtml(u.tribunale || '—') + '</td>';
+    html += '<td>' + escapeHtml(u.giudice || '—') + '</td>';
+    html += '<td>' + escapeHtml(pratica) + '</td>';
+    html += '<td class="text-truncate" style="max-width:200px;" title="' + escapeHtml(u.note || '') + '">' + escapeHtml(truncate(u.note || '', 60)) + '</td>';
+    html += '<td class="table-actions">';
+    html += '<button class="btn btn-ghost btn-sm btn-icon" title="Modifica" onclick="openEditUdModal(\'' + u.id + '\')">';
+    html += '<i class="fas fa-edit"></i></button> ';
+    html += '<button class="btn btn-danger btn-sm btn-icon" title="Elimina" onclick="deleteUdienza(\'' + u.id + '\')">';
+    html += '<i class="fas fa-trash"></i></button>';
+    html += '</td></tr>';
+  });
+  tbody.innerHTML = html;
+}
+
+function applyUdFilters() {
+  var praticaId = document.getElementById('filter-pratica-ud').value;
+  var da        = document.getElementById('filter-da').value;
+  var a         = document.getElementById('filter-a').value;
+  _udFiltered = _udList.filter(function(u) {
+    if (praticaId && u.praticaId !== praticaId) return false;
+    if (da && u.data && u.data < da) return false;
+    if (a  && u.data && u.data > a)  return false;
+    return true;
+  });
+  renderUdienze(_udFiltered);
+}
+
+function openNewUdModal() {
+  _udEditingId = null;
+  document.getElementById('modal-ud-title').textContent = 'Nuova Udienza';
+  document.getElementById('f-ud-praticaId').value = '';
+  document.getElementById('f-ud-data').value      = '';
+  document.getElementById('f-ud-ora').value       = '';
+  document.getElementById('f-ud-tribunale').value = '';
+  document.getElementById('f-ud-giudice').value   = '';
+  document.getElementById('f-ud-note').value      = '';
+  openModal('modal-udienza');
+}
+
+function openEditUdModal(id) {
+  var ud = _udList.find(function(u) { return u.id === id; });
+  if (!ud) return;
+  _udEditingId = id;
+  document.getElementById('modal-ud-title').textContent = 'Modifica Udienza';
+  document.getElementById('f-ud-praticaId').value = ud.praticaId || '';
+  document.getElementById('f-ud-data').value      = ud.data || '';
+  document.getElementById('f-ud-ora').value       = ud.ora || '';
+  document.getElementById('f-ud-tribunale').value = ud.tribunale || '';
+  document.getElementById('f-ud-giudice').value   = ud.giudice || '';
+  document.getElementById('f-ud-note').value      = ud.note || '';
+  openModal('modal-udienza');
+}
+
+async function saveUdienza() {
+  var praticaId = document.getElementById('f-ud-praticaId').value;
+  var data      = document.getElementById('f-ud-data').value;
+  var ora       = document.getElementById('f-ud-ora').value;
+  var tribunale = document.getElementById('f-ud-tribunale').value.trim();
+  var giudice   = document.getElementById('f-ud-giudice').value.trim();
+  var note      = document.getElementById('f-ud-note').value.trim();
+  if (!praticaId) { showToast('La pratica è obbligatoria', 'error'); return; }
+  if (!tribunale) { showToast('Il tribunale è obbligatorio', 'error'); return; }
+  if (!data)      { showToast('La data è obbligatoria', 'error'); return; }
+  if (!ora)       { showToast("L'ora è obbligatoria", 'error'); return; }
+  var payload = { praticaId: praticaId, data: data, ora: ora, tribunale: tribunale, giudice: giudice, note: note };
+  try {
+    if (_udEditingId) { await updateUdienza(_udEditingId, payload); showToast('Udienza aggiornata', 'success'); }
+    else              { await addUdienza(payload);                   showToast('Udienza creata', 'success'); }
+    closeModal('modal-udienza');
+    loadUdienze();
+  } catch (e) { console.error(e); showToast('Errore nel salvataggio', 'error'); }
+}
+
+async function addUdienza(data) {
+  return db.collection('udienze').add(Object.assign({}, data, { createdAt: firebase.firestore.FieldValue.serverTimestamp() }));
+}
+
+async function updateUdienza(id, data) {
+  return db.collection('udienze').doc(id).update(Object.assign({}, data, { updatedAt: firebase.firestore.FieldValue.serverTimestamp() }));
+}
+
+async function deleteUdienza(id) {
+  if (!confirm('Sei sicuro di voler eliminare questa udienza?')) return;
+  try {
+    await db.collection('udienze').doc(id).delete();
+    showToast('Udienza eliminata', 'success');
+    loadUdienze();
+  } catch (e) { console.error(e); showToast("Errore nell'eliminazione", 'error'); }
+}
+
+async function loadPraticheDropdown() {
+  try {
+    var snap = await db.collection('pratiche').orderBy('titolo').get();
+    var selFilter = document.getElementById('filter-pratica-ud');
+    var selForm   = document.getElementById('f-ud-praticaId');
+    if (selFilter) selFilter.innerHTML = '<option value="">Tutte le pratiche</option>';
+    if (selForm)   selForm.innerHTML   = '<option value="">Seleziona pratica...</option>';
+    _praticheUdMap = {};
+    snap.forEach(function(doc) {
+      var p = doc.data();
+      _praticheUdMap[doc.id] = p.titolo || ('Pratica ' + doc.id);
+      var label = p.titolo || ('Pratica ' + doc.id);
+      var makeOpt = function(val, text) { var o = document.createElement('option'); o.value = val; o.textContent = text; return o; };
+      if (selFilter) selFilter.appendChild(makeOpt(doc.id, label));
+      if (selForm)   selForm.appendChild(makeOpt(doc.id, label));
+    });
+    if (_udFiltered.length) renderUdienze(_udFiltered);
+    loadProssimeUdienze();
+  } catch (e) { console.error('Errore caricamento pratiche:', e); }
+}
