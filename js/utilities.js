@@ -135,3 +135,162 @@ function closeModal(id) {
   var el = document.getElementById(id);
   if (el) el.classList.remove('active');
 }
+
+// --- Missing helpers used across pages ---
+
+// Alias for escapeHtml (some pages use sanitizeInput)
+function sanitizeInput(str) { return escapeHtml(str); }
+
+// Format date as YYYY-MM-DD for <input type="date">
+function formatDateInput(d) {
+  if (!d) return '';
+  var date = d instanceof Date ? d : (d.toDate ? d.toDate() : new Date(d));
+  if (isNaN(date)) return '';
+  var y = date.getFullYear();
+  var m = String(date.getMonth() + 1).padStart(2, '0');
+  var day = String(date.getDate()).padStart(2, '0');
+  return y + '-' + m + '-' + day;
+}
+
+// Days until a date (negative = overdue)
+function daysUntil(dateStr) {
+  if (!dateStr) return null;
+  var target = new Date(dateStr);
+  var today = new Date();
+  today.setHours(0, 0, 0, 0);
+  target.setHours(0, 0, 0, 0);
+  return Math.round((target - today) / 86400000);
+}
+
+// Stato → CSS badge class
+function getStatoClass(stato) {
+  var map = {
+    'Aperta':        'badge-success',
+    'In lavorazione':'badge-info',
+    'In attesa':     'badge-warning',
+    'Chiusa':        'badge-gray',
+    'Archiviata':    'badge-gray',
+    'Programmato':   'badge-info',
+    'Confermato':    'badge-success',
+    'Completato':    'badge-gray',
+    'Cancellato':    'badge-danger',
+    'Nuova':         'badge-danger',
+    'In gestione':   'badge-warning'
+  };
+  return map[stato] || 'badge-gray';
+}
+
+// Stato → Italian label
+function getStatoLabel(stato) { return stato || '—'; }
+
+// Priorità → CSS badge class
+function getPrioritaClass(p) {
+  var map = { 'Alta': 'badge-danger', 'Media': 'badge-warning', 'Bassa': 'badge-success' };
+  return map[p] || 'badge-gray';
+}
+
+// Priorità → label
+function getPrioritaLabel(p) { return p || '—'; }
+
+// Firebase error → Italian message
+function handleFirebaseError(err) {
+  var map = {
+    'auth/user-not-found':       'Nessun utente trovato con questa email.',
+    'auth/wrong-password':       'Password errata.',
+    'auth/invalid-email':        'Email non valida.',
+    'auth/user-disabled':        'Account disabilitato.',
+    'auth/email-already-in-use': 'Email già in uso.',
+    'auth/weak-password':        'Password troppo debole (min. 6 caratteri).',
+    'auth/too-many-requests':    'Troppi tentativi. Riprova più tardi.',
+    'auth/network-request-failed': 'Errore di rete. Controlla la connessione.',
+    'auth/invalid-credential':   'Credenziali non valide.',
+    'permission-denied':         'Accesso negato.',
+    'not-found':                 'Documento non trovato.'
+  };
+  return map[err.code] || err.message || 'Si è verificato un errore.';
+}
+
+// initUI — close modals on backdrop click, Escape key
+function initUI() {
+  document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('modal-overlay')) {
+      e.target.classList.remove('active');
+    }
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.modal-overlay.active').forEach(function(m) {
+        m.classList.remove('active');
+      });
+    }
+  });
+  // Set user avatar initials
+  auth.onAuthStateChanged(function(user) {
+    if (!user) return;
+    var avatarEl = document.getElementById('userAvatar');
+    var nameEl = document.getElementById('userDisplayName');
+    if (nameEl) nameEl.textContent = user.displayName || user.email || '';
+    if (avatarEl) {
+      var parts = (user.displayName || user.email || '?').split(' ');
+      avatarEl.textContent = parts.map(function(p){ return p[0]; }).join('').toUpperCase().slice(0,2);
+    }
+    window.currentUser = user;
+    // Fetch Firestore user data
+    db.collection('users').doc(user.uid).get().then(function(doc) {
+      if (doc.exists) window.currentUserData = doc.data();
+    }).catch(function(){});
+  });
+}
+
+// Confirm dialog (returns Promise<boolean>)
+function confirmDialog(message) {
+  return new Promise(function(resolve) {
+    var ovId = 'confirmDialogOverlay';
+    var existing = document.getElementById(ovId);
+    if (existing) existing.remove();
+    var overlay = document.createElement('div');
+    overlay.id = ovId;
+    overlay.className = 'modal-overlay active';
+    overlay.innerHTML = `
+      <div class="confirm-dialog">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h3>Conferma azione</h3>
+        <p>${escapeHtml(message)}</p>
+        <div class="btn-row">
+          <button class="btn btn-secondary" id="confirmNo">Annulla</button>
+          <button class="btn btn-danger" id="confirmYes">Conferma</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.querySelector('#confirmYes').addEventListener('click', function() { overlay.remove(); resolve(true); });
+    overlay.querySelector('#confirmNo').addEventListener('click', function() { overlay.remove(); resolve(false); });
+    overlay.addEventListener('click', function(e) { if (e.target === overlay) { overlay.remove(); resolve(false); } });
+  });
+}
+
+// Filter array by search term across multiple fields
+function filterBySearch(arr, term, fields) {
+  if (!term) return arr;
+  var t = term.toLowerCase();
+  return arr.filter(function(item) {
+    return fields.some(function(f) {
+      return String(item[f] || '').toLowerCase().includes(t);
+    });
+  });
+}
+
+// Populate form from data object
+function populateForm(fields) {
+  Object.keys(fields).forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.value = fields[id] !== undefined && fields[id] !== null ? fields[id] : '';
+  });
+}
+
+// Sidebar toggle (global)
+function toggleSidebar() {
+  var sb = document.getElementById('sidebar');
+  var ov = document.getElementById('sidebarOverlay');
+  if (sb) sb.classList.toggle('open');
+  if (ov) ov.classList.toggle('active');
+}

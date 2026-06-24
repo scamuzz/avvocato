@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Appuntamenti - Studio Legale</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/calendario.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body data-protected="true">
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo"><i class="fas fa-balance-scale"></i><span>Studio Legale</span></div>
+  <nav class="sidebar-nav"><ul>
+    <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+    <li class="nav-section">Gestione</li>
+    <li><a href="clienti.html"><i class="fas fa-users"></i> Clienti</a></li>
+    <li><a href="pratiche.html"><i class="fas fa-briefcase"></i> Pratiche</a></li>
+    <li class="nav-section">Agenda</li>
+    <li><a href="appuntamenti.html" class="active"><i class="fas fa-calendar-check"></i> Appuntamenti</a></li>
+    <li><a href="udienze.html"><i class="fas fa-gavel"></i> Udienze</a></li>
+    <li class="nav-section">Archivio</li>
+    <li><a href="documenti.html"><i class="fas fa-file-alt"></i> Documenti</a></li>
+    <li><a href="note.html"><i class="fas fa-sticky-note"></i> Note Interne</a></li>
+    <li><a href="richieste.html"><i class="fas fa-inbox"></i> Richieste</a></li>
+  </ul></nav>
+</aside>
+<nav class="topnav">
+  <button class="sidebar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+  <span class="topnav-title">Appuntamenti</span>
+  <div class="topnav-user">
+    <div class="user-avatar" id="userAvatar">--</div>
+    <span class="topnav-user-name" id="userDisplayName"></span>
+    <button onclick="logoutUser()" class="btn btn-sm btn-danger"><i class="fas fa-sign-out-alt"></i> Esci</button>
+  </div>
+</nav>
+<main class="main-content">
+  <div class="page-content">
+    <div class="page-header">
+      <div class="page-header-left"><h1>Appuntamenti</h1><p>Gestisci gli appuntamenti dello studio</p></div>
+      <div class="page-header-actions">
+        <div class="calendar-view-toggle">
+          <button class="view-btn active" onclick="setView('lista', this)"><i class="fas fa-list"></i> Lista</button>
+          <button class="view-btn" onclick="setView('calendario', this)"><i class="fas fa-calendar"></i> Calendario</button>
+        </div>
+        <button class="btn btn-primary" onclick="openAddModal()"><i class="fas fa-plus"></i> Nuovo Appuntamento</button>
+      </div>
+    </div>
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <input type="date" id="filterData" class="form-control" style="max-width:160px" onchange="applyFilters()">
+      <select id="filterStato" class="form-control" style="max-width:160px" onchange="applyFilters()">
+        <option value="">Tutti gli stati</option>
+        <option>Programmato</option><option>Confermato</option><option>Completato</option><option>Cancellato</option>
+      </select>
+      <button class="btn btn-secondary btn-sm" onclick="clearFilters()"><i class="fas fa-times"></i> Cancella filtri</button>
+      <span class="text-muted text-small" id="countLabel"></span>
+    </div>
+    <div id="appContainer">
+      <div class="empty-state"><i class="fas fa-spinner fa-spin" style="font-size:2rem;color:var(--text-light)"></i><p>Caricamento...</p></div>
+    </div>
+  </div>
+</main>
+
+<!-- Add/Edit Modal -->
+<div class="modal-overlay" id="appModalOverlay">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3 id="appModalTitle">Nuovo Appuntamento</h3>
+      <button class="modal-close" onclick="closeModal('appModalOverlay')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <form id="appForm">
+        <input type="hidden" id="appId">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Cliente</label>
+            <select id="appClienteId" class="form-control" onchange="loadPraticheByCliente(this.value)">
+              <option value="">Seleziona cliente...</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Pratica</label>
+            <select id="appPraticaId" class="form-control"><option value="">Nessuna pratica</option></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Data *</label><input type="date" id="appData" class="form-control" required></div>
+          <div class="form-group"><label class="form-label">Ora *</label><input type="time" id="appOra" class="form-control" required></div>
+        </div>
+        <div class="form-group"><label class="form-label">Luogo</label><input type="text" id="appLuogo" class="form-control" placeholder="Ufficio / Video-call / Tribunale..."></div>
+        <div class="form-group"><label class="form-label">Descrizione</label><textarea id="appDescrizione" class="form-control" rows="3" placeholder="Oggetto dell'appuntamento..."></textarea></div>
+        <div class="form-group"><label class="form-label">Stato</label>
+          <select id="appStato" class="form-control"><option>Programmato</option><option>Confermato</option><option>Completato</option><option>Cancellato</option></select>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('appModalOverlay')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveAppuntamento()"><i class="fas fa-save"></i> Salva</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script src="../js/firebase-config.js"></script>
+<script src="../js/utilities.js"></script>
+<script src="../js/auth.js"></script>
+<script src="../js/appuntamenti.js"></script>
+</body>
+</html>
