@@ -529,6 +529,7 @@
     </main>
 
     <script type="module">
+      // Script modulare necessario per importare Firebase SDK via ESM.
       const tabs = document.querySelectorAll(".tab");
       const panels = document.querySelectorAll(".panel");
 
@@ -552,6 +553,10 @@
       const kpiAttivita = document.getElementById("kpi-attivita");
       const TODO_CHECKBOX_SELECTOR = 'input[type="checkbox"]';
       const NOTE_STORAGE_KEY = "avvocato.internal.note";
+      const FIREBASE_SDK_VERSION = "10.12.2";
+      const TODOS_COLLECTION = "internal_todos";
+      const INTERNAL_AREA_COLLECTION = "internal_area";
+      const INTERNAL_AREA_MAIN_DOC = "main";
 
       const normalizePriority = (priority) => {
         if (priority === "high" || priority === "low") return priority;
@@ -635,7 +640,7 @@
       };
 
       const appFirebaseConfig = globalThis.AVVOCATO_FIREBASE_CONFIG;
-      const shouldSeedTodos = globalThis.AVVOCATO_ENABLE_TODO_SEED === true;
+      const shouldSeedTodos = Boolean(globalThis.AVVOCATO_ENABLE_TODO_SEED);
       const hasFirebaseConfig =
         appFirebaseConfig &&
         typeof appFirebaseConfig === "object" &&
@@ -667,8 +672,8 @@
         if (!hasFirebaseConfig) return;
         try {
           const [{ initializeApp }, firestoreModule] = await Promise.all([
-            import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"),
-            import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"),
+            import(`https://www.gstatic.com/firebasejs/${FIREBASE_SDK_VERSION}/firebase-app.js`),
+            import(`https://www.gstatic.com/firebasejs/${FIREBASE_SDK_VERSION}/firebase-firestore.js`),
           ]);
 
           const app = initializeApp(appFirebaseConfig);
@@ -684,13 +689,14 @@
       const syncTodosFromFirestore = async () => {
         if (!firebaseEnabled || !firestoreDb || !firestoreApi) return;
         try {
-          const todosRef = firestoreApi.collection(firestoreDb, "internal_todos");
+          const todosRef = firestoreApi.collection(firestoreDb, TODOS_COLLECTION);
           const todosSnapshot = await firestoreApi.getDocs(
             firestoreApi.query(todosRef, firestoreApi.orderBy("createdAt", "asc")),
           );
 
           if (todosSnapshot.empty) {
             if (shouldSeedTodos) {
+              // Seeding esplicito: usa i TODO iniziali in pagina come base del primo dataset Firestore.
               const currentTodos = getTodosFromDom();
               const batch = firestoreApi.writeBatch(firestoreDb);
               currentTodos.forEach((todo) => {
@@ -729,14 +735,15 @@
           internalNoteInput instanceof HTMLTextAreaElement;
         if (!canSyncNote) return;
         try {
-          const noteRef = firestoreApi.doc(firestoreDb, "internal_area", "main");
+          const noteRef = firestoreApi.doc(firestoreDb, INTERNAL_AREA_COLLECTION, INTERNAL_AREA_MAIN_DOC);
           const noteSnapshot = await firestoreApi.getDoc(noteRef);
           if (!noteSnapshot.exists()) return;
           const noteValue = String(noteSnapshot.data().note || "").trim();
           if (!noteValue) return;
           const localNote = localStorage.getItem(NOTE_STORAGE_KEY)?.trim();
           if (localNote && localNote !== noteValue) {
-            setNoteMessage("Nota locale diversa: mantengo il contenuto locale.");
+            setNoteMessage("Conflitto nota locale/remota: mantenuta versione locale.");
+            console.warn("Conflitto nota locale/remota: mantenuta nota locale.");
             return;
           }
           internalNoteInput.value = noteValue;
@@ -754,7 +761,7 @@
 
           if (firebaseEnabled && firestoreDb && firestoreApi) {
             try {
-              const created = await firestoreApi.addDoc(firestoreApi.collection(firestoreDb, "internal_todos"), {
+              const created = await firestoreApi.addDoc(firestoreApi.collection(firestoreDb, TODOS_COLLECTION), {
                 text: value,
                 completed: false,
                 priority: "medium",
@@ -785,7 +792,7 @@
 
           if (!firebaseEnabled || !firestoreDb || !firestoreApi || !todoId) return;
           try {
-            await firestoreApi.updateDoc(firestoreApi.doc(firestoreDb, "internal_todos", todoId), {
+            await firestoreApi.updateDoc(firestoreApi.doc(firestoreDb, TODOS_COLLECTION, todoId), {
               completed: target.checked,
             });
           } catch (error) {
@@ -802,7 +809,7 @@
           if (firebaseEnabled && firestoreDb && firestoreApi && internalNoteInput instanceof HTMLTextAreaElement) {
             try {
               await firestoreApi.setDoc(
-                firestoreApi.doc(firestoreDb, "internal_area", "main"),
+                firestoreApi.doc(firestoreDb, INTERNAL_AREA_COLLECTION, INTERNAL_AREA_MAIN_DOC),
                 {
                   note: internalNoteInput.value.trim(),
                   updatedAt: firestoreApi.serverTimestamp(),
@@ -837,6 +844,7 @@
 
       bootstrapInternalArea().catch((error) => {
         console.error("Errore non gestito bootstrap area interna:", error);
+        setNoteMessage("Errore inizializzazione: uso dati locali.");
       });
     </script>
   </body>
