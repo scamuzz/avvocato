@@ -5,12 +5,12 @@
 
 (function () {
   var firebaseConfig = {
-    apiKey: "AIzaSyDP-OTmxD0w3a1GwV4Swv5al4iD7LjkRQc",
-    authDomain: "studio-avvocato.firebaseapp.com",
-    projectId: "studio-avvocato",
-    storageBucket: "studio-avvocato.firebasestorage.app",
-    messagingSenderId: "937368694167",
-    appId: "1:937368694167:web:afcd02a0f1b8ae5c66a8d2",
+   apiKey: "AIzaSyDP-OTmxD0w3a1GwV4Swv5al4iD7LjkRQc",
+  authDomain: "studio-avvocato.firebaseapp.com",
+  projectId: "studio-avvocato",
+  storageBucket: "studio-avvocato.firebasestorage.app",
+  messagingSenderId: "937368694167",
+  appId: "1:937368694167:web:afcd02a0f1b8ae5c66a8d2",
   };
 
   if (typeof firebase !== 'undefined' && !firebase.apps.length) {
