@@ -666,6 +666,7 @@
       let firestoreDb = null;
       let firestoreApi = null;
       let seedInProgress = false;
+      const FIREBASE_CONNECTED_MESSAGE = "Connessione Firebase eseguita con successo.";
       const isFirestoreReady = () => Boolean(firebaseEnabled && firestoreDb && firestoreApi);
 
       const setNoteMessage = (message) => {
@@ -698,8 +699,8 @@
           firestoreDb = firestoreModule.getFirestore(app);
           firestoreApi = firestoreModule;
           firebaseEnabled = true;
-          setNoteMessage("Connessione Firebase eseguita con successo.");
-          console.info("Connessione Firebase eseguita con successo.");
+          setNoteMessage(FIREBASE_CONNECTED_MESSAGE);
+          console.info(FIREBASE_CONNECTED_MESSAGE);
         } catch (error) {
           console.error("Errore inizializzazione Firebase:", error);
           setNoteMessage("Firebase non disponibile: uso salvataggio locale.");
