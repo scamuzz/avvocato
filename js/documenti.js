@@ -178,7 +178,7 @@ function uploadDocumento(praticaId, tipo, file) {
 
   var safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
   var filename = Date.now() + '_' + safeName;
-  var ref  = storage.ref('documenti/' + filename);
+  var ref  = storage.ref('documenti/' + praticaId + '/' + filename);
   var task = ref.put(file);
 
   task.on('state_changed',

@@ -61,23 +61,22 @@ function loadStats() {
     .then(function (s) { _setStatText('statPratiche', s.size); })
     .catch(function ()  { _setStatText('statPratiche', '—'); });
 
-  // Appuntamenti oggi
-  var todayStart = new Date(); todayStart.setHours(0,0,0,0);
-  var todayEnd   = new Date(); todayEnd.setHours(23,59,59,999);
+  // Appuntamenti oggi — 'data' stored as "YYYY-MM-DD" string
+  var todayStr = new Date().toISOString().split('T')[0];
 
   db.collection('appuntamenti')
-    .where('data', '>=', firebase.firestore.Timestamp.fromDate(todayStart))
-    .where('data', '<=', firebase.firestore.Timestamp.fromDate(todayEnd))
+    .where('data', '==', todayStr)
     .get()
     .then(function (s) { _setStatText('statAppuntamenti', s.size); })
     .catch(function ()  { _setStatText('statAppuntamenti', '—'); });
 
-  // Udienze nei prossimi 7 giorni
-  var weekEnd = new Date(); weekEnd.setDate(weekEnd.getDate() + 7); weekEnd.setHours(23,59,59,999);
+  // Udienze nei prossimi 7 giorni — 'data' stored as "YYYY-MM-DD" string
+  var weekEndDate = new Date(); weekEndDate.setDate(weekEndDate.getDate() + 7);
+  var weekEndStr = weekEndDate.toISOString().split('T')[0];
 
   db.collection('udienze')
-    .where('data', '>=', firebase.firestore.Timestamp.fromDate(todayStart))
-    .where('data', '<=', firebase.firestore.Timestamp.fromDate(weekEnd))
+    .where('data', '>=', todayStr)
+    .where('data', '<=', weekEndStr)
     .get()
     .then(function (s) { _setStatText('statUdienze', s.size); })
     .catch(function ()  { _setStatText('statUdienze', '—'); });
@@ -92,8 +91,7 @@ function _setStatText(id, val) {
 
 function loadAgendaOggi() {
   var container = document.getElementById('agendaList');
-  var todayStart = new Date(); todayStart.setHours(0,0,0,0);
-  var todayEnd   = new Date(); todayEnd.setHours(23,59,59,999);
+  var todayStr = new Date().toISOString().split('T')[0];
 
   var items   = [];
   var pending = 2;
@@ -104,9 +102,8 @@ function loadAgendaOggi() {
   }
 
   db.collection('appuntamenti')
-    .where('data', '>=', firebase.firestore.Timestamp.fromDate(todayStart))
-    .where('data', '<=', firebase.firestore.Timestamp.fromDate(todayEnd))
-    .orderBy('data')
+    .where('data', '==', todayStr)
+    .orderBy('ora')
     .get()
     .then(function (snap) {
       snap.forEach(function (doc) {
@@ -124,9 +121,8 @@ function loadAgendaOggi() {
     .catch(tryRender);
 
   db.collection('udienze')
-    .where('data', '>=', firebase.firestore.Timestamp.fromDate(todayStart))
-    .where('data', '<=', firebase.firestore.Timestamp.fromDate(todayEnd))
-    .orderBy('data')
+    .where('data', '==', todayStr)
+    .orderBy('ora')
     .get()
     .then(function (snap) {
       snap.forEach(function (doc) {

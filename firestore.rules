@@ -80,13 +80,13 @@ service cloud.firestore {
     }
 
     // NOTE INTERNE collection (NOT visible to clients)
-    match /noteInterne/{notaId} {
+    match /note/{notaId} {
       allow read, write: if isStaff();
       allow delete: if isAdmin();
     }
 
     // RICHIESTE CONTATTO - public write (from contact form), staff read
-    match /richiesteContatto/{richiestaId} {
+    match /richieste/{richiestaId} {
       allow read: if isStaff();
       allow create: if true; // Public form can submit without auth
       allow update: if isStaff();
