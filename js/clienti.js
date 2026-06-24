@@ -19,7 +19,7 @@ var _allClienti     = [];          // cache locale
 var _currentView    = 'table';     // 'table' | 'card'
 var _deleteTargetId = null;        // id cliente da eliminare
 var _unsubscribeClienti = null;    // listener Firestore
-var _newModalOpenedFromUrl = false;
+var _hasAutoOpenedModal = false;
 
 // --- Init ---
 
@@ -27,19 +27,31 @@ function initClienti() {
   // URL ?new=1 → apre subito il modale
   var params = new URLSearchParams(window.location.search);
   if (params.get('new') === '1') {
-    var unsubscribeAuth = auth.onAuthStateChanged(function (user) {
-      if (!user) return;
-      if (typeof unsubscribeAuth === 'function') {
-        unsubscribeAuth();
-        unsubscribeAuth = null;
-      }
-      if (_newModalOpenedFromUrl) return;
-      _newModalOpenedFromUrl = true;
+    var stopAuthWatcher = null;
+    var openFromUrl = function () {
+      if (_hasAutoOpenedModal) return;
+      _hasAutoOpenedModal = true;
       setTimeout(openAddModal, 400);
       params.delete('new');
       var query = params.toString();
       window.history.replaceState(null, '', window.location.pathname + (query ? ('?' + query) : ''));
-    });
+      if (typeof stopAuthWatcher === 'function') {
+        stopAuthWatcher();
+        stopAuthWatcher = null;
+      }
+    };
+
+    if (auth.currentUser) {
+      openFromUrl();
+    } else {
+      stopAuthWatcher = auth.onAuthStateChanged(function (user) {
+        if (user) openFromUrl();
+      });
+      if (_hasAutoOpenedModal && typeof stopAuthWatcher === 'function') {
+        stopAuthWatcher();
+        stopAuthWatcher = null;
+      }
+    }
   }
   loadClienti();
 }
