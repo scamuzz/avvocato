@@ -553,6 +553,7 @@
       const kpiAttivita = document.getElementById("kpi-attivita");
       const TODO_CHECKBOX_SELECTOR = 'input[type="checkbox"]';
       const NOTE_STORAGE_KEY = "avvocato.internal.note";
+      const REMOTE_NOTE_STORAGE_KEY = "avvocato.internal.remote.note";
       const FIREBASE_SDK_VERSION = "10.12.2";
       const TODOS_COLLECTION = "internal_todos";
       const INTERNAL_AREA_COLLECTION = "internal_area";
@@ -710,6 +711,16 @@
                 });
               });
               await batch.commit();
+              const seededSnapshot = await firestoreApi.getDocs(
+                firestoreApi.query(todosRef, firestoreApi.orderBy("createdAt", "asc")),
+              );
+              const seededTodos = seededSnapshot.docs.map((docItem) => ({
+                id: docItem.id,
+                text: String(docItem.data().text || ""),
+                completed: Boolean(docItem.data().completed),
+                priority: normalizePriority(docItem.data().priority),
+              }));
+              renderTodos(seededTodos);
               setNoteMessage("Firestore inizializzato con TODO locali.");
             }
             return;
@@ -744,6 +755,7 @@
           const localNote = localStorage.getItem(NOTE_STORAGE_KEY)?.trim();
           if (localNote && localNote !== noteValue) {
             setNoteMessage("Conflitto nota locale/remota: mantenuta nota locale.");
+            sessionStorage.setItem(REMOTE_NOTE_STORAGE_KEY, noteValue);
             console.warn("Conflitto nota locale/remota: mantenuta nota locale.");
             return;
           }
@@ -791,7 +803,11 @@
           const todoId = target.dataset.id;
           syncTodoKpi();
 
-          if (!isFirestoreReady() || !todoId) return;
+          if (!isFirestoreReady()) return;
+          if (!todoId) {
+            setNoteMessage("TODO locale senza ID Firebase: modifica salvata solo in locale.");
+            return;
+          }
           try {
             await firestoreApi.updateDoc(firestoreApi.doc(firestoreDb, TODOS_COLLECTION, todoId), {
               completed: target.checked,
