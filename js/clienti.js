@@ -27,7 +27,6 @@ function initClienti() {
   // URL ?new=1 → apre subito il modale
   var params = new URLSearchParams(window.location.search);
   if (params.get('new') === '1') {
-    var stopAuthWatcher = null;
     var openFromUrl = function () {
       if (_hasAutoOpenedModal) return;
       _hasAutoOpenedModal = true;
@@ -35,22 +34,14 @@ function initClienti() {
       params.delete('new');
       var query = params.toString();
       window.history.replaceState(null, '', window.location.pathname + (query ? ('?' + query) : ''));
-      if (typeof stopAuthWatcher === 'function') {
-        stopAuthWatcher();
-        stopAuthWatcher = null;
-      }
     };
 
     if (auth.currentUser) {
       openFromUrl();
     } else {
-      stopAuthWatcher = auth.onAuthStateChanged(function (user) {
+      auth.onAuthStateChanged(function (user) {
         if (user) openFromUrl();
       });
-      if (_hasAutoOpenedModal && typeof stopAuthWatcher === 'function') {
-        stopAuthWatcher();
-        stopAuthWatcher = null;
-      }
     }
   }
   loadClienti();
@@ -246,18 +237,21 @@ function viewCliente(id) {
 
 // --- Modale add/edit ---
 
-function openAddModal() {
-  document.getElementById('modalTitle').textContent = 'Nuovo Cliente';
+function _resetClienteForm() {
   document.getElementById('clienteForm').reset();
   document.getElementById('clienteId').value = '';
+}
+
+function openAddModal() {
+  document.getElementById('modalTitle').textContent = 'Nuovo Cliente';
+  _resetClienteForm();
   document.getElementById('submitBtn').disabled = false;
   document.getElementById('submitBtn').innerHTML = '<i class="fas fa-save"></i> Salva';
   openModal('clienteModal');
 }
 
 function closeClienteModal() {
-  document.getElementById('clienteForm').reset();
-  document.getElementById('clienteId').value = '';
+  _resetClienteForm();
   closeModal('clienteModal');
 }
 
