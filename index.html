@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Studio Legale - Portale Cliente e Ufficio</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f7f8fb;
+        --surface: #ffffff;
+        --surface-alt: #f1f4fb;
+        --text: #1f2937;
+        --muted: #5a6472;
+        --primary: #1d4ed8;
+        --primary-soft: #dbeafe;
+        --ok: #0f766e;
+        --warn: #b45309;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Roboto, Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.5;
+      }
+
+      .container {
+        width: min(1120px, 92vw);
+        margin: 0 auto;
+      }
+
+      header {
+        background: linear-gradient(150deg, #1e3a8a, #2563eb);
+        color: white;
+        padding: 1.5rem 0 2.5rem;
+      }
+
+      .topbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .brand {
+        font-weight: 700;
+        font-size: 1.15rem;
+      }
+
+      nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      nav button {
+        border: 0;
+        border-radius: 999px;
+        padding: 0.45rem 0.85rem;
+        background: #ffffff28;
+        color: white;
+        cursor: pointer;
+      }
+
+      nav button.active {
+        background: white;
+        color: #1e3a8a;
+        font-weight: 600;
+      }
+
+      .hero {
+        margin-top: 1.5rem;
+      }
+
+      .hero h1 {
+        margin: 0 0 0.4rem;
+        font-size: clamp(1.45rem, 2vw, 2.1rem);
+      }
+
+      .hero p {
+        margin: 0;
+        color: #e5e7eb;
+        max-width: 760px;
+      }
+
+      main {
+        padding: 1.5rem 0 2rem;
+      }
+
+      .panel {
+        display: none;
+      }
+
+      .panel.active {
+        display: block;
+      }
+
+      .card-grid {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      }
+
+      .card {
+        background: var(--surface);
+        border-radius: 14px;
+        padding: 1rem;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+      }
+
+      h2 {
+        margin: 0.2rem 0 0.9rem;
+        font-size: 1.2rem;
+      }
+
+      h3 {
+        margin: 0 0 0.35rem;
+        font-size: 1rem;
+      }
+
+      ul {
+        margin: 0;
+        padding-left: 1rem;
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      .tag {
+        display: inline-block;
+        border-radius: 999px;
+        background: var(--primary-soft);
+        color: #1e40af;
+        padding: 0.2rem 0.55rem;
+        font-size: 0.8rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .timeline {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .timeline li {
+        background: var(--surface-alt);
+        border-radius: 10px;
+        padding: 0.65rem 0.75rem;
+        margin-bottom: 0.6rem;
+        border-left: 4px solid var(--primary);
+      }
+
+      .status-ok {
+        color: var(--ok);
+        font-weight: 600;
+      }
+
+      .status-warn {
+        color: var(--warn);
+        font-weight: 600;
+      }
+
+      form {
+        display: grid;
+        gap: 0.7rem;
+      }
+
+      input,
+      textarea,
+      select {
+        width: 100%;
+        border: 1px solid #d1d5db;
+        border-radius: 9px;
+        padding: 0.55rem 0.65rem;
+        font: inherit;
+        background: #fff;
+      }
+
+      textarea {
+        min-height: 90px;
+        resize: vertical;
+      }
+
+      .btn {
+        border: 0;
+        border-radius: 9px;
+        padding: 0.6rem 0.8rem;
+        cursor: pointer;
+        font-weight: 600;
+        background: var(--primary);
+        color: white;
+      }
+
+      .btn.secondary {
+        background: #334155;
+      }
+
+      .flex {
+        display: flex;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+      }
+
+      .note {
+        margin-top: 0.7rem;
+        font-size: 0.9rem;
+        color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="container">
+        <div class="topbar">
+          <div class="brand">Studio Legale Avv. Rossi</div>
+          <nav>
+            <button class="tab active" data-target="pubblico">Area Pubblica</button>
+            <button class="tab" data-target="clienti">Area Clienti</button>
+            <button class="tab" data-target="interna">Area Interna</button>
+          </nav>
+        </div>
+        <div class="hero">
+          <h1>Portale unico per studio legale individuale</h1>
+          <p>
+            Un solo strumento per presentare i servizi, seguire le pratiche con i clienti e organizzare il lavoro quotidiano
+            dell'avvocato.
+          </p>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <section id="pubblico" class="panel active">
+        <h2>Area pubblica clienti</h2>
+        <div class="card-grid">
+          <article class="card">
+            <span class="tag">Servizi e profilo</span>
+            <h3>Ambiti di competenza</h3>
+            <ul>
+              <li>Diritto civile e contrattualistica</li>
+              <li>Recupero crediti e risarcimento danni</li>
+              <li>Tutela consumatore e privacy</li>
+            </ul>
+            <p class="muted">Profilo professionale con esperienza, metodo di lavoro e tempi medi di risposta.</p>
+          </article>
+
+          <article class="card">
+            <span class="tag">Prenotazione consulenza</span>
+            <h3>Agenda con slot disponibili</h3>
+            <form>
+              <input type="text" placeholder="Nome e cognome" />
+              <input type="email" placeholder="Email" />
+              <select>
+                <option>Consulenza online</option>
+                <option>Consulenza in studio</option>
+              </select>
+              <input type="date" />
+              <button type="button" class="btn">Richiedi appuntamento</button>
+            </form>
+          </article>
+
+          <article class="card">
+            <span class="tag">FAQ e contenuti</span>
+            <h3>Informazioni utili</h3>
+            <ul>
+              <li>Come preparare i documenti per il primo incontro</li>
+              <li>Tempi tipici di una pratica civile</li>
+              <li>Costi orientativi e modalità di pagamento</li>
+            </ul>
+          </article>
+
+          <article class="card">
+            <span class="tag">Contatti</span>
+            <h3>Richiesta rapida</h3>
+            <form>
+              <input type="text" placeholder="Oggetto richiesta" />
+              <textarea placeholder="Descrivi brevemente il problema"></textarea>
+              <button type="button" class="btn secondary">Invia richiesta</button>
+            </form>
+          </article>
+        </div>
+      </section>
+
+      <section id="clienti" class="panel">
+        <h2>Area riservata clienti</h2>
+        <div class="card-grid">
+          <article class="card">
+            <h3>Stato pratica</h3>
+            <ul class="timeline">
+              <li><strong>20/06:</strong> Incarico confermato - documenti ricevuti</li>
+              <li><strong>22/06:</strong> Diffida inviata alla controparte</li>
+              <li><strong>30/06:</strong> Attesa riscontro <span class="status-warn">in corso</span></li>
+            </ul>
+          </article>
+
+          <article class="card">
+            <h3>Documenti cliente</h3>
+            <div class="flex">
+              <button class="btn" type="button">Carica documento</button>
+              <button class="btn secondary" type="button">Scarica fascicolo PDF</button>
+            </div>
+            <p class="note">Scambio documenti centralizzato per ridurre email ripetitive.</p>
+          </article>
+
+          <article class="card">
+            <h3>Messaggi sicuri</h3>
+            <p class="muted">Canale dedicato tra cliente e avvocato con storico conversazioni.</p>
+            <textarea placeholder="Scrivi un messaggio per l'avvocato"></textarea>
+            <button class="btn" type="button">Invia messaggio</button>
+          </article>
+
+          <article class="card">
+            <h3>Fatture e pagamenti</h3>
+            <ul>
+              <li>Fattura INV-2026-0011 - 350€ <span class="status-ok">pagata</span></li>
+              <li>Fattura INV-2026-0014 - 200€ <span class="status-warn">in scadenza</span></li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section id="interna" class="panel">
+        <h2>Area interna (avvocato unico)</h2>
+        <div class="card-grid">
+          <article class="card">
+            <h3>Dashboard priorità</h3>
+            <ul>
+              <li>Pratiche urgenti oggi: <strong>2</strong></li>
+              <li>Udienze questa settimana: <strong>3</strong></li>
+              <li>Scadenze entro 48h: <strong>4</strong></li>
+            </ul>
+          </article>
+
+          <article class="card">
+            <h3>Calendario integrato</h3>
+            <ul>
+              <li>Lun 09:30 - Udienza Tribunale Civile</li>
+              <li>Mar 15:00 - Consulenza online (nuovo cliente)</li>
+              <li>Gio 11:00 - Scadenza deposito memoria</li>
+            </ul>
+          </article>
+
+          <article class="card">
+            <h3>Archivio fascicoli e modelli</h3>
+            <div class="flex">
+              <button class="btn secondary" type="button">Apri fascicoli</button>
+              <button class="btn secondary" type="button">Modelli atti</button>
+            </div>
+            <p class="note">Accesso rapido a documenti ricorrenti per aumentare la produttività.</p>
+          </article>
+
+          <article class="card">
+            <h3>Promemoria automatici</h3>
+            <ul>
+              <li>Follow-up cliente Bianchi entro domani</li>
+              <li>Invio parcella pratica Verdi</li>
+              <li>Rinnovo PEC tra 10 giorni</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const tabs = document.querySelectorAll(".tab");
+      const panels = document.querySelectorAll(".panel");
+
+      tabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+          tabs.forEach((item) => item.classList.remove("active"));
+          panels.forEach((panel) => panel.classList.remove("active"));
+
+          tab.classList.add("active");
+          const target = tab.getAttribute("data-target");
+          document.getElementById(target).classList.add("active");
+        });
+      });
+    </script>
+  </body>
+</html>
