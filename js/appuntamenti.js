@@ -288,7 +288,7 @@ async function saveAppuntamento() {
       showToast('Appuntamento creato', 'success');
     }
     closeModal('modal-appuntamento');
-    await _loadAll();
+    _loadAll();
   } catch (e) {
     console.error(e);
     showToast('Errore nel salvataggio', 'error');
@@ -302,7 +302,8 @@ function _setSaveButtonState(isSaving) {
   var btn = document.getElementById('btn-save-app');
   if (!btn) return;
   btn.disabled = !!isSaving;
-  btn.setAttribute('aria-busy', isSaving ? 'true' : 'false');
+  if (isSaving) btn.setAttribute('aria-busy', 'true');
+  else btn.removeAttribute('aria-busy');
   btn.innerHTML = isSaving
     ? '<i class="fas fa-spinner fa-spin"></i> Salvataggio...'
     : '<i class="fas fa-save"></i> Salva';
