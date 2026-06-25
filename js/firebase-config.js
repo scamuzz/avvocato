@@ -12,7 +12,7 @@
   messagingSenderId: "937368694167",
   appId: "1:937368694167:web:afcd02a0f1b8ae5c66a8d2",
   // Aggiunto per il tuo Realtime Database attivo in europe-west1:
-  databaseURL: "https://studio-avvocato-default-rtdb.europe-west1.firebasedatabase.app"
+  // databaseURL: "https://studio-avvocato-default-rtdb.europe-west1.firebasedatabase.app"
 };
 
 
