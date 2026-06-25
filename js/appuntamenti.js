@@ -355,6 +355,8 @@ async function deleteAppuntamento(id) {
           showToast('Non hai i permessi per eliminare o cancellare appuntamenti', 'error');
           return;
         }
+        showToast('Errore nella cancellazione dell\'appuntamento', 'error');
+        return;
       }
     }
     showToast('Errore nell\'eliminazione', 'error');
