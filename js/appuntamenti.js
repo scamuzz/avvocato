@@ -351,6 +351,10 @@ async function deleteAppuntamento(id) {
         return;
       } catch (fallbackErr) {
         console.error(fallbackErr);
+        if (fallbackErr && fallbackErr.code === 'permission-denied') {
+          showToast('Non hai i permessi per eliminare o cancellare appuntamenti', 'error');
+          return;
+        }
       }
     }
     showToast('Errore nell\'eliminazione', 'error');
