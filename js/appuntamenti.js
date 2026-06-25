@@ -5,6 +5,7 @@
 var _appList = [];
 var _filtered = [];
 var _editingId = null;
+var _isSaving = false;
 var _viewMode = 'lista';
 var _calMonth = new Date().getMonth();
 var _calYear  = new Date().getFullYear();
@@ -213,6 +214,7 @@ function switchView(mode) {
 
 function openNewAppModal() {
   _editingId = null;
+  _isSaving = false;
   document.getElementById('modal-app-title').textContent = 'Nuovo Appuntamento';
   document.getElementById('f-clienteId').value   = '';
   document.getElementById('f-praticaId').innerHTML = '<option value="">Nessuna pratica</option>';
@@ -221,6 +223,7 @@ function openNewAppModal() {
   document.getElementById('f-luogo').value       = '';
   document.getElementById('f-descrizione').value = '';
   document.getElementById('f-stato').value       = 'Programmato';
+  _setSaveButtonState(false);
   openModal('modal-appuntamento');
 }
 
@@ -233,6 +236,7 @@ async function openEditAppModal(id) {
   var app = _appList.find(function(a) { return a.id === id; });
   if (!app) return;
   _editingId = id;
+  _isSaving = false;
   document.getElementById('modal-app-title').textContent = 'Modifica Appuntamento';
   document.getElementById('f-clienteId').value   = app.clienteId || '';
   document.getElementById('f-data').value        = app.data || '';
@@ -241,12 +245,15 @@ async function openEditAppModal(id) {
   document.getElementById('f-descrizione').value = app.descrizione || '';
   document.getElementById('f-stato').value       = app.stato || 'Programmato';
   await _loadPraticheOpts(app.clienteId, app.praticaId);
+  _setSaveButtonState(false);
   openModal('modal-appuntamento');
 }
 
 // ── Save / CRUD ───────────────────────────────────────────────
 
 async function saveAppuntamento() {
+  if (_isSaving) return;
+
   var clienteId   = document.getElementById('f-clienteId').value;
   var praticaId   = document.getElementById('f-praticaId').value;
   var data        = document.getElementById('f-data').value;
@@ -269,6 +276,9 @@ async function saveAppuntamento() {
     stato:       stato
   };
 
+  _isSaving = true;
+  _setSaveButtonState(true);
+
   try {
     if (_editingId) {
       await updateAppuntamento(_editingId, payload);
@@ -278,11 +288,24 @@ async function saveAppuntamento() {
       showToast('Appuntamento creato', 'success');
     }
     closeModal('modal-appuntamento');
-    _loadAll();
+    await _loadAll();
   } catch (e) {
     console.error(e);
     showToast('Errore nel salvataggio', 'error');
+  } finally {
+    _isSaving = false;
+    _setSaveButtonState(false);
   }
+}
+
+function _setSaveButtonState(isSaving) {
+  var btn = document.getElementById('btn-save-app');
+  if (!btn) return;
+  btn.disabled = !!isSaving;
+  btn.setAttribute('aria-busy', isSaving ? 'true' : 'false');
+  btn.innerHTML = isSaving
+    ? '<i class="fas fa-spinner fa-spin"></i> Salvataggio...'
+    : '<i class="fas fa-save"></i> Salva';
 }
 
 async function addAppuntamento(data) {
