@@ -20,6 +20,7 @@ var _currentView    = 'table';     // 'table' | 'card'
 var _deleteTargetId = null;        // id cliente da eliminare
 var _unsubscribeClienti = null;    // listener Firestore
 var _hasAutoOpenedModal = false;
+var _loadedClientiForUid = null;   // evita doppio attach listener per stesso utente
 
 // --- Init ---
 
@@ -45,7 +46,20 @@ function initClienti() {
       });
     }
   }
-  loadClienti();
+  auth.onAuthStateChanged(function (user) {
+    if (!user) {
+      _loadedClientiForUid = null;
+      if (_unsubscribeClienti) {
+        _unsubscribeClienti();
+        _unsubscribeClienti = null;
+      }
+      return;
+    }
+
+    if (_loadedClientiForUid === user.uid && _unsubscribeClienti) return;
+    _loadedClientiForUid = user.uid;
+    loadClienti();
+  });
 }
 
 // --- Caricamento dati ---
