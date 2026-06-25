@@ -322,13 +322,28 @@ async function updateAppuntamento(id, data) {
 }
 
 async function deleteAppuntamento(id) {
+  if (!id) {
+    showToast('Appuntamento non valido', 'error');
+    return;
+  }
   if (!confirm('Sei sicuro di voler eliminare questo appuntamento?')) return;
   try {
-    await db.collection('appuntamenti').doc(id).delete();
+    var ref = db.collection('appuntamenti').doc(id);
+    var existing = await ref.get();
+    if (!existing.exists) {
+      showToast('Appuntamento non trovato', 'warning');
+      _loadAll();
+      return;
+    }
+    await ref.delete();
     showToast('Appuntamento eliminato', 'success');
     _loadAll();
   } catch (e) {
     console.error(e);
+    if (e && e.code === 'permission-denied') {
+      showToast('Non hai i permessi per eliminare appuntamenti', 'error');
+      return;
+    }
     showToast('Errore nell\'eliminazione', 'error');
   }
 }
