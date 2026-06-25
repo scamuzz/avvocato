@@ -341,8 +341,17 @@ async function deleteAppuntamento(id) {
   } catch (e) {
     console.error(e);
     if (e && e.code === 'permission-denied') {
-      showToast('Non hai i permessi per eliminare appuntamenti', 'error');
-      return;
+      try {
+        await db.collection('appuntamenti').doc(id).update({
+          stato: 'Cancellato',
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        showToast('Nessun permesso di eliminazione: appuntamento segnato come cancellato', 'warning');
+        _loadAll();
+        return;
+      } catch (fallbackErr) {
+        console.error(fallbackErr);
+      }
     }
     showToast('Errore nell\'eliminazione', 'error');
   }

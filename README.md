@@ -53,6 +53,9 @@ Applicazione web completa per la gestione di uno studio legale, basata su HTML5,
 4. Crea un database **Firestore** (modalità produzione)
 5. Abilita **Firebase Storage**
 
+> ℹ️ L'applicazione usa **Cloud Firestore** (`/firestore/...`) e non **Realtime Database** (`/database/...`).
+> Se apri la sezione Realtime Database in console è normale non vedere i documenti dell'app.
+
 ### 2. Configura le credenziali
 Apri `js/firebase-config.js` e sostituisci i valori con quelli del tuo progetto:
 
