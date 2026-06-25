@@ -1,0 +1,29 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "appuntamenti",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "data", "order": "ASCENDING" },
+        { "fieldPath": "ora",  "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "udienze",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "data", "order": "ASCENDING" },
+        { "fieldPath": "ora",  "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "promemoria",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "completato", "order": "ASCENDING" },
+        { "fieldPath": "scadenza",   "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
