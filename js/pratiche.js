@@ -173,7 +173,7 @@ function _val(id) {
 // --- Navigazione ---
 
 function viewPratica(id) {
-  window.location.href = 'profilo-pratica.html?id=' + encodeURIComponent(id);
+  openEditModal(id);
 }
 
 // --- Modale add/edit ---
