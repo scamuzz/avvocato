@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     /* ===== PUBLIC PAGE STYLES ===== */
+    :root { --mobile-cta-max-width: 35vw; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: system-ui, -apple-system, sans-serif; color: #2D3748; }
 
@@ -238,7 +239,7 @@
       .btn-outline-white {
         padding: 0.45rem 0.7rem;
         font-size: 0.75rem;
-        max-width: 35vw;
+        max-width: var(--mobile-cta-max-width);
         overflow: hidden;
         text-overflow: ellipsis;
       }
