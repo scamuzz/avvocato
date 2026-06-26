@@ -221,7 +221,7 @@
 
     /* Responsive */
     @media (max-width: 768px) {
-      .pub-nav { padding: 0 1rem; --mobile-cta-max-width: 35vw; }
+      .pub-nav { padding: 0 1rem; --mobile-cta-max-width: 35vw; /* mantiene spazio per il toggle menu */ }
       .pub-nav-logo span {
         font-size: 0.9rem;
         max-width: 145px;
@@ -239,7 +239,6 @@
       .btn-outline-white {
         padding: 0.45rem 0.7rem;
         font-size: 0.75rem;
-        white-space: nowrap;
         max-width: var(--mobile-cta-max-width);
         overflow: hidden;
         text-overflow: ellipsis;
