@@ -258,7 +258,7 @@ function _resetClienteForm() {
 }
 
 function openAddModal() {
-  document.getElementById('modalTitle').textContent = 'Nuovo Cliente';
+  document.getElementById('modalTitle').innerHTML = '<i class="fas fa-user-plus"></i> Nuovo Cliente';
   _resetClienteForm();
   document.getElementById('submitBtn').disabled = false;
   document.getElementById('submitBtn').innerHTML = '<i class="fas fa-save"></i> Salva';
@@ -274,7 +274,7 @@ function openEditModal(id) {
   var c = _allClienti.find(function (x) { return x.id === id; });
   if (!c) { showToast('Cliente non trovato', 'error'); return; }
 
-  document.getElementById('modalTitle').textContent  = 'Modifica Cliente';
+  document.getElementById('modalTitle').innerHTML = '<i class="fas fa-user-edit"></i> Modifica Cliente';
   document.getElementById('clienteId').value         = id;
   document.getElementById('fNome').value             = c.nome          || '';
   document.getElementById('fCognome').value          = c.cognome       || '';

@@ -9,12 +9,11 @@ service firebase.storage {
 
     // Documents folder - staff can read/write
     match /documenti/{praticaId}/{allPaths=**} {
-      // Allow authenticated users to read (staff + clients with access)
       allow read: if isAuth();
-      // Only allow upload if authenticated (staff check done in Firestore rules)
       allow write: if isAuth()
-        && request.resource.size < 50 * 1024 * 1024  // Max 50MB
-        && request.resource.contentType.matches('application/pdf|image/.*|application/msword|application/vnd.openxmlformats.*|text/plain');
+        && request.resource.size < 50 * 1024 * 1024
+        && request.resource.contentType.matches(
+             'application/pdf|image/.*|application/msword|application/vnd\\.openxmlformats.*|text/plain|application/zip|application/octet-stream');
       allow delete: if isAuth();
     }
 

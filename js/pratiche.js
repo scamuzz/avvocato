@@ -179,7 +179,7 @@ function viewPratica(id) {
 // --- Modale add/edit ---
 
 function openAddModal() {
-  document.getElementById('praticaModalTitle').textContent = 'Nuova Pratica';
+  document.getElementById('praticaModalTitle').innerHTML = '<i class="fas fa-folder-plus"></i> Nuova Pratica';
   document.getElementById('praticaForm').reset();
   document.getElementById('praticaId').value        = '';
   document.getElementById('fDataApertura').value    = todayStr();
@@ -192,7 +192,7 @@ function openEditModal(id) {
   var p = _allPratiche.find(function (x) { return x.id === id; });
   if (!p) { showToast('Pratica non trovata', 'error'); return; }
 
-  document.getElementById('praticaModalTitle').textContent = 'Modifica Pratica';
+  document.getElementById('praticaModalTitle').innerHTML = '<i class="fas fa-folder-open"></i> Modifica Pratica';
   document.getElementById('praticaId').value               = id;
   document.getElementById('fTitolo').value                 = p.titolo          || '';
   document.getElementById('fDescrizione').value            = p.descrizione     || '';
