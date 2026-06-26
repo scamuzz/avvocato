@@ -273,13 +273,13 @@
       </button>
     </div>
   </nav>
-  <nav class="pub-mobile-menu" id="pubMobileMenu" aria-label="Navigazione principale mobile" aria-hidden="true">
+  <div class="pub-mobile-menu" id="pubMobileMenu" aria-label="Navigazione principale mobile" aria-hidden="true">
     <a href="#servizi">Servizi</a>
     <a href="#chisiamo">Chi Siamo</a>
     <a href="#contatti">Contatti</a>
     <a href="#richiesta">Richiedi Appuntamento</a>
     <a href="pages/login.html">Area Riservata</a>
-  </nav>
+  </div>
 
   <!-- Hero -->
   <section class="hero">
@@ -678,6 +678,10 @@
         mobileMenuToggle.setAttribute('aria-label', isOpen ? 'Chiudi menu' : 'Apri menu');
         mobileMenuToggle.innerHTML = isOpen ? ICON_CLOSE : ICON_BARS;
       };
+      const closeMobileMenu = (restoreFocus = false) => {
+        setMobileMenuState(false);
+        if (restoreFocus) mobileMenuToggle.focus();
+      };
 
       mobileMenuToggle.addEventListener('click', () => {
         setMobileMenuState(!pubMobileMenu.classList.contains('open'));
@@ -685,18 +689,18 @@
 
       pubMobileMenu.querySelectorAll('a').forEach(link => {
         link.addEventListener('click', () => {
-          setMobileMenuState(false);
+          closeMobileMenu(false);
         });
       });
 
       document.addEventListener('click', (e) => {
         if (!pubMobileMenu.classList.contains('open')) return;
         if (pubMobileMenu.contains(e.target) || mobileMenuToggle.contains(e.target)) return;
-        setMobileMenuState(false);
+        closeMobileMenu(true);
       });
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && pubMobileMenu.classList.contains('open')) {
-          setMobileMenuState(false);
+          closeMobileMenu(true);
         }
       });
 
