@@ -101,7 +101,28 @@ firebase login
 firebase deploy --only firestore:rules,storage
 ```
 
-### 5. Deploy su Firebase Hosting
+### 5. Configura CORS per Firebase Storage
+
+> ⚠️ Necessario se il sito è ospitato su un dominio esterno (es. GitHub Pages). Senza questa configurazione, il browser bloccherà il caricamento dei file con errore CORS.
+
+Il file `cors.json` nella root del progetto contiene già la configurazione corretta. Applicala al bucket con Google Cloud SDK:
+
+```bash
+# Con gsutil
+gsutil cors set cors.json gs://studio-avvocato.firebasestorage.app
+
+# Oppure con gcloud
+gcloud storage buckets update gs://studio-avvocato.firebasestorage.app --cors-file=cors.json
+
+# Verifica
+gsutil cors get gs://studio-avvocato.firebasestorage.app
+```
+
+In alternativa puoi impostare il CORS dalla [Google Cloud Console](https://console.cloud.google.com/storage/browser/studio-avvocato.firebasestorage.app) → scheda **Configuration** → **CORS**.
+
+> 💡 `gsutil` e `gcloud` sono inclusi nel [Google Cloud SDK](https://cloud.google.com/sdk/docs/install).
+
+### 6. Deploy su Firebase Hosting
 ```bash
 firebase deploy --only hosting
 ```
