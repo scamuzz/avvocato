@@ -8,7 +8,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     /* ===== PUBLIC PAGE STYLES ===== */
-    :root { --mobile-cta-max-width: 35vw; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: system-ui, -apple-system, sans-serif; color: #2D3748; }
 
@@ -221,7 +220,7 @@
 
     /* Responsive */
     @media (max-width: 768px) {
-      .pub-nav { padding: 0 1rem; }
+      .pub-nav { padding: 0 1rem; --mobile-cta-max-width: 35vw; }
       .pub-nav-logo span {
         font-size: 0.9rem;
         max-width: 145px;
@@ -274,7 +273,7 @@
       <li><a href="#richiesta">Richiedi Appuntamento</a></li>
     </ul>
     <div class="pub-nav-cta">
-      <a href="pages/login.html" class="btn-outline-white"><i class="fas fa-lock"></i> Area Riservata</a>
+      <a href="pages/login.html" class="btn-outline-white" aria-label="Area Riservata" title="Area Riservata"><i class="fas fa-lock"></i> Area Riservata</a>
       <button type="button" class="pub-nav-mobile-toggle" id="mobileMenuToggle" aria-label="Apri menu" aria-expanded="false">
         <i class="fas fa-bars"></i>
       </button>
