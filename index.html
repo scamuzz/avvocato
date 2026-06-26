@@ -13,6 +13,7 @@
 
     /* Navigation */
     .pub-nav {
+      --mobile-cta-max-width: none;
       position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
       background: rgba(30,58,95,0.97); backdrop-filter: blur(8px);
       padding: 0 2rem; height: 70px;
@@ -238,6 +239,7 @@
       .btn-outline-white {
         padding: 0.45rem 0.7rem;
         font-size: 0.75rem;
+        white-space: nowrap;
         max-width: var(--mobile-cta-max-width);
         overflow: hidden;
         text-overflow: ellipsis;
