@@ -9,7 +9,7 @@
   <style>
     /* ===== PUBLIC PAGE STYLES ===== */
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: system-ui, -apple-system, sans-serif; color: #2D3748; }
+    body { font-family: system-ui, -apple-system, sans-serif; color: #2D3748; overflow-x: hidden; }
 
     /* Navigation */
     .pub-nav {
@@ -17,15 +17,16 @@
       background: rgba(30,58,95,0.97); backdrop-filter: blur(8px);
       padding: 0 2rem; height: 70px;
       display: flex; align-items: center; justify-content: space-between;
+      gap: 0.75rem;
       box-shadow: 0 2px 20px rgba(0,0,0,0.2);
     }
-    .pub-nav-logo { display: flex; align-items: center; gap: 0.75rem; color: white; text-decoration: none; }
+    .pub-nav-logo { display: flex; align-items: center; gap: 0.75rem; color: white; text-decoration: none; min-width: 0; flex: 1 1 auto; }
     .pub-nav-logo i { font-size: 1.6rem; color: #63B3ED; }
-    .pub-nav-logo span { font-size: 1.1rem; font-weight: 700; letter-spacing: 0.5px; }
+    .pub-nav-logo span { font-size: 1.1rem; font-weight: 700; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .pub-nav-links { display: flex; gap: 2rem; list-style: none; }
     .pub-nav-links a { color: rgba(255,255,255,0.85); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
     .pub-nav-links a:hover { color: white; }
-    .pub-nav-cta { display: flex; gap: 1rem; align-items: center; }
+    .pub-nav-cta { display: flex; gap: 1rem; align-items: center; flex: 0 0 auto; }
     .pub-nav-mobile-toggle {
       display: none;
       width: 40px;
@@ -74,6 +75,8 @@
       border: 1.5px solid rgba(255,255,255,0.7); color: white; background: transparent;
       padding: 0.5rem 1.25rem; border-radius: 6px; cursor: pointer;
       font-size: 0.875rem; text-decoration: none; transition: all 0.2s;
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      white-space: nowrap;
     }
     .btn-outline-white:hover { background: white; color: #1E3A5F; }
     .btn-pub-primary {
@@ -231,10 +234,13 @@
       .hero-stats { grid-template-columns: repeat(3, 1fr); }
       .chisiamo-grid, .contatti-grid, .footer-grid { grid-template-columns: 1fr; }
       .pub-nav-links { display: none; }
-      .pub-nav-cta { gap: 0.5rem; }
+      .pub-nav-cta { gap: 0.4rem; margin-left: auto; }
       .btn-outline-white {
         padding: 0.45rem 0.7rem;
         font-size: 0.75rem;
+        max-width: 7.8rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       .pub-nav-mobile-toggle { display: inline-flex; }
     }
