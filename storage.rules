@@ -10,7 +10,10 @@ service firebase.storage {
     // Documents folder - staff can read/write
     match /documenti/{praticaId}/{allPaths=**} {
       allow read: if isAuth();
-      allow write: if isAuth() && request.resource.size < 50 * 1024 * 1024;
+      allow write: if isAuth()
+        && request.resource.size < 50 * 1024 * 1024
+        && request.resource.contentType.matches(
+             'application/pdf|image/.*|application/msword|application/vnd\\.openxmlformats.*|text/plain|application/zip|application/octet-stream');
       allow delete: if isAuth();
     }
 
