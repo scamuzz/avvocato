@@ -669,29 +669,32 @@
     const mobileMenuToggle = document.getElementById('mobileMenuToggle');
     const pubMobileMenu = document.getElementById('pubMobileMenu');
     if (mobileMenuToggle && pubMobileMenu) {
-      mobileMenuToggle.addEventListener('click', () => {
-        const isOpen = pubMobileMenu.classList.toggle('open');
+      const MENU_ICON_OPEN = '<i class="fas fa-times"></i>';
+      const MENU_ICON_CLOSED = '<i class="fas fa-bars"></i>';
+      const setMobileMenuState = (isOpen) => {
+        pubMobileMenu.classList.toggle('open', isOpen);
         pubMobileMenu.setAttribute('aria-hidden', String(!isOpen));
-        mobileMenuToggle.innerHTML = isOpen
-          ? '<i class="fas fa-times"></i>'
-          : '<i class="fas fa-bars"></i>';
+        mobileMenuToggle.setAttribute('aria-label', isOpen ? 'Chiudi menu' : 'Apri menu');
+        mobileMenuToggle.innerHTML = isOpen ? MENU_ICON_OPEN : MENU_ICON_CLOSED;
+      };
+
+      mobileMenuToggle.addEventListener('click', () => {
+        setMobileMenuState(!pubMobileMenu.classList.contains('open'));
       });
 
       pubMobileMenu.querySelectorAll('a').forEach(link => {
         link.addEventListener('click', () => {
-          pubMobileMenu.classList.remove('open');
-          pubMobileMenu.setAttribute('aria-hidden', 'true');
-          mobileMenuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+          setMobileMenuState(false);
         });
       });
 
       document.addEventListener('click', (e) => {
         if (!pubMobileMenu.classList.contains('open')) return;
         if (pubMobileMenu.contains(e.target) || mobileMenuToggle.contains(e.target)) return;
-        pubMobileMenu.classList.remove('open');
-        pubMobileMenu.setAttribute('aria-hidden', 'true');
-        mobileMenuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+        setMobileMenuState(false);
       });
+
+      setMobileMenuState(false);
     }
   </script>
 </body>
