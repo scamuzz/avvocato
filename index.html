@@ -273,13 +273,13 @@
       </button>
     </div>
   </nav>
-  <div class="pub-mobile-menu" id="pubMobileMenu" aria-label="Navigazione principale mobile" aria-hidden="true">
+  <nav class="pub-mobile-menu" id="pubMobileMenu" aria-label="Navigazione principale mobile" aria-hidden="true">
     <a href="#servizi">Servizi</a>
     <a href="#chisiamo">Chi Siamo</a>
     <a href="#contatti">Contatti</a>
     <a href="#richiesta">Richiedi Appuntamento</a>
     <a href="pages/login.html">Area Riservata</a>
-  </div>
+  </nav>
 
   <!-- Hero -->
   <section class="hero">
@@ -669,14 +669,14 @@
     const mobileMenuToggle = document.getElementById('mobileMenuToggle');
     const pubMobileMenu = document.getElementById('pubMobileMenu');
     if (mobileMenuToggle && pubMobileMenu) {
-      const MENU_ICON_CLOSE = '<i class="fas fa-times"></i>';
-      const MENU_ICON_BARS = '<i class="fas fa-bars"></i>';
+      const ICON_CLOSE = '<i class="fas fa-times"></i>';
+      const ICON_BARS = '<i class="fas fa-bars"></i>';
       const setMobileMenuState = (isOpen) => {
         pubMobileMenu.classList.toggle('open', isOpen);
         pubMobileMenu.setAttribute('aria-hidden', String(!isOpen));
         mobileMenuToggle.setAttribute('aria-expanded', String(isOpen));
         mobileMenuToggle.setAttribute('aria-label', isOpen ? 'Chiudi menu' : 'Apri menu');
-        mobileMenuToggle.innerHTML = isOpen ? MENU_ICON_CLOSE : MENU_ICON_BARS;
+        mobileMenuToggle.innerHTML = isOpen ? ICON_CLOSE : ICON_BARS;
       };
 
       mobileMenuToggle.addEventListener('click', () => {
@@ -693,6 +693,11 @@
         if (!pubMobileMenu.classList.contains('open')) return;
         if (pubMobileMenu.contains(e.target) || mobileMenuToggle.contains(e.target)) return;
         setMobileMenuState(false);
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && pubMobileMenu.classList.contains('open')) {
+          setMobileMenuState(false);
+        }
       });
 
       setMobileMenuState(false);
