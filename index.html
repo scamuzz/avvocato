@@ -268,12 +268,12 @@
     </ul>
     <div class="pub-nav-cta">
       <a href="pages/login.html" class="btn-outline-white"><i class="fas fa-lock"></i> Area Riservata</a>
-      <button type="button" class="pub-nav-mobile-toggle" id="mobileMenuToggle" aria-label="Apri menu">
+      <button type="button" class="pub-nav-mobile-toggle" id="mobileMenuToggle" aria-label="Apri menu" aria-expanded="false">
         <i class="fas fa-bars"></i>
       </button>
     </div>
   </nav>
-  <div class="pub-mobile-menu" id="pubMobileMenu" aria-hidden="true">
+  <div class="pub-mobile-menu" id="pubMobileMenu" role="navigation" aria-label="Navigazione principale mobile" aria-hidden="true">
     <a href="#servizi">Servizi</a>
     <a href="#chisiamo">Chi Siamo</a>
     <a href="#contatti">Contatti</a>
@@ -669,13 +669,14 @@
     const mobileMenuToggle = document.getElementById('mobileMenuToggle');
     const pubMobileMenu = document.getElementById('pubMobileMenu');
     if (mobileMenuToggle && pubMobileMenu) {
-      const MENU_ICON_OPEN = '<i class="fas fa-times"></i>';
-      const MENU_ICON_CLOSED = '<i class="fas fa-bars"></i>';
+      const MENU_ICON_CLOSE = '<i class="fas fa-times"></i>';
+      const MENU_ICON_BARS = '<i class="fas fa-bars"></i>';
       const setMobileMenuState = (isOpen) => {
         pubMobileMenu.classList.toggle('open', isOpen);
         pubMobileMenu.setAttribute('aria-hidden', String(!isOpen));
+        mobileMenuToggle.setAttribute('aria-expanded', String(isOpen));
         mobileMenuToggle.setAttribute('aria-label', isOpen ? 'Chiudi menu' : 'Apri menu');
-        mobileMenuToggle.innerHTML = isOpen ? MENU_ICON_OPEN : MENU_ICON_CLOSED;
+        mobileMenuToggle.innerHTML = isOpen ? MENU_ICON_CLOSE : MENU_ICON_BARS;
       };
 
       mobileMenuToggle.addEventListener('click', () => {
