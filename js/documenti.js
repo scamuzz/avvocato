@@ -168,6 +168,11 @@ function saveUpload() {
 }
 
 function uploadDocumento(praticaId, tipo, file) {
+  if (!window.storage) {
+    showToast('Firebase Storage non disponibile. Verifica che sia abilitato nel progetto Firebase.', 'error');
+    return;
+  }
+
   var progressContainer = document.getElementById('up-progress');
   var progressFill      = document.getElementById('up-progress-fill');
   var progressLabel     = document.getElementById('up-progress-label');
@@ -189,7 +194,17 @@ function uploadDocumento(praticaId, tipo, file) {
     },
     function(error) {
       console.error('Errore upload:', error);
-      showToast('Errore durante il caricamento', 'error');
+      var msg = 'Errore durante il caricamento.';
+      if (error.code === 'storage/unauthorized') {
+        msg = 'Accesso negato. Pubblica le Storage Rules su Firebase.';
+      } else if (error.code === 'storage/canceled') {
+        msg = 'Caricamento annullato.';
+      } else if (error.code === 'storage/unknown' || error.code === 'storage/retry-limit-exceeded') {
+        msg = 'Errore di rete. Riprova.';
+      } else if (error.code) {
+        msg = 'Errore: ' + error.code;
+      }
+      showToast(msg, 'error');
       progressContainer.style.display = 'none';
       btnUpload.disabled = false;
     },

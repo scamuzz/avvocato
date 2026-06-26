@@ -739,7 +739,7 @@ textarea.form-control { resize: vertical; min-height: 90px; }
    ========================================================= */
 .modal-overlay {
   position: fixed; inset: 0;
-  background: rgba(0,0,0,.5);
+  background: rgba(0,0,0,.55);
   display: flex; align-items: center; justify-content: center;
   z-index: 2000; padding: 20px;
   backdrop-filter: blur(4px);
@@ -752,12 +752,13 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 .modal {
   background: var(--white);
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 24px 64px rgba(0,0,0,.22), 0 8px 24px rgba(0,0,0,.1);
   width: 100%; max-width: 560px;
   max-height: 90vh;
   display: flex; flex-direction: column;
-  transform: scale(.95) translateY(12px);
-  transition: transform .25s ease;
+  transform: scale(.96) translateY(14px);
+  transition: transform .28s cubic-bezier(.34,1.4,.64,1);
+  overflow: hidden;
 }
 
 .modal-overlay.open .modal { transform: scale(1) translateY(0); }
@@ -768,32 +769,40 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 
 .modal-header {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--grey-200);
+  padding: 18px 24px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
   flex-shrink: 0;
 }
 
-.modal-title { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+.modal-title {
+  font-size: 1.05rem; font-weight: 700; color: #fff;
+  display: flex; align-items: center; gap: 8px;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.05rem; font-weight: 700; color: #fff;
+}
 
 .modal-close {
   width: 32px; height: 32px;
-  background: var(--grey-100); border: none;
+  background: rgba(255,255,255,.18); border: none;
   border-radius: var(--radius-full);
   display: flex; align-items: center; justify-content: center;
-  color: var(--grey-600); font-size: 1.1rem;
+  color: #fff; font-size: 1rem;
   cursor: pointer; transition: var(--transition); line-height: 1;
+  flex-shrink: 0;
 }
 
-.modal-close:hover { background: var(--grey-200); color: var(--text); }
+.modal-close:hover { background: rgba(255,255,255,.32); color: #fff; }
 
-.modal-body { padding: 24px; overflow-y: auto; flex: 1; }
+.modal-body { padding: 24px; overflow-y: auto; flex: 1; background: #fff; }
 
 .modal-footer {
   display: flex; align-items: center; justify-content: flex-end;
-  gap: 10px; padding: 16px 24px;
+  gap: 10px; padding: 14px 24px;
   border-top: 1px solid var(--grey-200);
   background: var(--grey-50); flex-shrink: 0;
-  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
 }
 
 /* =========================================================
@@ -1388,28 +1397,30 @@ textarea.form-control { resize: vertical; min-height: 90px; }
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.48);
+  background: rgba(0,0,0,0.55);
   z-index: 200;
   align-items: center;
   justify-content: center;
   padding: 1rem;
+  backdrop-filter: blur(4px);
 }
 .modal-overlay.active { display: flex; }
 
 .modal {
   background: white;
   border-radius: 16px;
-  padding: 2rem;
+  padding: 0;
   width: 100%;
   max-width: 520px;
   max-height: 92vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.22);
-  animation: modalIn 0.2s ease;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.22);
+  animation: modalIn 0.25s cubic-bezier(.34,1.4,.64,1);
 }
 
 @keyframes modalIn {
-  from { opacity: 0; transform: translateY(-12px) scale(0.98); }
+  from { opacity: 0; transform: translateY(-14px) scale(0.97); }
   to   { opacity: 1; transform: translateY(0)    scale(1);    }
 }
 
@@ -1417,36 +1428,49 @@ textarea.form-control { resize: vertical; min-height: 90px; }
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.25rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 18px 24px;
+  background: linear-gradient(135deg, #1E3A5F 0%, #2C5282 100%);
+  flex-shrink: 0;
 }
 
 .modal-header h3 {
   margin: 0;
-  font-size: 1.1rem;
-  color: #1E3A5F;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
 }
 
 .modal-close {
-  background: none;
+  background: rgba(255,255,255,0.18);
   border: none;
-  font-size: 1.3rem;
+  font-size: 1rem;
   cursor: pointer;
-  color: #9ca3af;
-  padding: 0.15rem 0.4rem;
-  border-radius: 6px;
+  color: #fff;
+  padding: 0;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
   line-height: 1;
+  transition: background 0.2s;
+  flex-shrink: 0;
 }
-.modal-close:hover { background: #f3f4f6; color: #374151; }
+.modal-close:hover { background: rgba(255,255,255,0.32); color: #fff; }
+
+.modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+  background: #fff;
+}
 
 .modal-footer {
   display: flex;
   justify-content: flex-end;
   gap: 0.65rem;
-  margin-top: 1.5rem;
-  padding-top: 1rem;
+  padding: 14px 24px;
   border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+  flex-shrink: 0;
 }
 
 /* Form groups */
@@ -1469,6 +1493,41 @@ textarea.form-control { resize: vertical; min-height: 90px; }
   grid-template-columns: 1fr 1fr;
   gap: 0.75rem;
 }
+
+/* Inputs without form-control class (legacy pages) */
+.form-group input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]),
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 9px 13px;
+  background: #fff;
+  border: 1.5px solid #cbd5e0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #2d3748;
+  line-height: 1.5;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.form-group input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):hover,
+.form-group select:hover,
+.form-group textarea:hover { border-color: #a0aec0; }
+.form-group input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #3182ce;
+  box-shadow: 0 0 0 3px rgba(49,130,206,0.15);
+}
+.form-group select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23718096' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px;
+  padding-right: 36px;
+  cursor: pointer;
+}
+.form-group textarea { resize: vertical; min-height: 80px; }
 
 /* Confirm dialog */
 .confirm-overlay {
