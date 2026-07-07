@@ -410,6 +410,8 @@ document.addEventListener('DOMContentLoaded', function () {
       closeConfirmDelete();
     }
   });
+});
 
+document.addEventListener('app:authReady', function () {
   initClienti();
 });

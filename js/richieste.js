@@ -7,7 +7,7 @@ var _richFiltered  = [];
 var _activeStato   = '';
 var _currentRichId = null;
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('app:authReady', function() {
   loadRichieste();
 });
 

@@ -335,4 +335,4 @@ function loadRecentiRichieste() {
 }
 
 // --- Init ---
-document.addEventListener('DOMContentLoaded', initDashboard);
+document.addEventListener('app:authReady', initDashboard);

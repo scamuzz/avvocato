@@ -72,6 +72,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }).catch(function (err) { console.warn('Impossibile leggere il profilo utente:', err); });
 
     window.currentUser = user;
+    document.dispatchEvent(new Event('app:authReady'));
 
     // Highlight active sidebar link
     var currentPage = window.location.pathname.split('/').pop() || 'index.html';
