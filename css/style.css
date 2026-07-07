@@ -1676,16 +1676,17 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 }
 
 .topnav-user > span {
-  color: #1E3A5F;
+  color: #ffffff;
   font-weight: 700;
   font-size: 0.875rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.28rem 0.75rem 0.28rem 0.5rem;
-  background: linear-gradient(135deg, rgba(30,58,95,0.07), rgba(59,130,246,0.07));
+  padding: 0.28rem 0.85rem 0.28rem 0.5rem;
+  background: linear-gradient(135deg, #1E3A5F, #2563eb);
   border-radius: 999px;
-  border: 1px solid rgba(30,58,95,0.12);
+  border: 1px solid rgba(30,58,95,0.25);
+  box-shadow: 0 2px 6px rgba(30,58,95,0.18);
 }
 
 .topnav-user > span::before {
