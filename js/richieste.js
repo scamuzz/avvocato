@@ -43,8 +43,13 @@ async function loadRichieste() {
     try {
       snap = await db.collection('richieste').orderBy('data', 'desc').get();
     } catch (e) {
-      // fallback if 'data' field missing or no index
-      snap = await db.collection('richieste').orderBy('createdAt', 'desc').get();
+      try {
+        // fallback for older records saved with 'dataInvio'
+        snap = await db.collection('richieste').orderBy('dataInvio', 'desc').get();
+      } catch (e2) {
+        // last fallback
+        snap = await db.collection('richieste').orderBy('createdAt', 'desc').get();
+      }
     }
     _richList = [];
     snap.forEach(function(doc) {
@@ -71,7 +76,7 @@ function renderRichieste(list) {
   }
   var html = '';
   list.forEach(function(r) {
-    var ts = r.data || r.createdAt;
+    var ts = r.data || r.dataInvio || r.createdAt;
     html += '<tr style="cursor:pointer;" onclick="viewRichiesta(\'' + r.id + '\')">';
     html += '<td>' + escapeHtml(r.nome || '—') + '</td>';
     html += '<td>' + escapeHtml(r.email || '—') + '</td>';
@@ -113,7 +118,7 @@ function viewRichiesta(id) {
   var r = _richList.find(function(x) { return x.id === id; });
   if (!r) return;
   _currentRichId = id;
-  var ts = r.data || r.createdAt;
+  var ts = r.data || r.dataInvio || r.createdAt;
   document.getElementById('rd-nome').textContent      = r.nome || '—';
   document.getElementById('rd-email').textContent     = r.email || '—';
   document.getElementById('rd-telefono').textContent  = r.telefono || '—';
