@@ -15,8 +15,8 @@
   flex-wrap: wrap;
   gap: 1rem;
 }
-.welcome-title { margin: 0 0 0.3rem; font-size: 1.4rem; font-weight: 700; }
-.welcome-date  { margin: 0; opacity: 0.85; font-size: 0.9rem; }
+.welcome-title { margin: 0 0 0.3rem; font-size: 1.4rem; font-weight: 700; color: #fff; }
+.welcome-date  { margin: 0; font-size: 0.9rem; color: rgba(255,255,255,0.85); }
 .quick-actions-top { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 .quick-actions-top .btn {
   background: rgba(255,255,255,0.18);
