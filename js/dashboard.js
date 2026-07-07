@@ -293,7 +293,7 @@ function loadRecentiRichieste() {
   var container = document.getElementById('recentiRichiesteWrap');
 
   db.collection('richieste')
-    .orderBy('createdAt', 'desc')
+    .orderBy('data', 'desc')
     .limit(5)
     .get()
     .then(function (snap) {
