@@ -230,22 +230,6 @@ function initUI() {
       });
     }
   });
-  // Set user avatar initials
-  auth.onAuthStateChanged(function(user) {
-    if (!user) return;
-    var avatarEl = document.getElementById('userAvatar');
-    var nameEl = document.getElementById('userDisplayName');
-    if (nameEl) nameEl.textContent = user.displayName || user.email || '';
-    if (avatarEl) {
-      var parts = (user.displayName || user.email || '?').split(' ');
-      avatarEl.textContent = parts.map(function(p){ return p[0]; }).join('').toUpperCase().slice(0,2);
-    }
-    window.currentUser = user;
-    // Fetch Firestore user data
-    db.collection('users').doc(user.uid).get().then(function(doc) {
-      if (doc.exists) window.currentUserData = doc.data();
-    }).catch(function(){});
-  });
 }
 
 // Confirm dialog (returns Promise<boolean>)
