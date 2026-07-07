@@ -7,7 +7,7 @@ var _udFiltered  = [];
 var _udEditingId = null;
 var _praticheUdMap = {};
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('app:authReady', function() {
   loadUdienze();
   loadPraticheDropdown();
 });

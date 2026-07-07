@@ -12,7 +12,7 @@ var _calYear  = new Date().getFullYear();
 var _clientiMap = {};
 var _praticheMap = {};
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('app:authReady', function() {
   _loadAll();
   _loadClientiOpts();
 });

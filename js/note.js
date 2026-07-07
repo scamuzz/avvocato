@@ -7,7 +7,7 @@ var _noteFiltered    = [];
 var _noteEditingId   = null;
 var _praticheNoteMap = {};
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('app:authReady', function() {
   loadNote();
   loadPraticheNoteDropdown();
 });

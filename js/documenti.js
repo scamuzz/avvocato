@@ -7,7 +7,7 @@ var _docFiltered    = [];
 var _praticheDocMap = {};
 var _pendingFile    = null;
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('app:authReady', function() {
   loadDocumenti();
   loadPraticheDocDropdown();
 });
