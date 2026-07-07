@@ -50,9 +50,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     var fallbackName = user.displayName || user.email || '';
-    var fallbackInitials = fallbackName
-      ? fallbackName.split(/[\s@]+/).filter(Boolean).slice(0, 2).map(function (p) { return p[0].toUpperCase(); }).join('')
-      : '?';
+    var fallbackInitials;
+    if (fallbackName) {
+      var namePart = fallbackName.indexOf('@') !== -1 ? fallbackName.split('@')[0] : fallbackName;
+      fallbackInitials = namePart.split(/[\s.]+/).filter(Boolean).slice(0, 2).map(function (p) { return p[0].toUpperCase(); }).join('') || '?';
+    } else {
+      fallbackInitials = '?';
+    }
     applyUserDisplay(fallbackName, fallbackInitials);
 
     db.collection('users').doc(user.uid).get().then(function (doc) {
