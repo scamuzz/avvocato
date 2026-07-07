@@ -598,7 +598,7 @@
         const area = document.getElementById('info-area').value;
         const messaggio = document.getElementById('info-messaggio').value.trim();
 
-        await db.collection('richiesteContatto').add({
+        await db.collection('richieste').add({
           nome: nome + ' ' + cognome,
           email,
           telefono,
@@ -636,7 +636,7 @@
         const data = document.getElementById('apt-data').value;
         const motivo = document.getElementById('apt-motivo').value.trim();
 
-        await db.collection('richiesteContatto').add({
+        await db.collection('richieste').add({
           nome: nome + ' ' + cognome,
           email,
           telefono,
