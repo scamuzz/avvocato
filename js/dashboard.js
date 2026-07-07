@@ -80,6 +80,13 @@ function loadStats() {
     .get()
     .then(function (s) { _setStatText('statUdienze', s.size); })
     .catch(function ()  { _setStatText('statUdienze', '—'); });
+
+  // Richieste nuove
+  db.collection('richieste')
+    .where('stato', '==', 'Nuova')
+    .get()
+    .then(function (s) { _setStatText('statRichieste', s.size); })
+    .catch(function ()  { _setStatText('statRichieste', '—'); });
 }
 
 function _setStatText(id, val) {
@@ -297,25 +304,26 @@ function loadRecentiRichieste() {
       var rows = '';
       snap.forEach(function (doc) {
         var d = doc.data();
-        var ogg = d.oggetto || truncate(d.testo || '', 50) || '—';
+        var msg = truncate(d.messaggio || '', 60) || '—';
+        var ts  = d.data || d.dataInvio || d.createdAt;
         var statoCls = d.stato === 'Nuova'
           ? 'badge-aperta'
-          : d.stato === 'In lavorazione'
+          : d.stato === 'In gestione'
             ? 'badge-lavorazione'
             : 'badge-chiusa';
         rows +=
           '<tr>' +
             '<td>' + escapeHtml(d.nome || '—') + '</td>' +
-            '<td>' + escapeHtml(ogg) + '</td>' +
+            '<td>' + escapeHtml(msg) + '</td>' +
             '<td>' + escapeHtml(d.email || '—') + '</td>' +
             '<td><span class="badge ' + statoCls + '">' + escapeHtml(d.stato || 'Nuova') + '</span></td>' +
-            '<td>' + formatDate(d.createdAt) + '</td>' +
+            '<td>' + formatDate(ts) + '</td>' +
           '</tr>';
       });
       container.innerHTML =
         '<table class="data-table">' +
           '<thead><tr>' +
-            '<th>Nome</th><th>Oggetto</th><th>Email</th><th>Stato</th><th>Data</th>' +
+            '<th>Nome</th><th>Messaggio</th><th>Email</th><th>Stato</th><th>Data</th>' +
           '</tr></thead>' +
           '<tbody>' + rows + '</tbody>' +
         '</table>';

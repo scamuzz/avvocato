@@ -24,7 +24,7 @@
 /* Stats row */
 .stats-row {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 1rem;
   margin-bottom: 1.5rem;
 }
@@ -56,6 +56,7 @@
 .stat-icon-orange { background: #fef3c7; color: #d97706; }
 .stat-icon-green  { background: #d1fae5; color: #059669; }
 .stat-icon-red    { background: #fee2e2; color: #dc2626; }
+.stat-icon-purple { background: #ede9fe; color: #7c3aed; }
 
 .stat-num   { font-size: 1.8rem; font-weight: 700; line-height: 1; color: #1E3A5F; }
 .stat-label { font-size: 0.78rem; color: #6b7280; margin-top: 0.2rem; }
@@ -132,6 +133,9 @@
 /* Section cards */
 .section-card { margin-bottom: 1.25rem; }
 
+@media (max-width: 1280px) {
+  .stats-row { grid-template-columns: repeat(3, 1fr); }
+}
 @media (max-width: 1100px) {
   .stats-row { grid-template-columns: repeat(2, 1fr); }
 }
