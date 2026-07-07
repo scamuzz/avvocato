@@ -41,6 +41,7 @@
   transition: box-shadow 0.2s;
 }
 .stat-card:hover { box-shadow: 0 4px 16px rgba(30,58,95,0.1); }
+a.stat-card { text-decoration: none; color: inherit; cursor: pointer; }
 
 .stat-icon {
   width: 52px;
