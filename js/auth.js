@@ -33,11 +33,23 @@ document.addEventListener('DOMContentLoaded', function () {
       requestAnimationFrame(function () { mainContent.style.opacity = '1'; });
     }
 
-    // Display user name
-    var displayEl = document.getElementById('userDisplayName');
-    if (displayEl) {
-      displayEl.textContent = user.displayName || user.email || '';
-    }
+    // Display user name — sidebar and navbar
+    var displayName = user.displayName || user.email || '';
+    var initials = displayName
+      ? displayName.split(/[\s@]+/).filter(Boolean).slice(0, 2).map(function (p) { return p[0].toUpperCase(); }).join('')
+      : '?';
+
+    var sidebarNameEl = document.getElementById('userDisplayName');
+    if (sidebarNameEl) sidebarNameEl.textContent = displayName;
+
+    var sidebarAvatarEl = document.getElementById('userAvatar');
+    if (sidebarAvatarEl) sidebarAvatarEl.textContent = initials;
+
+    var navNameEl = document.getElementById('navUserName');
+    if (navNameEl) navNameEl.textContent = displayName;
+
+    var navAvatarEl = document.getElementById('navUserAvatar');
+    if (navAvatarEl) navAvatarEl.textContent = initials;
 
     // Highlight active sidebar link
     var currentPage = window.location.pathname.split('/').pop() || 'index.html';
