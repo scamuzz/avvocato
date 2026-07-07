@@ -392,6 +392,14 @@
 
     function _fmtDateStr(str) {
       if (!str) return '—';
+      // Handle Firestore Timestamp objects
+      if (typeof str === 'object' && typeof str.toDate === 'function') {
+        var d = str.toDate();
+        str = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      } else if (str instanceof Date) {
+        str = str.getFullYear() + '-' + String(str.getMonth() + 1).padStart(2, '0') + '-' + String(str.getDate()).padStart(2, '0');
+      }
+      if (typeof str !== 'string') return '—';
       var p = str.split('-');
       if (p.length !== 3) return str;
       return p[2] + '/' + p[1] + '/' + p[0];
