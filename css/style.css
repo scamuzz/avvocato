@@ -1722,8 +1722,8 @@ textarea.form-control { resize: vertical; min-height: 90px; }
   background: linear-gradient(to bottom, #f9fafb, #f3f4f6);
 }
 
-.modal-footer .btn {
-  border-radius: 999px !important;
+.modal .modal-footer .btn {
+  border-radius: 999px;
   padding: 0.5rem 1.5rem;
   font-weight: 600;
   font-size: 0.875rem;
@@ -1733,54 +1733,54 @@ textarea.form-control { resize: vertical; min-height: 90px; }
   overflow: hidden;
 }
 
-.modal-footer .btn-primary {
+.modal .modal-footer .btn-primary {
   background: linear-gradient(135deg, #1E3A5F 0%, #3b82f6 100%);
   border-color: transparent;
   box-shadow: 0 4px 12px rgba(30,58,95,0.3);
   color: #fff;
 }
 
-.modal-footer .btn-primary:hover {
+.modal .modal-footer .btn-primary:hover {
   background: linear-gradient(135deg, #163050 0%, #2563eb 100%);
   box-shadow: 0 6px 20px rgba(30,58,95,0.4);
   transform: translateY(-1px);
 }
 
-.modal-footer .btn-secondary {
+.modal .modal-footer .btn-secondary {
   background: transparent;
   border: 1.5px solid #d1d5db;
   color: #374151;
   box-shadow: none;
 }
 
-.modal-footer .btn-secondary:hover {
+.modal .modal-footer .btn-secondary:hover {
   background: #f3f4f6;
   border-color: #9ca3af;
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
-.modal-footer .btn-danger {
+.modal .modal-footer .btn-danger {
   background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
   border-color: transparent;
   box-shadow: 0 4px 12px rgba(185,28,28,0.3);
   color: #fff;
 }
 
-.modal-footer .btn-danger:hover {
+.modal .modal-footer .btn-danger:hover {
   background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
   box-shadow: 0 6px 20px rgba(185,28,28,0.4);
   transform: translateY(-1px);
 }
 
-.modal-footer .btn-ghost {
-  border-radius: 999px !important;
+.modal .modal-footer .btn-ghost {
+  border-radius: 999px;
   border: 1.5px solid #d1d5db;
   color: #374151;
   background: transparent;
 }
 
-.modal-footer .btn-ghost:hover {
+.modal .modal-footer .btn-ghost:hover {
   background: #f3f4f6;
   border-color: #9ca3af;
   transform: translateY(-1px);
@@ -1851,8 +1851,8 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 }
 
 /* ---- Confirm box bottoni ---- */
-.confirm-actions .btn {
-  border-radius: 999px !important;
+.confirm-box .confirm-actions .btn {
+  border-radius: 999px;
   padding: 0.45rem 1.25rem;
   font-weight: 600;
 }
