@@ -603,7 +603,7 @@
           email,
           telefono,
           messaggio: (area ? '[' + area + '] ' : '') + messaggio,
-          dataInvio: firebase.firestore.FieldValue.serverTimestamp(),
+          data: firebase.firestore.FieldValue.serverTimestamp(),
           stato: 'Nuova',
           tipo: 'informazioni'
         });
@@ -641,7 +641,7 @@
           email,
           telefono,
           messaggio: (data ? 'Data preferita: ' + data + '. ' : '') + motivo,
-          dataInvio: firebase.firestore.FieldValue.serverTimestamp(),
+          data: firebase.firestore.FieldValue.serverTimestamp(),
           stato: 'Nuova',
           tipo: 'appuntamento'
         });
