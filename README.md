@@ -157,6 +157,12 @@ firebase deploy --only hosting
 - **Layout**: Sidebar fissa + navbar superiore
 - **Responsive**: Breakpoint mobile a 768px con sidebar collassabile
 
+## 🆓 Modalità upload PDF free
+
+- Upload documenti configurato per uso senza abbonamento interno all'app.
+- Consentiti solo file **PDF** (`application/pdf`) in Firebase Storage.
+- Limite per file: **10 MB** (coerente con uso su piano gratuito Firebase entro le soglie disponibili).
+
 ## ⚠️ Indici Firestore Necessari
 
 Alcune query richiedono indici compositi. Firebase mostrerà un link in console per crearli automaticamente. I principali:
