@@ -6,6 +6,7 @@ var _docList        = [];
 var _docFiltered    = [];
 var _praticheDocMap = {};
 var _pendingFile    = null;
+var FREE_UPLOAD_MAX_BYTES = 10 * 1024 * 1024; // 10 MB
 
 document.addEventListener('app:authReady', function() {
   loadDocumenti();
@@ -45,6 +46,23 @@ function _getFileIcon(tipo) {
 
 function _isPDF(nome) {
   return nome && nome.toLowerCase().endsWith('.pdf');
+}
+
+function _isPdfFile(file) {
+  if (!file) return false;
+  var byMime = file.type === 'application/pdf';
+  var byName = _isPDF(file.name || '');
+  return byMime || byName;
+}
+
+function _validateFreeUploadFile(file) {
+  if (!_isPdfFile(file)) {
+    return 'In modalità free puoi caricare solo file PDF.';
+  }
+  if (file.size > FREE_UPLOAD_MAX_BYTES) {
+    return 'File troppo grande. Limite modalità free: 10 MB.';
+  }
+  return '';
 }
 
 function _fmtDateDoc(ts) {
@@ -148,6 +166,16 @@ function handleFileSelect(e) {
 }
 
 function _setPendingFile(file) {
+  var validationError = _validateFreeUploadFile(file);
+  if (validationError) {
+    _pendingFile = null;
+    document.getElementById('up-file').value = '';
+    var fnReset = document.getElementById('drop-filename');
+    fnReset.textContent = '';
+    fnReset.classList.add('d-none');
+    showToast(validationError, 'error');
+    return;
+  }
   _pendingFile = file;
   var fnEl = document.getElementById('drop-filename');
   fnEl.textContent = file.name + ' (' + _fmtSize(file.size) + ')';
@@ -170,6 +198,11 @@ function saveUpload() {
 function uploadDocumento(praticaId, tipo, file) {
   if (!window.storage) {
     showToast('Firebase Storage non disponibile. Verifica che sia abilitato nel progetto Firebase.', 'error');
+    return;
+  }
+  var validationError = _validateFreeUploadFile(file);
+  if (validationError) {
+    showToast(validationError, 'error');
     return;
   }
 

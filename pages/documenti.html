@@ -147,8 +147,9 @@
           <div id="drop-zone" onclick="document.getElementById('up-file').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
             <span class="drop-icon"><i class="fas fa-cloud-upload-alt"></i></span>
             <div>Trascina il file qui o <strong>clicca per selezionare</strong></div>
+            <div class="text-muted text-sm mt-2">Modalità free: solo PDF (max 10 MB)</div>
             <div id="drop-filename" class="drop-filename d-none"></div>
-            <input type="file" id="up-file" onchange="handleFileSelect(event)">
+            <input type="file" id="up-file" accept=".pdf,application/pdf" onchange="handleFileSelect(event)">
           </div>
         </div>
         <div id="up-progress">
