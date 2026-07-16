@@ -56,11 +56,9 @@ function _isPdfFile(file) {
 async function _isPdfHeader(file) {
   if (!file || !file.slice) return false;
   try {
-    var headerBytes = new Uint8Array(await file.slice(0, 5).arrayBuffer());
-    var signature = '';
-    for (var i = 0; i < headerBytes.length; i += 1) {
-      signature += String.fromCharCode(headerBytes[i]);
-    }
+    var headerBlob = file.slice(0, 5);
+    var headerBytes = new Uint8Array(await headerBlob.arrayBuffer());
+    var signature = new TextDecoder('ascii').decode(headerBytes);
     return signature === '%PDF-';
   } catch (e) {
     return false;
@@ -224,9 +222,6 @@ function saveUpload() {
 async function uploadDocumento(praticaId, tipo, file) {
   if (!window.storage) {
     showToast('Firebase Storage non disponibile. Verifica che sia abilitato nel progetto Firebase.', 'error');
-    return;
-  }
-  if (!(await _validateFileWithFeedback(file))) {
     return;
   }
 
