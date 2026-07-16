@@ -224,7 +224,6 @@ function saveUpload() {
 async function uploadDocumento(praticaId, tipo, file) {
   if (!window.storage) {
     showToast('Firebase Storage non disponibile. Verifica che sia abilitato nel progetto Firebase.', 'error');
-    _resetPendingFileSelection();
     return;
   }
   if (!(await _validateFileWithFeedback(file))) {
