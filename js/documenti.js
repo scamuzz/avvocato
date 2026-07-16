@@ -50,9 +50,7 @@ function _isPDF(nome) {
 
 function _isPdfFile(file) {
   if (!file) return false;
-  var byMime = file.type === 'application/pdf';
-  var byName = _isPDF(file.name || '');
-  return byMime || byName;
+  return file.type === 'application/pdf';
 }
 
 function _validateFreeUploadFile(file) {
@@ -63,6 +61,15 @@ function _validateFreeUploadFile(file) {
     return 'File troppo grande. Limite modalità free: 10 MB.';
   }
   return '';
+}
+
+function _validatePendingFileOrToast(file) {
+  var validationError = _validateFreeUploadFile(file);
+  if (validationError) {
+    showToast(validationError, 'error');
+    return false;
+  }
+  return true;
 }
 
 function _fmtDateDoc(ts) {
@@ -166,14 +173,12 @@ function handleFileSelect(e) {
 }
 
 function _setPendingFile(file) {
-  var validationError = _validateFreeUploadFile(file);
-  if (validationError) {
+  if (!_validatePendingFileOrToast(file)) {
     _pendingFile = null;
     document.getElementById('up-file').value = '';
     var fnReset = document.getElementById('drop-filename');
     fnReset.textContent = '';
     fnReset.classList.add('d-none');
-    showToast(validationError, 'error');
     return;
   }
   _pendingFile = file;
@@ -200,9 +205,7 @@ function uploadDocumento(praticaId, tipo, file) {
     showToast('Firebase Storage non disponibile. Verifica che sia abilitato nel progetto Firebase.', 'error');
     return;
   }
-  var validationError = _validateFreeUploadFile(file);
-  if (validationError) {
-    showToast(validationError, 'error');
+  if (!_validatePendingFileOrToast(file)) {
     return;
   }
 
