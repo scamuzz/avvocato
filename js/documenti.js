@@ -53,9 +53,23 @@ function _isPdfFile(file) {
   return file.type === 'application/pdf';
 }
 
-function _validateFreeUploadFile(file) {
+async function _isPdfHeader(file) {
+  if (!file || !file.slice) return false;
+  try {
+    var headerBytes = new Uint8Array(await file.slice(0, 5).arrayBuffer());
+    var signature = String.fromCharCode.apply(null, headerBytes);
+    return signature === '%PDF-';
+  } catch (e) {
+    return false;
+  }
+}
+
+async function _validateFreeUploadFile(file) {
   if (!_isPdfFile(file)) {
     return 'In modalità free puoi caricare solo file PDF.';
+  }
+  if (!(await _isPdfHeader(file))) {
+    return 'Il file selezionato non è un PDF valido.';
   }
   if (file.size > FREE_UPLOAD_MAX_BYTES) {
     return 'File troppo grande. Limite modalità free: 10 MB.';
@@ -63,13 +77,21 @@ function _validateFreeUploadFile(file) {
   return '';
 }
 
-function _validatePendingFileOrToast(file) {
-  var validationError = _validateFreeUploadFile(file);
+async function _validateFileWithFeedback(file) {
+  var validationError = await _validateFreeUploadFile(file);
   if (validationError) {
     showToast(validationError, 'error');
     return false;
   }
   return true;
+}
+
+function _resetPendingFileSelection() {
+  _pendingFile = null;
+  document.getElementById('up-file').value = '';
+  var fnEl = document.getElementById('drop-filename');
+  fnEl.textContent = '';
+  fnEl.classList.add('d-none');
 }
 
 function _fmtDateDoc(ts) {
@@ -172,13 +194,9 @@ function handleFileSelect(e) {
   if (file) _setPendingFile(file);
 }
 
-function _setPendingFile(file) {
-  if (!_validatePendingFileOrToast(file)) {
-    _pendingFile = null;
-    document.getElementById('up-file').value = '';
-    var fnReset = document.getElementById('drop-filename');
-    fnReset.textContent = '';
-    fnReset.classList.add('d-none');
+async function _setPendingFile(file) {
+  if (!(await _validateFileWithFeedback(file))) {
+    _resetPendingFileSelection();
     return;
   }
   _pendingFile = file;
@@ -200,12 +218,12 @@ function saveUpload() {
   uploadDocumento(praticaId, tipo, _pendingFile);
 }
 
-function uploadDocumento(praticaId, tipo, file) {
+async function uploadDocumento(praticaId, tipo, file) {
   if (!window.storage) {
     showToast('Firebase Storage non disponibile. Verifica che sia abilitato nel progetto Firebase.', 'error');
     return;
   }
-  if (!_validatePendingFileOrToast(file)) {
+  if (!(await _validateFileWithFeedback(file))) {
     return;
   }
 
@@ -257,15 +275,13 @@ function uploadDocumento(praticaId, tipo, file) {
         });
         closeModal('modal-upload');
         showToast('Documento caricato con successo', 'success');
-        _pendingFile = null;
+        _resetPendingFileSelection();
         progressContainer.style.display = 'none';
         progressFill.style.width = '0%';
         progressLabel.textContent = '0%';
         btnUpload.disabled = false;
-        document.getElementById('drop-filename').classList.add('d-none');
         document.getElementById('up-praticaId').value = '';
         document.getElementById('up-tipo').value = '';
-        document.getElementById('up-file').value = '';
         loadDocumenti();
       } catch (e) {
         console.error('Errore salvataggio Firestore:', e);
